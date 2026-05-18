@@ -1478,19 +1478,22 @@
   display: flex; flex-direction: column;
 }
 .me-preview-pane {
-  flex: 1; overflow-y: auto;
+  flex: 1; overflow: hidden;
   background: var(--color-bg);
   display: flex; flex-direction: column;
+  position: relative;
 }
 
 /* tab content wrappers */
-.me-tab { display: none; flex-direction: column; flex: 1; }
+.me-tab { display: none; flex-direction: column; flex: 1; min-height: 0; }
 .me-tab.on { display: flex; }
 
-/* channel tabs inside edit pane */
+/* channel tabs inside edit pane — sticky at top of scrollable pane */
 .me-ch-tabs {
   display: flex; border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
+  position: sticky; top: 0; z-index: 2;
+  background: #fff;
 }
 .me-ch-tab {
   all: unset; cursor: pointer;
@@ -1628,10 +1631,11 @@
 /* Preview pane: email */
 .me-email-preview {
   padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 12px;
+  overflow: hidden; /* no scroll — preview is decorative, not exhaustive */
 }
 .me-email-meta {
   background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow: hidden; flex-shrink: 0;
 }
 .me-meta-row {
   display: flex; align-items: baseline; gap: 6px;
@@ -1642,9 +1646,45 @@
 .me-meta-label { color: var(--color-text-muted); width: 60px; flex-shrink: 0; font-weight: 500; }
 .me-meta-value { color: var(--color-text-primary); font-weight: 500; }
 
+/* Wrapper for rendered email: clipped, with fade + hover overlay */
+.me-email-rendered-wrap {
+  position: relative; flex: 1; min-height: 0;
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  overflow: hidden;
+}
+/* fade the bottom of the email preview */
+.me-email-rendered-wrap::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 72px;
+  background: linear-gradient(to bottom, transparent, rgba(249,250,251,.95));
+  pointer-events: none;
+  z-index: 1;
+}
+/* hover overlay — "Edit layout" CTA */
+.me-email-edit-overlay {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(15,23,42,.38);
+  opacity: 0;
+  transition: opacity .18s;
+  border-radius: var(--radius-md);
+}
+.me-email-rendered-wrap:hover .me-email-edit-overlay { opacity: 1; }
+.me-email-edit-overlay-btn {
+  all: unset; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: var(--radius-md);
+  background: #fff; color: var(--color-text-primary);
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 4px 16px rgba(15,23,42,.18);
+  transition: transform .12s;
+}
+.me-email-edit-overlay-btn:hover { transform: scale(1.03); }
+
 .me-email-rendered {
-  background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-md);
-  overflow: hidden; flex: 1;
+  background: #fff;
+  overflow: hidden; height: 100%;
 }
 .me-email-body-inner {
   padding: 24px 20px; text-align: center;
@@ -1672,6 +1712,7 @@
 /* Preview pane: SMS */
 .me-sms-preview-pane {
   padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px;
+  overflow: hidden; justify-content: center;
 }
 .me-phone-wrap {
   display: flex; justify-content: center;
@@ -2069,20 +2110,12 @@
       </button>
     </div>
 
-    <!-- Step nav + message nav -->
-    <div class="me-step-nav">
-      <button class="me-step-btn on" id="me-step-initial" onclick="setMeStep('initial')">Initial Send</button>
-      <button class="me-step-btn" id="me-step-reminder" onclick="setMeStep('reminder')">Reminder</button>
-      <div class="me-step-sep">
-        <span class="me-nav-label" id="me-nav-label">Message 1 of 2</span>
-        <button class="me-nav-btn" id="me-prev-btn" aria-label="Previous message">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M7.5 2L3.5 6l4 4"/></svg>
-        </button>
-        <button class="me-nav-btn" id="me-next-btn" aria-label="Next message">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4.5 2L8.5 6l-4 4"/></svg>
-        </button>
-      </div>
-    </div>
+    <!-- hidden step nav elements (kept for JS compat, visually removed) -->
+    <div id="me-step-initial" style="display:none"></div>
+    <div id="me-step-reminder" style="display:none"></div>
+    <div id="me-nav-label" style="display:none"></div>
+    <div id="me-prev-btn" style="display:none"></div>
+    <div id="me-next-btn" style="display:none"></div>
 
     <!-- Body: edit pane + preview pane -->
     <div class="me-body">
@@ -2199,19 +2232,27 @@
                 <span class="me-meta-value" id="me-preview-pretext" style="color:var(--color-text-muted);font-style:italic;">—</span>
               </div>
             </div>
-            <div class="me-email-rendered">
-              <div class="me-email-body-inner">
-                <div class="me-ep-logo">🔧</div>
-                <div class="me-ep-biz">Tomer's Rental</div>
-                <div class="me-ep-card">
-                  <div class="me-ep-text" id="me-ep-body"></div>
-                  <div style="text-align:center">
-                    <span class="me-ep-cta" id="me-ep-cta" style="background:#7c3aed">Rate your stay</span>
+            <div class="me-email-rendered-wrap">
+              <div class="me-email-edit-overlay">
+                <button class="me-email-edit-overlay-btn" onclick="alert('Opens Stripo email editor')">
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5l2 2-6 6H3.5v-2l6-6z"/><path d="M8 3l2 2"/></svg>
+                  Edit layout
+                </button>
+              </div>
+              <div class="me-email-rendered">
+                <div class="me-email-body-inner">
+                  <div class="me-ep-logo">🔧</div>
+                  <div class="me-ep-biz">Tomer's Rental</div>
+                  <div class="me-ep-card">
+                    <div class="me-ep-text" id="me-ep-body"></div>
+                    <div style="text-align:center">
+                      <span class="me-ep-cta" id="me-ep-cta" style="background:#7c3aed">Rate your stay</span>
+                    </div>
                   </div>
-                </div>
-                <div class="me-ep-footer">
-                  Thank you for choosing Tomer's Rental!<br>
-                  <span style="color:#d1d5db">Unsubscribe · 1881 Oak Ave, Evanston, IL, 60201</span>
+                  <div class="me-ep-footer">
+                    Thank you for choosing Tomer's Rental!<br>
+                    <span style="color:#d1d5db">Unsubscribe · 1881 Oak Ave, Evanston, IL, 60201</span>
+                  </div>
                 </div>
               </div>
             </div>
