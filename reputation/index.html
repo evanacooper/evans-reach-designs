@@ -1692,24 +1692,27 @@
   display: flex; justify-content: center;
 }
 .me-phone {
-  background: #1c1c1e; border-radius: 36px; width: 200px;
+  background: #1c1c1e; border-radius: 40px; width: 196px; height: 420px;
   padding: 10px 6px 14px;
-  box-shadow: 0 12px 40px rgba(15,23,42,.28), 0 0 0 1px rgba(255,255,255,.06) inset;
+  box-shadow: 0 16px 48px rgba(15,23,42,.30), 0 0 0 1px rgba(255,255,255,.06) inset;
   display: flex; flex-direction: column; gap: 0;
-  /* keep it phone-shaped regardless of container */
   flex-shrink: 0;
 }
 .me-phone-notch {
   width: 48px; height: 4px; background: #3a3a3c; border-radius: 2px; margin: 0 auto 10px;
+  flex-shrink: 0;
 }
 .me-phone-screen {
-  background: #f2f2f7; border-radius: 28px; padding: 10px 8px 12px;
-  display: flex; flex-direction: column; gap: 6px; min-height: 180px;
+  background: #f2f2f7; border-radius: 30px; padding: 10px 8px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  flex: 1; overflow: hidden;
 }
 .me-phone-sender {
   font-size: 9.5px; font-weight: 600; text-align: center; color: #6b7280;
   padding-bottom: 6px; border-bottom: 1px solid #e5e5ea; margin-bottom: 2px;
 }
+/* spacer pushes bubble to the bottom of the screen */
+.me-phone-spacer { flex: 1; }
 /* bubble row: push bubble to the right like an outgoing message */
 .me-phone-bubble-row {
   display: flex; justify-content: flex-end;
@@ -2247,6 +2250,7 @@
                 <div class="me-phone-notch"></div>
                 <div class="me-phone-screen">
                   <div class="me-phone-sender">Tomer's Rental</div>
+                  <div class="me-phone-spacer"></div>
                   <div class="me-phone-bubble-row">
                     <div class="me-phone-bubble" id="me-phone-bubble">Your message will appear here.</div>
                   </div>
