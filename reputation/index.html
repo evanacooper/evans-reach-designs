@@ -1394,6 +1394,320 @@
 .abh-sms-meta {
   font-size: 10.5px; color: var(--color-text-muted); margin-top: 8px; text-align: right;
 }
+
+/* ── Message Editor Modal ── */
+.msg-editor-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(15,23,42,.45);
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+.msg-editor-overlay.open { display: flex; }
+
+.msg-editor {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(15,23,42,.18), 0 0 0 1px rgba(15,23,42,.06);
+  width: 100%; max-width: 900px;
+  height: min(80vh, 640px);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  animation: meScale .18s ease-out;
+}
+@keyframes meScale { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* header */
+.me-head {
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  flex-shrink: 0;
+}
+.me-head-left { display: flex; flex-direction: column; gap: 2px; }
+.me-eyebrow {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--color-text-muted);
+}
+.me-title { font-size: 16px; font-weight: 700; color: var(--color-text-primary); }
+.me-sub { font-size: 12px; color: var(--color-text-muted); margin-top: 1px; }
+.me-close {
+  all: unset; cursor: pointer; width: 30px; height: 30px; border-radius: 8px;
+  display: grid; place-items: center;
+  color: var(--color-text-muted); flex-shrink: 0;
+}
+.me-close:hover { background: var(--color-bg); color: var(--color-text-primary); }
+
+/* step nav pills */
+.me-step-nav {
+  display: flex; align-items: center; gap: 6px;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+.me-step-btn {
+  all: unset; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 10px 2px;
+  font-size: 12px; font-weight: 600; color: var(--color-text-muted);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.me-step-btn + .me-step-btn { margin-left: 14px; }
+.me-step-btn.on { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); }
+.me-step-btn:hover:not(.on) { color: var(--color-text-secondary); }
+.me-step-sep { margin-left: auto; display: flex; align-items: center; gap: 6px; padding: 8px 0; }
+.me-nav-btn {
+  all: unset; cursor: pointer; width: 26px; height: 26px; border-radius: 6px;
+  display: grid; place-items: center; color: var(--color-text-muted);
+  border: 1px solid var(--color-border); background: #fff;
+}
+.me-nav-btn:hover:not(:disabled) { color: var(--color-text-primary); border-color: var(--color-text-primary); }
+.me-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+.me-nav-label {
+  font-size: 11px; font-weight: 600; color: var(--color-text-muted);
+}
+
+/* body: left edit + right preview */
+.me-body {
+  flex: 1; display: flex; overflow: hidden;
+}
+.me-edit-pane {
+  width: 340px; flex-shrink: 0;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.me-preview-pane {
+  flex: 1; overflow-y: auto;
+  background: var(--color-bg);
+  display: flex; flex-direction: column;
+}
+
+/* tab content wrappers */
+.me-tab { display: none; flex-direction: column; flex: 1; }
+.me-tab.on { display: flex; }
+
+/* channel tabs inside edit pane */
+.me-ch-tabs {
+  display: flex; border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.me-ch-tab {
+  all: unset; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 16px;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  flex: 1; justify-content: center;
+}
+.me-ch-tab.on { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); }
+.me-ch-tab:hover:not(.on) { color: var(--color-text-secondary); }
+
+/* field groups */
+.me-fields { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+.me-field { display: flex; flex-direction: column; gap: 5px; }
+.me-field label {
+  font-size: 11.5px; font-weight: 600; color: var(--color-text-secondary);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.me-input {
+  width: 100%; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
+  padding: 7px 10px; font-size: 13px; font-family: inherit;
+  color: var(--color-text-primary); background: #fff; outline: none;
+  transition: border-color .15s;
+}
+.me-input:focus { border-color: #6366f1; }
+.me-input::placeholder { color: var(--color-text-muted); }
+
+/* SMS textarea */
+.me-sms-area {
+  resize: none;
+  min-height: 100px; line-height: 1.6;
+}
+.me-char-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11.5px; color: var(--color-text-muted);
+}
+.me-char-count { font-weight: 600; font-variant-numeric: tabular-nums; }
+.me-char-count.warn { color: var(--color-warning); }
+.me-char-count.danger { color: var(--color-destructive); }
+.me-sms-split-warn {
+  display: none;
+  align-items: center; gap: 6px;
+  background: var(--color-warning-bg); border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-sm); padding: 7px 10px;
+  font-size: 12px; color: #92400e;
+}
+.me-sms-split-warn.visible { display: flex; }
+.me-merge-btn {
+  all: unset; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 11px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  font-size: 12px; font-weight: 600; color: var(--color-text-secondary); background: #fff;
+  transition: border-color .15s, color .15s;
+}
+.me-merge-btn:hover { border-color: #6366f1; color: var(--color-text-primary); }
+
+/* merge field dropdown */
+.me-merge-dropdown {
+  position: relative;
+}
+.me-merge-panel {
+  display: none;
+  position: absolute; left: 0; top: calc(100% + 6px); z-index: 10;
+  background: #fff; border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(15,23,42,.10);
+  width: 260px; max-height: 280px; overflow-y: auto;
+}
+.me-merge-panel.open { display: block; }
+.me-merge-search {
+  border: none; border-bottom: 1px solid var(--color-border);
+  padding: 9px 12px; font-size: 13px; font-family: inherit;
+  width: 100%; outline: none; color: var(--color-text-primary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.me-merge-category {
+  padding: 6px 12px 2px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--color-text-muted);
+}
+.me-merge-item {
+  all: unset; cursor: pointer; display: block; width: 100%;
+  padding: 7px 12px;
+  font-size: 12.5px; color: var(--color-text-primary);
+  transition: background .1s;
+}
+.me-merge-item:hover { background: #f1f5f9; }
+.me-merge-item code {
+  font-family: monospace; font-size: 11px;
+  background: #e0e7ff; color: #4338ca;
+  padding: 1px 4px; border-radius: 3px; margin-left: 4px;
+}
+
+/* merge chip (inline) */
+.me-merge-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 6px; border-radius: 4px;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  color: #1d4ed8; font-size: 12px; font-weight: 500;
+  white-space: nowrap; vertical-align: middle;
+}
+
+/* Email editor section divider */
+.me-section-label {
+  padding: 10px 18px 6px;
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--color-text-muted); background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);
+  margin-top: 4px; flex-shrink: 0;
+}
+
+/* stripo bar */
+.me-stripo-bar {
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-border);
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; background: var(--color-bg);
+}
+.me-stripo-hint {
+  font-size: 12px; color: var(--color-text-muted); flex: 1; line-height: 1.45;
+}
+.me-stripo-btn {
+  all: unset; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border); background: #fff;
+  font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary);
+  white-space: nowrap; transition: border-color .15s, color .15s;
+}
+.me-stripo-btn:hover { border-color: #6366f1; color: var(--color-text-primary); }
+
+/* Preview pane: email */
+.me-email-preview {
+  padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 12px;
+}
+.me-email-meta {
+  background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.me-meta-row {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 6px 12px; border-bottom: 1px solid var(--color-border);
+  font-size: 12px;
+}
+.me-meta-row:last-child { border-bottom: none; }
+.me-meta-label { color: var(--color-text-muted); width: 60px; flex-shrink: 0; font-weight: 500; }
+.me-meta-value { color: var(--color-text-primary); font-weight: 500; }
+
+.me-email-rendered {
+  background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  overflow: hidden; flex: 1;
+}
+.me-email-body-inner {
+  padding: 24px 20px; text-align: center;
+}
+.me-ep-logo {
+  width: 48px; height: 48px; background: #f9fafb; border: 1px solid var(--color-border);
+  border-radius: 8px; margin: 0 auto 12px; display: flex; align-items: center;
+  justify-content: center; font-size: 22px;
+}
+.me-ep-biz { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+.me-ep-card {
+  background: #f9fafb; border-radius: 10px; padding: 16px 14px; margin-bottom: 14px; text-align: left;
+}
+.me-ep-text { font-size: 13px; color: #374151; line-height: 1.6; white-space: pre-line; margin-bottom: 14px; }
+.me-ep-cta {
+  display: inline-block; padding: 10px 22px; border-radius: 7px;
+  font-size: 13px; font-weight: 600; color: #fff; text-decoration: none;
+}
+.me-ep-footer {
+  padding: 10px 16px 14px;
+  font-size: 11px; color: #9ca3af; text-align: center; line-height: 1.6;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Preview pane: SMS */
+.me-sms-preview-pane {
+  padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px;
+}
+.me-phone-wrap {
+  display: flex; justify-content: center;
+}
+.me-phone {
+  background: #1a1a2e; border-radius: 28px; width: 240px;
+  padding: 12px 8px 16px;
+  box-shadow: 0 8px 32px rgba(15,23,42,.22);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.me-phone-notch {
+  width: 60px; height: 6px; background: #2d2d44; border-radius: 3px; margin: 0 auto 8px;
+}
+.me-phone-screen {
+  background: #fff; border-radius: 18px; padding: 12px 10px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.me-phone-sender {
+  font-size: 10px; font-weight: 700; text-align: center; color: #6b7280;
+  padding-bottom: 6px; border-bottom: 1px solid #f1f5f9;
+}
+.me-phone-bubble {
+  background: #f0f4f8; border-radius: 10px 10px 10px 3px;
+  padding: 8px 10px; font-size: 11.5px; line-height: 1.55; color: #111827;
+  word-break: break-word;
+}
+.me-phone-time {
+  font-size: 9.5px; color: #9ca3af; text-align: center;
+}
+
+/* Editor footer */
+.me-foot {
+  padding: 12px 20px; border-top: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  background: var(--color-bg); flex-shrink: 0;
+}
 </style>
 </head>
 <body>
@@ -1738,6 +2052,200 @@
     </div>
   </aside>
 </div>
+
+<!-- Message Editor Modal -->
+<div class="msg-editor-overlay" id="msg-editor-overlay" role="dialog" aria-modal="true" aria-labelledby="me-title">
+  <div class="msg-editor" id="msg-editor">
+
+    <!-- Header -->
+    <div class="me-head">
+      <div class="me-head-left">
+        <div class="me-eyebrow" id="me-eyebrow">Message 1 of 2</div>
+        <div class="me-title" id="me-title"></div>
+        <div class="me-sub" id="me-sub"></div>
+      </div>
+      <button class="me-close" onclick="closeMsgEditor()" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>
+
+    <!-- Step nav + message nav -->
+    <div class="me-step-nav">
+      <button class="me-step-btn on" id="me-step-initial" onclick="setMeStep('initial')">Initial Send</button>
+      <button class="me-step-btn" id="me-step-reminder" onclick="setMeStep('reminder')">Reminder</button>
+      <div class="me-step-sep">
+        <span class="me-nav-label" id="me-nav-label">Message 1 of 2</span>
+        <button class="me-nav-btn" id="me-prev-btn" aria-label="Previous message">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M7.5 2L3.5 6l4 4"/></svg>
+        </button>
+        <button class="me-nav-btn" id="me-next-btn" aria-label="Next message">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4.5 2L8.5 6l-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body: edit pane + preview pane -->
+    <div class="me-body">
+
+      <!-- LEFT: Edit pane -->
+      <div class="me-edit-pane">
+
+        <!-- Channel tabs -->
+        <div class="me-ch-tabs">
+          <button class="me-ch-tab on" id="me-ch-email" onclick="setMeChannel('email')">
+            <svg width="12" height="10" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.75" y="0.75" width="11.5" height="9.5" rx="1.5"/><path d="M0.75 3L6.5 6.5 12.25 3"/></svg>
+            Email
+          </button>
+          <button class="me-ch-tab" id="me-ch-sms" onclick="setMeChannel('sms')">
+            <svg width="9" height="11" viewBox="0 0 10 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.75" y="0.75" width="8.5" height="10.5" rx="2"/><path d="M3.5 9.5h3"/></svg>
+            SMS
+          </button>
+        </div>
+
+        <!-- Email tab -->
+        <div class="me-tab on" id="me-tab-email">
+          <div class="me-section-label">Sender</div>
+          <div class="me-fields" style="gap:10px; padding-bottom:0;">
+            <div class="me-field">
+              <label for="me-sender-name">Sender name</label>
+              <input class="me-input" id="me-sender-name" type="text" placeholder="Tomer's Rental" value="Tomer's Rental">
+            </div>
+            <div class="me-field">
+              <label for="me-sender-email">From email</label>
+              <input class="me-input" id="me-sender-email" type="email" placeholder="noreply@tomersrental.com" value="noreply@tomersrental.com">
+            </div>
+            <div class="me-field">
+              <label for="me-reply-to">Reply-to</label>
+              <input class="me-input" id="me-reply-to" type="email" placeholder="hello@tomersrental.com" value="">
+            </div>
+          </div>
+          <div class="me-section-label" style="margin-top:12px;">Content</div>
+          <div class="me-fields" style="gap:10px;">
+            <div class="me-field">
+              <label for="me-subject">Subject line</label>
+              <input class="me-input" id="me-subject" type="text" placeholder="Your email subject…">
+            </div>
+            <div class="me-field">
+              <label for="me-preview-text">Preview text</label>
+              <input class="me-input" id="me-preview-text" type="text" placeholder="Short preview shown in inbox…">
+            </div>
+          </div>
+          <div class="me-stripo-bar">
+            <span class="me-stripo-hint">Edit the full email layout, images, and colors.</span>
+            <button class="me-stripo-btn" onclick="alert('Opens Stripo email editor')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5l2 2-6 6H3.5v-2l6-6z"/><path d="M8 3l2 2"/></svg>
+              Edit layout
+            </button>
+          </div>
+        </div>
+
+        <!-- SMS tab -->
+        <div class="me-tab" id="me-tab-sms">
+          <div class="me-fields" style="gap:12px;">
+            <div class="me-field">
+              <label for="me-sms-body">Message</label>
+              <textarea
+                class="me-input me-sms-area"
+                id="me-sms-body"
+                rows="5"
+                placeholder="Type your SMS message…"
+                oninput="updateSmsCount(this)"
+              ></textarea>
+              <div class="me-char-row">
+                <span id="me-sms-split-note" style="font-size:11px;color:var(--color-text-muted);">160 chars = 1 message</span>
+                <span class="me-char-count" id="me-char-count">0 / 160</span>
+              </div>
+            </div>
+            <div class="me-sms-split-warn" id="me-sms-split-warn">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#d97706" stroke-width="1.4"/><path d="M7 4.5v3M7 9.5v.5" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>
+              This message will be split into <strong id="me-sms-parts">2</strong> SMS messages. Shorter messages reduce cost and improve deliverability.
+            </div>
+            <div class="me-field">
+              <label>Merge fields</label>
+              <div class="me-merge-dropdown" id="me-merge-dd">
+                <button class="me-merge-btn" onclick="toggleMergePanel()" type="button">
+                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4.5h7M2 6.5h4"/><rect x="0.75" y="0.75" width="9.5" height="9.5" rx="2"/></svg>
+                  Insert merge field
+                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1.5 3L4.5 6l3-3"/></svg>
+                </button>
+                <div class="me-merge-panel" id="me-merge-panel">
+                  <input class="me-merge-search" id="me-merge-search" type="text" placeholder="Search fields…" oninput="filterMergeItems(this.value)">
+                  <div id="me-merge-list"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /me-edit-pane -->
+
+      <!-- RIGHT: Preview pane -->
+      <div class="me-preview-pane">
+
+        <!-- Email preview -->
+        <div class="me-tab on" id="me-preview-email">
+          <div class="me-email-preview">
+            <div class="me-email-meta">
+              <div class="me-meta-row">
+                <span class="me-meta-label">From</span>
+                <span class="me-meta-value" id="me-preview-from">Tomer's Rental &lt;noreply@tomersrental.com&gt;</span>
+              </div>
+              <div class="me-meta-row">
+                <span class="me-meta-label">Subject</span>
+                <span class="me-meta-value" id="me-preview-subject">—</span>
+              </div>
+              <div class="me-meta-row">
+                <span class="me-meta-label">Preview</span>
+                <span class="me-meta-value" id="me-preview-pretext" style="color:var(--color-text-muted);font-style:italic;">—</span>
+              </div>
+            </div>
+            <div class="me-email-rendered">
+              <div class="me-email-body-inner">
+                <div class="me-ep-logo">🔧</div>
+                <div class="me-ep-biz">Tomer's Rental</div>
+                <div class="me-ep-card">
+                  <div class="me-ep-text" id="me-ep-body"></div>
+                  <div style="text-align:center">
+                    <span class="me-ep-cta" id="me-ep-cta" style="background:#7c3aed">Rate your stay</span>
+                  </div>
+                </div>
+                <div class="me-ep-footer">
+                  Thank you for choosing Tomer's Rental!<br>
+                  <span style="color:#d1d5db">Unsubscribe · 1881 Oak Ave, Evanston, IL, 60201</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SMS preview -->
+        <div class="me-tab" id="me-preview-sms">
+          <div class="me-sms-preview-pane">
+            <div class="me-phone-wrap">
+              <div class="me-phone">
+                <div class="me-phone-notch"></div>
+                <div class="me-phone-screen">
+                  <div class="me-phone-sender">Tomer's Rental</div>
+                  <div class="me-phone-bubble" id="me-phone-bubble">Your message will appear here.</div>
+                  <div class="me-phone-time">Just now</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /me-preview-pane -->
+
+    </div><!-- /me-body -->
+
+    <!-- Footer -->
+    <div class="me-foot">
+      <button class="btn btn-secondary" onclick="closeMsgEditor()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeMsgEditor()">Save changes</button>
+    </div>
+
+  </div><!-- /msg-editor -->
+</div><!-- /msg-editor-overlay -->
 
 <!-- Annotations toggle -->
 <button class="annotation-toggle" onclick="toggleAnnotations()" id="ann-btn">Show annotations</button>
@@ -2179,108 +2687,11 @@ function renderGrid() {
   state.abhActiveStep = null;
 }
 
-// Drawer state
-const abhDrawerState = {
-  open: false,
-  flowKey: null,
-  autoId: null,
-  stepId: null,
-  channel: 'email',
-};
-
-function openAbhDrawer(flowKey, autoId, stepId) {
-  abhDrawerState.flowKey = flowKey;
-  abhDrawerState.autoId = autoId;
-  abhDrawerState.stepId = stepId;
-  abhDrawerState.open = true;
-  // Deactivate previous
-  document.querySelectorAll('.abh-msg.abh-active').forEach(el => el.classList.remove('abh-active'));
-  const unitId = `abh-${autoId}-${stepId}`;
-  const unit = document.getElementById(unitId);
-  if (unit) unit.classList.add('abh-active');
-  renderAbhDrawer();
-  document.getElementById('abh-drawer-overlay').classList.add('open');
-}
-
-function closeAbhDrawer() {
-  abhDrawerState.open = false;
-  document.getElementById('abh-drawer-overlay').classList.remove('open');
-  document.querySelectorAll('.abh-msg.abh-active').forEach(el => el.classList.remove('abh-active'));
-}
-
-function setAbhChannel(ch) {
-  abhDrawerState.channel = ch;
-  renderAbhDrawer();
-}
-
-function renderAbhDrawer() {
-  const { flowKey, autoId, stepId, channel } = abhDrawerState;
-  const flow = PREVIEW_FLOWS[flowKey];
-  if (!flow) return;
-  const step = flow.steps[stepId];
-  if (!step) return;
-
-  // Build all message stepIds in sequence order for this automation
-  const auto = flow.automations.find(a => a.id === autoId);
-  const allStepIds = auto ? auto.nodes.filter(n => n.type === 'message').map(n => n.stepId) : [];
-  const currentIdx = allStepIds.indexOf(stepId);
-
-  document.getElementById('abh-drawer-eyebrow').textContent = `Message ${currentIdx + 1} of ${allStepIds.length}`;
-  document.getElementById('abh-drawer-title').textContent = step.title;
-  document.getElementById('abh-drawer-sub').textContent = step.sub;
-
-  // Nav pills
-  const pills = allStepIds.map((sid, i) => {
-    const s = flow.steps[sid];
-    const label = s.title.toLowerCase().includes('reminder') ? 'Reminder' : 'Initial';
-    return `<button class="abh-nav-pill${sid === stepId ? ' on' : ''}" onclick="openAbhDrawer('${flowKey}','${autoId}','${sid}')">${label}</button>`;
-  }).join('');
-  document.getElementById('abh-drawer-pills').innerHTML = pills;
-
-  // Nav buttons
-  document.getElementById('abh-drawer-prev').disabled = currentIdx === 0;
-  document.getElementById('abh-drawer-next').disabled = currentIdx === allStepIds.length - 1;
-  document.getElementById('abh-drawer-prev').onclick = () => {
-    if (currentIdx > 0) openAbhDrawer(flowKey, autoId, allStepIds[currentIdx - 1]);
-  };
-  document.getElementById('abh-drawer-next').onclick = () => {
-    if (currentIdx < allStepIds.length - 1) openAbhDrawer(flowKey, autoId, allStepIds[currentIdx + 1]);
-  };
-
-  // Channel toggle
-  document.getElementById('abh-ch-email').classList.toggle('on', channel === 'email');
-  document.getElementById('abh-ch-sms').classList.toggle('on', channel === 'sms');
-
-  // Body
-  const body = document.getElementById('abh-drawer-body');
-  if (channel === 'email') {
-    body.innerHTML = `<div class="abh-email-preview">
-      <div class="abh-email-header">
-        <div class="abh-email-from">From: Tomer's Rental &lt;noreply@tomersrental.com&gt;</div>
-        <div class="abh-email-subject">${step.subject}</div>
-      </div>
-      <div class="abh-email-body">
-        <div class="abh-email-logo">🔧</div>
-        <div class="abh-email-biz">Tomer's Rental</div>
-        <div class="abh-email-card">
-          <div class="abh-email-card-body">${step.body.replace(/\n/g, '<br>')}</div>
-          <div style="text-align:center">
-            <span class="abh-email-cta" style="background:${step.ctaColor}">${step.cta}</span>
-          </div>
-        </div>
-        <div class="abh-email-footer">
-          Thank you for choosing Tomer's Rental!<br>
-          <span style="color:#d1d5db">Unsubscribe · 1881 Oak Ave, Evanston, IL, 60201</span>
-        </div>
-      </div>
-    </div>`;
-  } else {
-    body.innerHTML = `<div class="abh-sms-preview">
-      <div class="abh-sms-bubble">${step.sms}</div>
-      <div class="abh-sms-meta">Tomer's Rental · SMS</div>
-    </div>`;
-  }
-}
+// Drawer state — kept for compat; openAbhDrawer/closeAbhDrawer now open the message editor modal
+const abhDrawerState = { open: false, flowKey: null, autoId: null, stepId: null, channel: 'email' };
+// Stub: old drawer channel toggle — no-op, drawer is replaced by msg editor modal
+function setAbhChannel(ch) { /* replaced by setMeChannel */ }
+function renderAbhDrawer() { /* replaced by renderMeModal */ }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // FLOW SELECTION
@@ -2639,16 +3050,347 @@ function toggleAnnotations() {
     document.body.classList.contains('show-annotations') ? 'Hide annotations' : 'Show annotations';
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// KEYBOARD
-// ═══════════════════════════════════════════════════════════════════════════
+// Flow card keyboard activation
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeAbhDrawer();
   if (e.key === 'Enter' || e.key === ' ') {
     const el = document.activeElement;
     if (el && el.classList.contains('flow-card')) {
       const id = el.id.replace('card-', '');
       selectFlow(id);
+    }
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MESSAGE EDITOR MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+
+const MERGE_FIELDS = [
+  { category: 'Customer', fields: [
+    { label: 'First name', token: '{{first_name}}' },
+    { label: 'Last name', token: '{{last_name}}' },
+    { label: 'Full name', token: '{{full_name}}' },
+    { label: 'Email', token: '{{email}}' },
+    { label: 'Phone number', token: '{{phone_number}}' },
+  ]},
+  { category: 'Business', fields: [
+    { label: 'Business name', token: '{{business_name}}' },
+    { label: 'Location name', token: '{{location_name}}' },
+    { label: 'Business phone', token: '{{business_phone}}' },
+    { label: 'Website URL', token: '{{website_url}}' },
+  ]},
+  { category: 'Review', fields: [
+    { label: 'Review link', token: '{{review_link}}' },
+    { label: 'Feedback link', token: '{{feedback_link}}' },
+    { label: 'Opt-out link', token: '{{opt_out_link}}' },
+  ]},
+];
+
+const meState = {
+  open: false,
+  flowKey: null,
+  autoId: null,
+  stepId: null,
+  channel: 'email',   // 'email' | 'sms'
+  // live editable values
+  senderName: "Tomer's Rental",
+  senderEmail: 'noreply@tomersrental.com',
+  replyTo: '',
+  subject: '',
+  previewText: '',
+  smsBody: '',
+};
+
+function openMsgEditor(flowKey, autoId, stepId) {
+  const flow = PREVIEW_FLOWS[flowKey];
+  if (!flow) return;
+  const step = flow.steps[stepId];
+  if (!step) return;
+
+  meState.flowKey = flowKey;
+  meState.autoId = autoId;
+  meState.stepId = stepId;
+  meState.channel = 'email';
+
+  // Seed form values from step data
+  meState.subject = step.subject || '';
+  meState.previewText = '';
+  meState.smsBody = step.sms || '';
+
+  renderMeModal();
+  bindEmailInputs();
+  document.getElementById('msg-editor-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMsgEditor() {
+  document.getElementById('msg-editor-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function setMeChannel(ch) {
+  meState.channel = ch;
+  // Sync tabs
+  document.getElementById('me-ch-email').classList.toggle('on', ch === 'email');
+  document.getElementById('me-ch-sms').classList.toggle('on', ch === 'sms');
+  document.getElementById('me-tab-email').classList.toggle('on', ch === 'email');
+  document.getElementById('me-tab-sms').classList.toggle('on', ch === 'sms');
+  document.getElementById('me-preview-email').classList.toggle('on', ch === 'email');
+  document.getElementById('me-preview-sms').classList.toggle('on', ch === 'sms');
+  if (ch === 'sms') {
+    updateSmsCount(document.getElementById('me-sms-body'));
+    updatePhoneBubble();
+  }
+}
+
+function setMeStep(which) {
+  const flow = PREVIEW_FLOWS[meState.flowKey];
+  if (!flow) return;
+  const auto = flow.automations.find(a => a.id === meState.autoId);
+  if (!auto) return;
+  const allStepIds = auto.nodes.filter(n => n.type === 'message').map(n => n.stepId);
+  const isReminder = (sid) => flow.steps[sid]?.title.toLowerCase().includes('reminder');
+  let targetId = null;
+  if (which === 'initial') {
+    targetId = allStepIds.find(sid => !isReminder(sid));
+  } else {
+    targetId = allStepIds.find(sid => isReminder(sid));
+  }
+  if (targetId && targetId !== meState.stepId) {
+    meState.stepId = targetId;
+    const step = flow.steps[targetId];
+    meState.subject = step.subject || '';
+    meState.previewText = '';
+    meState.smsBody = step.sms || '';
+    renderMeModal();
+  }
+}
+
+function renderMeModal() {
+  const flow = PREVIEW_FLOWS[meState.flowKey];
+  const step = flow.steps[meState.stepId];
+  const auto = flow.automations.find(a => a.id === meState.autoId);
+  const allStepIds = auto ? auto.nodes.filter(n => n.type === 'message').map(n => n.stepId) : [];
+  const currentIdx = allStepIds.indexOf(meState.stepId);
+  const isReminder = step.title.toLowerCase().includes('reminder');
+
+  // Header
+  document.getElementById('me-eyebrow').textContent = `Message ${currentIdx + 1} of ${allStepIds.length}`;
+  document.getElementById('me-title').textContent = step.title;
+  document.getElementById('me-sub').textContent = step.sub;
+
+  // Step nav
+  document.getElementById('me-step-initial').classList.toggle('on', !isReminder);
+  document.getElementById('me-step-reminder').classList.toggle('on', isReminder);
+
+  // Prev/next nav
+  const prevBtn = document.getElementById('me-prev-btn');
+  const nextBtn = document.getElementById('me-next-btn');
+  prevBtn.disabled = currentIdx === 0;
+  nextBtn.disabled = currentIdx === allStepIds.length - 1;
+  document.getElementById('me-nav-label').textContent = `${currentIdx + 1} of ${allStepIds.length}`;
+
+  prevBtn.onclick = () => {
+    if (currentIdx > 0) {
+      meState.stepId = allStepIds[currentIdx - 1];
+      const s = flow.steps[meState.stepId];
+      meState.subject = s.subject || '';
+      meState.previewText = '';
+      meState.smsBody = s.sms || '';
+      renderMeModal();
+    }
+  };
+  nextBtn.onclick = () => {
+    if (currentIdx < allStepIds.length - 1) {
+      meState.stepId = allStepIds[currentIdx + 1];
+      const s = flow.steps[meState.stepId];
+      meState.subject = s.subject || '';
+      meState.previewText = '';
+      meState.smsBody = s.sms || '';
+      renderMeModal();
+    }
+  };
+
+  // Email fields
+  document.getElementById('me-subject').value = meState.subject;
+  document.getElementById('me-preview-text').value = meState.previewText;
+
+  // Live update email preview
+  updateEmailPreview();
+
+  // SMS textarea
+  const smsTa = document.getElementById('me-sms-body');
+  smsTa.value = meState.smsBody;
+  updateSmsCount(smsTa);
+  updatePhoneBubble();
+
+  // Merge field list
+  renderMergeList('');
+}
+
+function updateEmailPreview() {
+  const flow = PREVIEW_FLOWS[meState.flowKey];
+  if (!flow) return;
+  const step = flow.steps[meState.stepId];
+  if (!step) return;
+
+  const senderName = document.getElementById('me-sender-name')?.value || meState.senderName;
+  const senderEmail = document.getElementById('me-sender-email')?.value || meState.senderEmail;
+  const subject = document.getElementById('me-subject')?.value || step.subject;
+  const previewText = document.getElementById('me-preview-text')?.value || '';
+
+  document.getElementById('me-preview-from').textContent = `${senderName} <${senderEmail}>`;
+  document.getElementById('me-preview-subject').textContent = subject || '—';
+  const ptEl = document.getElementById('me-preview-pretext');
+  ptEl.textContent = previewText || '—';
+  ptEl.style.fontStyle = previewText ? 'normal' : 'italic';
+  ptEl.style.color = previewText ? 'var(--color-text-primary)' : 'var(--color-text-muted)';
+
+  document.getElementById('me-ep-body').innerHTML = step.body.replace(/\n/g,'<br>');
+  const ctaEl = document.getElementById('me-ep-cta');
+  ctaEl.textContent = step.cta;
+  ctaEl.style.background = step.ctaColor;
+}
+
+function updatePhoneBubble() {
+  const ta = document.getElementById('me-sms-body');
+  const text = ta ? ta.value : meState.smsBody;
+  const bubble = document.getElementById('me-phone-bubble');
+  if (!bubble) return;
+  bubble.textContent = text || 'Your message will appear here.';
+  bubble.style.color = text ? '#111827' : '#9ca3af';
+}
+
+// Live-bind email inputs to the preview
+function bindEmailInputs() {
+  ['me-sender-name','me-sender-email','me-reply-to','me-subject','me-preview-text'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateEmailPreview);
+  });
+}
+
+const SMS_SEG = 160;
+const SMS_WARN = 320;
+
+function updateSmsCount(ta) {
+  const len = ta.value.length;
+  const parts = len === 0 ? 1 : Math.ceil(len / SMS_SEG);
+  const countEl = document.getElementById('me-char-count');
+  const splitWarn = document.getElementById('me-sms-split-warn');
+  const splitParts = document.getElementById('me-sms-parts');
+  const splitNote = document.getElementById('me-sms-split-note');
+
+  const segRemain = len === 0 ? SMS_SEG : SMS_SEG - (len % SMS_SEG || SMS_SEG);
+  const overFirst = len > SMS_SEG;
+
+  if (overFirst) {
+    countEl.textContent = `${len} / ${parts * SMS_SEG}`;
+    countEl.className = 'me-char-count ' + (len > SMS_WARN ? 'danger' : 'warn');
+    splitNote.textContent = `${segRemain} chars left in message ${parts}`;
+    splitWarn.classList.add('visible');
+    splitParts.textContent = parts;
+  } else {
+    countEl.textContent = `${len} / 160`;
+    countEl.className = 'me-char-count';
+    splitNote.textContent = '160 chars = 1 message';
+    splitWarn.classList.remove('visible');
+  }
+
+  updatePhoneBubble();
+}
+
+// Merge fields
+function renderMergeList(query) {
+  const list = document.getElementById('me-merge-list');
+  if (!list) return;
+  const q = query.toLowerCase().trim();
+  let html = '';
+  MERGE_FIELDS.forEach(cat => {
+    const items = cat.fields.filter(f => !q || f.label.toLowerCase().includes(q) || f.token.includes(q));
+    if (!items.length) return;
+    html += `<div class="me-merge-category">${cat.category}</div>`;
+    items.forEach(f => {
+      html += `<button class="me-merge-item" onclick="insertMergeField('${f.token}','${f.label}')" type="button">
+        ${f.label} <code>${f.token}</code>
+      </button>`;
+    });
+  });
+  list.innerHTML = html || '<div style="padding:12px;font-size:12px;color:var(--color-text-muted);">No fields found</div>';
+}
+
+function filterMergeItems(query) {
+  renderMergeList(query);
+}
+
+function toggleMergePanel() {
+  const panel = document.getElementById('me-merge-panel');
+  const isOpen = panel.classList.toggle('open');
+  if (isOpen) {
+    document.getElementById('me-merge-search').focus();
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', closeMergePanelOutside);
+    }, 0);
+  }
+}
+
+function closeMergePanelOutside(e) {
+  const dd = document.getElementById('me-merge-dd');
+  if (!dd.contains(e.target)) {
+    document.getElementById('me-merge-panel').classList.remove('open');
+    document.removeEventListener('click', closeMergePanelOutside);
+  }
+}
+
+function insertMergeField(token, label) {
+  const ta = document.getElementById('me-sms-body');
+  if (!ta) return;
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const before = ta.value.substring(0, start);
+  const after = ta.value.substring(end);
+  ta.value = before + token + after;
+  const newPos = start + token.length;
+  ta.setSelectionRange(newPos, newPos);
+  ta.focus();
+  updateSmsCount(ta);
+  // Close panel
+  document.getElementById('me-merge-panel').classList.remove('open');
+  document.removeEventListener('click', closeMergePanelOutside);
+}
+
+// Hook the card clicks to open the NEW editor modal instead of the old drawer
+function openAbhDrawer(flowKey, autoId, stepId) {
+  // Mark card active
+  document.querySelectorAll('.abh-msg.abh-active').forEach(el => el.classList.remove('abh-active'));
+  const unitId = `abh-${autoId}-${stepId}`;
+  const unit = document.getElementById(unitId);
+  if (unit) unit.classList.add('abh-active');
+  // Open modal
+  openMsgEditor(flowKey, autoId, stepId);
+}
+
+// Keep old close for compat (escape key still uses it)
+function closeAbhDrawer() {
+  closeMsgEditor();
+  document.querySelectorAll('.abh-msg.abh-active').forEach(el => el.classList.remove('abh-active'));
+  // Old overlay (now unused but keep for safety)
+  const oldOverlay = document.getElementById('abh-drawer-overlay');
+  if (oldOverlay) oldOverlay.classList.remove('open');
+}
+
+// Close on overlay click
+document.getElementById('msg-editor-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeMsgEditor();
+});
+
+// Keyboard: ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('msg-editor-overlay').classList.contains('open')) {
+      closeMsgEditor();
+    } else {
+      closeAbhDrawer();
     }
   }
 });
