@@ -1685,36 +1685,42 @@
 
 /* Preview pane: SMS */
 .me-sms-preview-pane {
-  padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px;
-  overflow: hidden; justify-content: center;
+  padding: 20px; flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; align-items: center; justify-content: center;
 }
 .me-phone-wrap {
   display: flex; justify-content: center;
 }
 .me-phone {
-  background: #1a1a2e; border-radius: 28px; width: 240px;
-  padding: 12px 8px 16px;
-  box-shadow: 0 8px 32px rgba(15,23,42,.22);
-  display: flex; flex-direction: column; gap: 6px;
+  background: #1c1c1e; border-radius: 36px; width: 200px;
+  padding: 10px 6px 14px;
+  box-shadow: 0 12px 40px rgba(15,23,42,.28), 0 0 0 1px rgba(255,255,255,.06) inset;
+  display: flex; flex-direction: column; gap: 0;
+  /* keep it phone-shaped regardless of container */
+  flex-shrink: 0;
 }
 .me-phone-notch {
-  width: 60px; height: 6px; background: #2d2d44; border-radius: 3px; margin: 0 auto 8px;
+  width: 48px; height: 4px; background: #3a3a3c; border-radius: 2px; margin: 0 auto 10px;
 }
 .me-phone-screen {
-  background: #fff; border-radius: 18px; padding: 12px 10px;
-  display: flex; flex-direction: column; gap: 8px;
+  background: #f2f2f7; border-radius: 28px; padding: 10px 8px 12px;
+  display: flex; flex-direction: column; gap: 6px; min-height: 180px;
 }
 .me-phone-sender {
-  font-size: 10px; font-weight: 700; text-align: center; color: #6b7280;
-  padding-bottom: 6px; border-bottom: 1px solid #f1f5f9;
+  font-size: 9.5px; font-weight: 600; text-align: center; color: #6b7280;
+  padding-bottom: 6px; border-bottom: 1px solid #e5e5ea; margin-bottom: 2px;
+}
+/* bubble row: push bubble to the right like an outgoing message */
+.me-phone-bubble-row {
+  display: flex; justify-content: flex-end;
 }
 .me-phone-bubble {
-  background: #f0f4f8; border-radius: 10px 10px 10px 3px;
-  padding: 8px 10px; font-size: 11.5px; line-height: 1.55; color: #111827;
-  word-break: break-word;
+  background: #007aff; border-radius: 14px 14px 3px 14px;
+  padding: 7px 10px; font-size: 11px; line-height: 1.5; color: #fff;
+  word-break: break-word; max-width: 85%;
 }
 .me-phone-time {
-  font-size: 9.5px; color: #9ca3af; text-align: center;
+  font-size: 8.5px; color: #9ca3af; text-align: center; margin-top: 2px;
 }
 
 /* Editor footer */
@@ -2241,7 +2247,9 @@
                 <div class="me-phone-notch"></div>
                 <div class="me-phone-screen">
                   <div class="me-phone-sender">Tomer's Rental</div>
-                  <div class="me-phone-bubble" id="me-phone-bubble">Your message will appear here.</div>
+                  <div class="me-phone-bubble-row">
+                    <div class="me-phone-bubble" id="me-phone-bubble">Your message will appear here.</div>
+                  </div>
                   <div class="me-phone-time">Just now</div>
                 </div>
               </div>
