@@ -1395,34 +1395,29 @@
   font-size: 10.5px; color: var(--color-text-muted); margin-top: 8px; text-align: right;
 }
 
-/* ── Message Editor Modal ── */
+/* ── Message Editor — full-screen takeover ── */
 .msg-editor-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 400;
-  background: rgba(15,23,42,.4);
-  align-items: center; justify-content: center;
-  padding: 24px;
+  background: #fff;
 }
-.msg-editor-overlay.open { display: flex; }
+.msg-editor-overlay.open { display: flex; flex-direction: column; }
 
 .msg-editor {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 32px 80px rgba(15,23,42,.16), 0 0 0 1px rgba(15,23,42,.05);
-  width: 100%; max-width: 900px;
-  height: min(80vh, 640px);
   display: flex; flex-direction: column;
-  overflow: hidden;
-  animation: meScale .16s ease-out;
+  flex: 1; overflow: hidden;
+  /* no border-radius, no shadow — it IS the screen */
 }
-@keyframes meScale { from { transform: scale(.97); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes meSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.msg-editor-overlay.open { animation: meSlideIn .18s ease-out; }
 
 /* header */
 .me-head {
-  padding: 18px 22px 16px;
+  padding: 16px 24px 14px;
   border-bottom: 1px solid var(--color-border);
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   flex-shrink: 0;
+  background: #fff;
 }
 .me-head-left { display: flex; flex-direction: column; gap: 1px; }
 .me-eyebrow {
@@ -1431,13 +1426,8 @@
 }
 .me-title { font-size: 15px; font-weight: 700; color: var(--color-text-primary); letter-spacing: -.01em; }
 .me-sub { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
-.me-close {
-  all: unset; cursor: pointer; width: 28px; height: 28px; border-radius: 7px;
-  display: grid; place-items: center;
-  color: var(--color-text-muted); flex-shrink: 0;
-  transition: background .12s, color .12s;
-}
-.me-close:hover { background: var(--color-bg); color: var(--color-text-primary); }
+/* X close button — hidden, replaced by back button in footer */
+.me-close { display: none; }
 
 /* (hidden nav stubs — no visual output) */
 .me-step-nav { display: none; }
@@ -1445,10 +1435,10 @@
 
 /* body: left edit + right preview */
 .me-body {
-  flex: 1; display: flex; overflow: hidden;
+  flex: 1; display: flex; overflow: hidden; min-height: 0;
 }
 .me-edit-pane {
-  width: 320px; flex-shrink: 0;
+  width: 360px; flex-shrink: 0;
   border-right: 1px solid var(--color-border);
   overflow-y: auto;
   display: flex; flex-direction: column;
@@ -1620,45 +1610,56 @@
 .me-meta-label { color: var(--color-text-muted); width: 52px; flex-shrink: 0; font-weight: 500; }
 .me-meta-value { color: var(--color-text-primary); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Wrapper for rendered email: clipped, with fade + hover overlay */
+/* Wrapper for rendered email: clipped, scrollable on hover */
 .me-email-rendered-wrap {
   position: relative; flex: 1; min-height: 0;
   border: 1px solid var(--color-border); border-radius: var(--radius-md);
   overflow: hidden;
+  /* scrolling lives on the inner rendered div, enabled on hover via JS class */
 }
-/* fade the bottom of the email preview */
+/* fade at the bottom — hidden while scrolling */
 .me-email-rendered-wrap::after {
   content: '';
   position: absolute; bottom: 0; left: 0; right: 0;
-  height: 72px;
-  background: linear-gradient(to bottom, transparent, rgba(249,250,251,.95));
+  height: 64px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,.96));
   pointer-events: none;
   z-index: 1;
+  transition: opacity .2s;
 }
-/* hover overlay — "Edit layout" CTA */
+.me-email-rendered-wrap.scrolling::after { opacity: 0; }
+
+/* hover overlay — "Edit layout" CTA; hidden while scrolling */
 .me-email-edit-overlay {
   position: absolute; inset: 0; z-index: 2;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(15,23,42,.38);
+  display: flex; align-items: flex-start; justify-content: flex-end;
+  padding: 10px;
+  background: transparent;
   opacity: 0;
   transition: opacity .18s;
+  pointer-events: none;
   border-radius: var(--radius-md);
 }
-.me-email-rendered-wrap:hover .me-email-edit-overlay { opacity: 1; }
+.me-email-rendered-wrap:hover:not(.scrolling) .me-email-edit-overlay { opacity: 1; pointer-events: auto; }
 .me-email-edit-overlay-btn {
   all: unset; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 18px; border-radius: var(--radius-md);
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: var(--radius-sm);
   background: #fff; color: var(--color-text-primary);
-  font-size: 13px; font-weight: 600;
-  box-shadow: 0 4px 16px rgba(15,23,42,.18);
-  transition: transform .12s;
+  font-size: 12px; font-weight: 600;
+  box-shadow: 0 2px 12px rgba(15,23,42,.14), 0 0 0 1px rgba(15,23,42,.07);
+  transition: box-shadow .12s;
 }
-.me-email-edit-overlay-btn:hover { transform: scale(1.03); }
+.me-email-edit-overlay-btn:hover { box-shadow: 0 4px 16px rgba(15,23,42,.18), 0 0 0 1px rgba(15,23,42,.10); }
 
 .me-email-rendered {
   background: #fff;
-  overflow: hidden; height: 100%;
+  /* overflow enabled on hover via JS — the wrap clips it */
+  overflow-y: hidden; height: 100%;
+  transition: overflow .1s;
+}
+.me-email-rendered-wrap.scrolling .me-email-rendered {
+  overflow-y: auto;
 }
 .me-email-body-inner {
   padding: 24px 20px; text-align: center;
@@ -1728,10 +1729,20 @@
 
 /* Editor footer */
 .me-foot {
-  padding: 11px 20px; border-top: 1px solid var(--color-border);
-  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  padding: 11px 24px; border-top: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: space-between;
   background: #fff; flex-shrink: 0;
 }
+.me-foot-right { display: flex; align-items: center; gap: 8px; }
+.me-back-btn {
+  all: unset; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 500; color: var(--color-text-secondary);
+  padding: 6px 2px;
+  transition: color .12s;
+}
+.me-back-btn:hover { color: var(--color-text-primary); }
+.me-back-btn svg { flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -2267,8 +2278,14 @@
 
     <!-- Footer -->
     <div class="me-foot">
-      <button class="btn btn-secondary" onclick="closeMsgEditor()">Cancel</button>
-      <button class="btn btn-primary" onclick="closeMsgEditor()">Save changes</button>
+      <button class="me-back-btn" onclick="closeMsgEditor()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2L4 7l5 5"/></svg>
+        Back to preview
+      </button>
+      <div class="me-foot-right">
+        <button class="btn btn-secondary" onclick="closeMsgEditor()">Cancel</button>
+        <button class="btn btn-primary" onclick="closeMsgEditor()">Save changes</button>
+      </div>
     </div>
 
   </div><!-- /msg-editor -->
@@ -3153,6 +3170,7 @@ function openMsgEditor(flowKey, autoId, stepId) {
 function closeMsgEditor() {
   document.getElementById('msg-editor-overlay').classList.remove('open');
   document.body.style.overflow = '';
+  document.querySelectorAll('.abh-msg.abh-active').forEach(el => el.classList.remove('abh-active'));
 }
 
 function setMeChannel(ch) {
@@ -3406,9 +3424,17 @@ function closeAbhDrawer() {
   if (oldOverlay) oldOverlay.classList.remove('open');
 }
 
-// Close on overlay click
-document.getElementById('msg-editor-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closeMsgEditor();
+// Close on overlay click — full-screen, no backdrop to click
+// (kept stub for safety)
+
+// Email preview: enable scroll on hover
+document.getElementById('msg-editor-overlay').addEventListener('mouseover', function(e) {
+  const wrap = e.target.closest('.me-email-rendered-wrap');
+  if (wrap) wrap.classList.add('scrolling');
+});
+document.getElementById('msg-editor-overlay').addEventListener('mouseout', function(e) {
+  const wrap = e.target.closest('.me-email-rendered-wrap');
+  if (wrap && !wrap.contains(e.relatedTarget)) wrap.classList.remove('scrolling');
 });
 
 // Keyboard: ESC
