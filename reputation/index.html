@@ -1492,6 +1492,105 @@
 .me-input:focus { border-color: var(--color-text-primary); box-shadow: 0 0 0 2px rgba(17,24,39,.07); }
 .me-input::placeholder { color: var(--color-text-muted); }
 
+/* ── Sender profile picker ── */
+.me-sender-profile {
+  display: flex; flex-direction: column;
+  padding: 8px 16px 14px;
+  gap: 2px;
+}
+.me-sp-option {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: background .12s;
+}
+.me-sp-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.me-sp-radio-dot {
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  flex-shrink: 0; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .12s;
+}
+.me-sp-radio-dot::after {
+  content: '';
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-text-primary);
+  transform: scale(0);
+  transition: transform .12s;
+}
+.me-sp-option--selected .me-sp-radio-dot {
+  border-color: var(--color-text-primary);
+}
+.me-sp-option--selected .me-sp-radio-dot::after {
+  transform: scale(1);
+}
+.me-sp-option-text { font-size: 13px; color: var(--color-text-primary); }
+
+/* Contact detail area */
+.me-sp-contact-detail {
+  display: none;
+  flex-direction: column; gap: 10px;
+  padding: 6px 10px 2px 34px;
+}
+.me-sp-contact-detail.visible { display: flex; }
+.me-sp-role-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.me-sp-role-select { flex: 1; }
+.me-sp-info-btn {
+  all: unset; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-muted);
+  border-radius: 50%; width: 22px; height: 22px;
+  transition: color .12s, background .12s;
+  flex-shrink: 0;
+}
+.me-sp-info-btn:hover { color: var(--color-text-secondary); background: var(--color-border); }
+
+/* Fallback block */
+.me-sp-fallback {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.me-sp-fallback-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.me-sp-fallback-title {
+  font-size: 10.5px; font-weight: 600; letter-spacing: .02em;
+  color: var(--color-text-muted);
+}
+.me-sp-less-btn {
+  all: unset; cursor: pointer;
+  font-size: 11px; color: var(--color-text-secondary);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.me-sp-less-btn:hover { color: var(--color-text-primary); }
+.me-sp-fallback-fields { display: flex; flex-direction: column; gap: 6px; }
+.me-sp-fallback-row {
+  display: flex; align-items: baseline; gap: 6px;
+  font-size: 12px;
+}
+.me-sp-fallback-label {
+  font-weight: 600; color: var(--color-text-muted);
+  min-width: 46px; flex-shrink: 0;
+  font-size: 11px;
+}
+.me-sp-fallback-value { color: var(--color-text-secondary); }
+
+.me-sp-more-btn {
+  all: unset; cursor: pointer;
+  font-size: 11px; color: var(--color-text-secondary);
+  text-decoration: underline; text-underline-offset: 2px;
+  align-self: flex-start;
+}
+.me-sp-more-btn:hover { color: var(--color-text-primary); }
+
 /* SMS textarea */
 .me-sms-area {
   resize: none;
@@ -2084,18 +2183,52 @@
           <!-- Email tab -->
           <div class="me-tab on" id="me-tab-email">
             <div class="me-section-label">Sender</div>
-            <div class="me-fields" style="padding-top:4px; padding-bottom:0;">
-              <div class="me-field">
-                <label for="me-sender-name">Sender name</label>
-                <input class="me-input" id="me-sender-name" type="text" placeholder="Tomer's Rental" value="Tomer's Rental">
-              </div>
-              <div class="me-field">
-                <label for="me-sender-email">From email</label>
-                <input class="me-input" id="me-sender-email" type="email" placeholder="noreply@tomersrental.com" value="noreply@tomersrental.com">
-              </div>
-              <div class="me-field">
-                <label for="me-reply-to">Reply-to</label>
-                <input class="me-input" id="me-reply-to" type="email" placeholder="hello@tomersrental.com" value="">
+            <div class="me-sender-profile">
+              <!-- Option: Business Default -->
+              <label class="me-sp-option me-sp-option--selected" id="me-sp-biz-label">
+                <input type="radio" name="me-sender-type" value="business" checked onchange="meToggleSender(this)">
+                <span class="me-sp-radio-dot"></span>
+                <span class="me-sp-option-text">Business default contact info</span>
+              </label>
+
+              <!-- Option: Customer's Assigned Contact -->
+              <label class="me-sp-option" id="me-sp-contact-label">
+                <input type="radio" name="me-sender-type" value="contact" onchange="meToggleSender(this)">
+                <span class="me-sp-radio-dot"></span>
+                <span class="me-sp-option-text">Customer's assigned contact</span>
+              </label>
+
+              <!-- Assigned contact detail row (visible when contact option active) -->
+              <div class="me-sp-contact-detail" id="me-sp-contact-detail">
+                <div class="me-sp-role-row">
+                  <select class="me-input me-sp-role-select" id="me-sp-role">
+                    <option value="agent">Agent</option>
+                    <option value="manager">Manager</option>
+                    <option value="owner">Owner</option>
+                    <option value="rep">Sales Rep</option>
+                  </select>
+                  <button class="me-sp-info-btn" title="The email will be sent from the contact assigned to this role for the customer receiving the message." onclick="return false;">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="5" r=".7" fill="currentColor"/></svg>
+                  </button>
+                </div>
+                <!-- Fallback -->
+                <div class="me-sp-fallback" id="me-sp-fallback">
+                  <div class="me-sp-fallback-header">
+                    <span class="me-sp-fallback-title">Fallback</span>
+                    <button class="me-sp-less-btn" onclick="meCollapseFallback()">Less</button>
+                  </div>
+                  <div class="me-sp-fallback-fields">
+                    <div class="me-sp-fallback-row">
+                      <span class="me-sp-fallback-label">From</span>
+                      <span class="me-sp-fallback-value">Tomer's Rental &lt;noreply@tomersrental.com&gt;</span>
+                    </div>
+                    <div class="me-sp-fallback-row">
+                      <span class="me-sp-fallback-label">Reply-to</span>
+                      <span class="me-sp-fallback-value">noreply@tomersrental.com</span>
+                    </div>
+                  </div>
+                </div>
+                <button class="me-sp-more-btn" id="me-sp-more-btn" onclick="meExpandFallback()" style="display:none;">Fallback</button>
               </div>
             </div>
             <div class="me-section-label">Content</div>
@@ -3256,8 +3389,8 @@ function updateEmailPreview() {
   const step = flow.steps[meState.stepId];
   if (!step) return;
 
-  const senderName = document.getElementById('me-sender-name')?.value || meState.senderName;
-  const senderEmail = document.getElementById('me-sender-email')?.value || meState.senderEmail;
+  const senderName = meState.senderName;
+  const senderEmail = meState.senderEmail;
   const subject = document.getElementById('me-subject')?.value || step.subject;
   const previewText = document.getElementById('me-preview-text')?.value || '';
 
@@ -3285,10 +3418,31 @@ function updatePhoneBubble() {
 
 // Live-bind email inputs to the preview
 function bindEmailInputs() {
-  ['me-sender-name','me-sender-email','me-reply-to','me-subject','me-preview-text'].forEach(id => {
+  ['me-subject','me-preview-text'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', updateEmailPreview);
   });
+}
+
+// Sender profile toggle
+function meToggleSender(radio) {
+  const isBiz = radio.value === 'business';
+  const bizLabel = document.getElementById('me-sp-biz-label');
+  const contactLabel = document.getElementById('me-sp-contact-label');
+  const detail = document.getElementById('me-sp-contact-detail');
+  bizLabel.classList.toggle('me-sp-option--selected', isBiz);
+  contactLabel.classList.toggle('me-sp-option--selected', !isBiz);
+  detail.classList.toggle('visible', !isBiz);
+}
+
+function meExpandFallback() {
+  document.getElementById('me-sp-fallback').style.display = 'flex';
+  document.getElementById('me-sp-more-btn').style.display = 'none';
+}
+
+function meCollapseFallback() {
+  document.getElementById('me-sp-fallback').style.display = 'none';
+  document.getElementById('me-sp-more-btn').style.display = 'inline';
 }
 
 const SMS_SEG = 160;
