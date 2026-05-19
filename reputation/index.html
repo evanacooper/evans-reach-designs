@@ -68,6 +68,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative; /* so the editor overlay positions inside it */
   }
 
   /* Wide variant for the preview step */
@@ -1395,21 +1396,22 @@
   font-size: 10.5px; color: var(--color-text-muted); margin-top: 8px; text-align: right;
 }
 
-/* ── Message Editor — full-screen takeover ── */
+/* ── Message Editor — fills the existing modal shell ── */
 .msg-editor-overlay {
   display: none;
-  position: fixed; inset: 0; z-index: 400;
+  position: absolute; inset: 0; z-index: 10;
   background: #fff;
+  border-radius: var(--radius-lg); /* match the modal shell */
 }
 .msg-editor-overlay.open { display: flex; flex-direction: column; }
 
 .msg-editor {
   display: flex; flex-direction: column;
   flex: 1; overflow: hidden;
-  /* no border-radius, no shadow — it IS the screen */
+  border-radius: var(--radius-lg);
 }
-@keyframes meSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.msg-editor-overlay.open { animation: meSlideIn .18s ease-out; }
+@keyframes meSlideIn { from { opacity: 0; } to { opacity: 1; } }
+.msg-editor-overlay.open { animation: meSlideIn .15s ease-out; }
 
 /* header */
 .me-head {
@@ -2047,249 +2049,212 @@
     </div>
   </div>
 
-</div>
+  <!-- Message editor — sits inside the modal shell, covers it absolutely -->
+  <div class="msg-editor-overlay" id="msg-editor-overlay" role="dialog" aria-modal="true" aria-labelledby="me-title">
+    <div class="msg-editor" id="msg-editor">
 
-<!-- Step 6: Message preview drawer -->
-<div class="abh-drawer-overlay" id="abh-drawer-overlay">
-  <div class="abh-drawer-scrim" onclick="closeAbhDrawer()"></div>
-  <aside class="abh-drawer">
-    <div class="abh-drawer-head">
-      <div>
-        <div class="abh-drawer-eyebrow" id="abh-drawer-eyebrow">Message 1 of 2</div>
-        <div class="abh-drawer-title" id="abh-drawer-title"></div>
-        <div class="abh-drawer-sub" id="abh-drawer-sub"></div>
-      </div>
-      <button class="abh-drawer-close" onclick="closeAbhDrawer()" aria-label="Close">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
-      </button>
-    </div>
-    <div class="abh-drawer-toolbar">
-      <div class="abh-drawer-nav">
-        <button class="abh-nav-btn" id="abh-drawer-prev" aria-label="Previous message">&#8592;</button>
-        <div class="abh-nav-pills" id="abh-drawer-pills"></div>
-        <button class="abh-nav-btn" id="abh-drawer-next" aria-label="Next message">&#8594;</button>
-      </div>
-      <div class="abh-ch-toggle">
-        <button class="abh-ch-btn on" id="abh-ch-email" onclick="setAbhChannel('email')">
-          <svg width="12" height="10" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.75" y="0.75" width="11.5" height="9.5" rx="1.5"/><path d="M0.75 3L6.5 6.5 12.25 3"/></svg>
-          Email
-        </button>
-        <button class="abh-ch-btn" id="abh-ch-sms" onclick="setAbhChannel('sms')">
-          <svg width="9" height="11" viewBox="0 0 10 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.75" y="0.75" width="8.5" height="10.5" rx="2"/><path d="M3.5 9.5h3"/></svg>
-          SMS
-        </button>
-      </div>
-    </div>
-    <div class="abh-drawer-body" id="abh-drawer-body"></div>
-    <div class="abh-drawer-foot">
-      <button class="btn btn-secondary" onclick="closeAbhDrawer()">Close</button>
-      <button class="btn btn-primary" onclick="closeAbhDrawer()">Done</button>
-    </div>
-  </aside>
-</div>
-
-<!-- Message Editor Modal -->
-<div class="msg-editor-overlay" id="msg-editor-overlay" role="dialog" aria-modal="true" aria-labelledby="me-title">
-  <div class="msg-editor" id="msg-editor">
-
-    <!-- Header -->
-    <div class="me-head">
-      <div class="me-head-left">
-        <div id="me-eyebrow" style="display:none"></div>
-        <div class="me-title" id="me-title"></div>
-        <div class="me-sub" id="me-sub"></div>
-      </div>
-      <button class="me-close" onclick="closeMsgEditor()" aria-label="Close">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
-      </button>
-    </div>
-
-    <!-- hidden step nav elements (kept for JS compat, visually removed) -->
-    <div id="me-step-initial" style="display:none"></div>
-    <div id="me-step-reminder" style="display:none"></div>
-    <div id="me-nav-label" style="display:none"></div>
-    <div id="me-prev-btn" style="display:none"></div>
-    <div id="me-next-btn" style="display:none"></div>
-
-    <!-- Body: edit pane + preview pane -->
-    <div class="me-body">
-
-      <!-- LEFT: Edit pane -->
-      <div class="me-edit-pane">
-
-        <!-- Channel tabs -->
-        <div class="me-ch-tabs">
-          <button class="me-ch-tab on" id="me-ch-email" onclick="setMeChannel('email')">
-            <svg width="12" height="10" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.75" y="0.75" width="11.5" height="9.5" rx="1.5"/><path d="M0.75 3L6.5 6.5 12.25 3"/></svg>
-            Email
-          </button>
-          <button class="me-ch-tab" id="me-ch-sms" onclick="setMeChannel('sms')">
-            <svg width="9" height="11" viewBox="0 0 10 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.75" y="0.75" width="8.5" height="10.5" rx="2"/><path d="M3.5 9.5h3"/></svg>
-            SMS
-          </button>
+      <!-- Header -->
+      <div class="me-head">
+        <div class="me-head-left">
+          <div id="me-eyebrow" style="display:none"></div>
+          <div class="me-title" id="me-title"></div>
+          <div class="me-sub" id="me-sub"></div>
         </div>
+        <button class="me-close" onclick="closeMsgEditor()" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+        </button>
+      </div>
 
-        <!-- Email tab -->
-        <div class="me-tab on" id="me-tab-email">
-          <div class="me-section-label">Sender</div>
-          <div class="me-fields" style="padding-top:4px; padding-bottom:0;">
-            <div class="me-field">
-              <label for="me-sender-name">Sender name</label>
-              <input class="me-input" id="me-sender-name" type="text" placeholder="Tomer's Rental" value="Tomer's Rental">
-            </div>
-            <div class="me-field">
-              <label for="me-sender-email">From email</label>
-              <input class="me-input" id="me-sender-email" type="email" placeholder="noreply@tomersrental.com" value="noreply@tomersrental.com">
-            </div>
-            <div class="me-field">
-              <label for="me-reply-to">Reply-to</label>
-              <input class="me-input" id="me-reply-to" type="email" placeholder="hello@tomersrental.com" value="">
-            </div>
-          </div>
-          <div class="me-section-label">Content</div>
-          <div class="me-fields" style="padding-top:4px;">
-            <div class="me-field">
-              <label for="me-subject">Subject line</label>
-              <input class="me-input" id="me-subject" type="text" placeholder="Your email subject…">
-            </div>
-            <div class="me-field">
-              <label for="me-preview-text">Preview text</label>
-              <input class="me-input" id="me-preview-text" type="text" placeholder="Short preview shown in inbox…">
-            </div>
-          </div>
-          <div class="me-stripo-bar">
-            <span class="me-stripo-hint">Edit the full email layout, images, and colors.</span>
-            <button class="me-stripo-btn" onclick="alert('Opens Stripo email editor')">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5l2 2-6 6H3.5v-2l6-6z"/><path d="M8 3l2 2"/></svg>
-              Edit layout
+      <!-- hidden step nav elements (kept for JS compat) -->
+      <div id="me-step-initial" style="display:none"></div>
+      <div id="me-step-reminder" style="display:none"></div>
+      <div id="me-nav-label" style="display:none"></div>
+      <div id="me-prev-btn" style="display:none"></div>
+      <div id="me-next-btn" style="display:none"></div>
+
+      <!-- Body: edit pane + preview pane -->
+      <div class="me-body">
+
+        <!-- LEFT: Edit pane -->
+        <div class="me-edit-pane">
+
+          <!-- Channel tabs -->
+          <div class="me-ch-tabs">
+            <button class="me-ch-tab on" id="me-ch-email" onclick="setMeChannel('email')">
+              <svg width="12" height="10" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.75" y="0.75" width="11.5" height="9.5" rx="1.5"/><path d="M0.75 3L6.5 6.5 12.25 3"/></svg>
+              Email
+            </button>
+            <button class="me-ch-tab" id="me-ch-sms" onclick="setMeChannel('sms')">
+              <svg width="9" height="11" viewBox="0 0 10 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="0.75" y="0.75" width="8.5" height="10.5" rx="2"/><path d="M3.5 9.5h3"/></svg>
+              SMS
             </button>
           </div>
-        </div>
 
-        <!-- SMS tab -->
-        <div class="me-tab" id="me-tab-sms">
-          <div class="me-fields" style="gap:12px;">
-            <div class="me-field">
-              <label for="me-sms-body">Message</label>
-              <textarea
-                class="me-input me-sms-area"
-                id="me-sms-body"
-                rows="5"
-                placeholder="Type your SMS message…"
-                oninput="updateSmsCount(this)"
-              ></textarea>
-              <div class="me-char-row">
-                <span id="me-sms-split-note" style="font-size:11px;color:var(--color-text-muted);">160 chars = 1 message</span>
-                <span class="me-char-count" id="me-char-count">0 / 160</span>
+          <!-- Email tab -->
+          <div class="me-tab on" id="me-tab-email">
+            <div class="me-section-label">Sender</div>
+            <div class="me-fields" style="padding-top:4px; padding-bottom:0;">
+              <div class="me-field">
+                <label for="me-sender-name">Sender name</label>
+                <input class="me-input" id="me-sender-name" type="text" placeholder="Tomer's Rental" value="Tomer's Rental">
+              </div>
+              <div class="me-field">
+                <label for="me-sender-email">From email</label>
+                <input class="me-input" id="me-sender-email" type="email" placeholder="noreply@tomersrental.com" value="noreply@tomersrental.com">
+              </div>
+              <div class="me-field">
+                <label for="me-reply-to">Reply-to</label>
+                <input class="me-input" id="me-reply-to" type="email" placeholder="hello@tomersrental.com" value="">
               </div>
             </div>
-            <div class="me-sms-split-warn" id="me-sms-split-warn">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#d97706" stroke-width="1.4"/><path d="M7 4.5v3M7 9.5v.5" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>
-              This message will be split into <strong id="me-sms-parts">2</strong> SMS messages. Shorter messages reduce cost and improve deliverability.
+            <div class="me-section-label">Content</div>
+            <div class="me-fields" style="padding-top:4px;">
+              <div class="me-field">
+                <label for="me-subject">Subject line</label>
+                <input class="me-input" id="me-subject" type="text" placeholder="Your email subject…">
+              </div>
+              <div class="me-field">
+                <label for="me-preview-text">Preview text</label>
+                <input class="me-input" id="me-preview-text" type="text" placeholder="Short preview shown in inbox…">
+              </div>
             </div>
-            <div class="me-field">
-              <label>Merge fields</label>
-              <div class="me-merge-dropdown" id="me-merge-dd">
-                <button class="me-merge-btn" onclick="toggleMergePanel()" type="button">
-                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4.5h7M2 6.5h4"/><rect x="0.75" y="0.75" width="9.5" height="9.5" rx="2"/></svg>
-                  Insert merge field
-                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1.5 3L4.5 6l3-3"/></svg>
-                </button>
-                <div class="me-merge-panel" id="me-merge-panel">
-                  <input class="me-merge-search" id="me-merge-search" type="text" placeholder="Search fields…" oninput="filterMergeItems(this.value)">
-                  <div id="me-merge-list"></div>
+            <div class="me-stripo-bar">
+              <span class="me-stripo-hint"></span>
+              <button class="me-stripo-btn" onclick="alert('Opens Stripo email editor')">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5l2 2-6 6H3.5v-2l6-6z"/><path d="M8 3l2 2"/></svg>
+                Edit layout
+              </button>
+            </div>
+          </div>
+
+          <!-- SMS tab -->
+          <div class="me-tab" id="me-tab-sms">
+            <div class="me-fields" style="gap:12px;">
+              <div class="me-field">
+                <label for="me-sms-body">Message</label>
+                <textarea class="me-input me-sms-area" id="me-sms-body" rows="5" placeholder="Type your SMS message…" oninput="updateSmsCount(this)"></textarea>
+                <div class="me-char-row">
+                  <span id="me-sms-split-note" style="font-size:11px;color:var(--color-text-muted);">160 chars = 1 message</span>
+                  <span class="me-char-count" id="me-char-count">0 / 160</span>
+                </div>
+              </div>
+              <div class="me-sms-split-warn" id="me-sms-split-warn">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#d97706" stroke-width="1.4"/><path d="M7 4.5v3M7 9.5v.5" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>
+                This message will be split into <strong id="me-sms-parts">2</strong> SMS messages. Shorter messages reduce cost and improve deliverability.
+              </div>
+              <div class="me-field">
+                <label>Merge fields</label>
+                <div class="me-merge-dropdown" id="me-merge-dd">
+                  <button class="me-merge-btn" onclick="toggleMergePanel()" type="button">
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4.5h7M2 6.5h4"/><rect x="0.75" y="0.75" width="9.5" height="9.5" rx="2"/></svg>
+                    Insert merge field
+                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1.5 3L4.5 6l3-3"/></svg>
+                  </button>
+                  <div class="me-merge-panel" id="me-merge-panel">
+                    <input class="me-merge-search" id="me-merge-search" type="text" placeholder="Search fields…" oninput="filterMergeItems(this.value)">
+                    <div id="me-merge-list"></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-      </div><!-- /me-edit-pane -->
+        </div><!-- /me-edit-pane -->
 
-      <!-- RIGHT: Preview pane -->
-      <div class="me-preview-pane">
+        <!-- RIGHT: Preview pane -->
+        <div class="me-preview-pane">
 
-        <!-- Email preview -->
-        <div class="me-tab on" id="me-preview-email">
-          <div class="me-email-preview">
-            <div class="me-email-meta">
-              <div class="me-meta-row">
-                <span class="me-meta-label">From</span>
-                <span class="me-meta-value" id="me-preview-from">Tomer's Rental &lt;noreply@tomersrental.com&gt;</span>
+          <!-- Email preview -->
+          <div class="me-tab on" id="me-preview-email">
+            <div class="me-email-preview">
+              <div class="me-email-meta">
+                <div class="me-meta-row">
+                  <span class="me-meta-label">From</span>
+                  <span class="me-meta-value" id="me-preview-from">Tomer's Rental &lt;noreply@tomersrental.com&gt;</span>
+                </div>
+                <div class="me-meta-row">
+                  <span class="me-meta-label">Subject</span>
+                  <span class="me-meta-value" id="me-preview-subject">—</span>
+                </div>
+                <div class="me-meta-row">
+                  <span class="me-meta-label">Preview</span>
+                  <span class="me-meta-value" id="me-preview-pretext" style="color:var(--color-text-muted);font-style:italic;">—</span>
+                </div>
               </div>
-              <div class="me-meta-row">
-                <span class="me-meta-label">Subject</span>
-                <span class="me-meta-value" id="me-preview-subject">—</span>
-              </div>
-              <div class="me-meta-row">
-                <span class="me-meta-label">Preview</span>
-                <span class="me-meta-value" id="me-preview-pretext" style="color:var(--color-text-muted);font-style:italic;">—</span>
-              </div>
-            </div>
-            <div class="me-email-rendered-wrap">
-              <div class="me-email-edit-overlay">
-                <button class="me-email-edit-overlay-btn" onclick="alert('Opens Stripo email editor')">
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5l2 2-6 6H3.5v-2l6-6z"/><path d="M8 3l2 2"/></svg>
-                  Edit layout
-                </button>
-              </div>
-              <div class="me-email-rendered">
-                <div class="me-email-body-inner">
-                  <div class="me-ep-logo">🔧</div>
-                  <div class="me-ep-biz">Tomer's Rental</div>
-                  <div class="me-ep-card">
-                    <div class="me-ep-text" id="me-ep-body"></div>
-                    <div style="text-align:center">
-                      <span class="me-ep-cta" id="me-ep-cta" style="background:#7c3aed">Rate your stay</span>
+              <div class="me-email-rendered-wrap">
+                <div class="me-email-edit-overlay">
+                  <button class="me-email-edit-overlay-btn" onclick="alert('Opens Stripo email editor')">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5l2 2-6 6H3.5v-2l6-6z"/><path d="M8 3l2 2"/></svg>
+                    Edit layout
+                  </button>
+                </div>
+                <div class="me-email-rendered">
+                  <div class="me-email-body-inner">
+                    <div class="me-ep-logo">🔧</div>
+                    <div class="me-ep-biz">Tomer's Rental</div>
+                    <div class="me-ep-card">
+                      <div class="me-ep-text" id="me-ep-body"></div>
+                      <div style="text-align:center">
+                        <span class="me-ep-cta" id="me-ep-cta" style="background:#7c3aed">Rate your stay</span>
+                      </div>
+                    </div>
+                    <div class="me-ep-footer">
+                      Thank you for choosing Tomer's Rental!<br>
+                      <span style="color:#d1d5db">Unsubscribe · 1881 Oak Ave, Evanston, IL, 60201</span>
                     </div>
                   </div>
-                  <div class="me-ep-footer">
-                    Thank you for choosing Tomer's Rental!<br>
-                    <span style="color:#d1d5db">Unsubscribe · 1881 Oak Ave, Evanston, IL, 60201</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SMS preview -->
+          <div class="me-tab" id="me-preview-sms">
+            <div class="me-sms-preview-pane">
+              <div class="me-phone-wrap">
+                <div class="me-phone">
+                  <div class="me-phone-notch"></div>
+                  <div class="me-phone-screen">
+                    <div class="me-phone-sender">Tomer's Rental</div>
+                    <div class="me-phone-spacer"></div>
+                    <div class="me-phone-bubble-row">
+                      <div class="me-phone-bubble" id="me-phone-bubble">Your message will appear here.</div>
+                    </div>
+                    <div class="me-phone-time">Just now</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+        </div><!-- /me-preview-pane -->
+
+      </div><!-- /me-body -->
+
+      <!-- Footer -->
+      <div class="me-foot">
+        <button class="me-back-btn" onclick="closeMsgEditor()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2L4 7l5 5"/></svg>
+          Back to preview
+        </button>
+        <div class="me-foot-right">
+          <button class="btn btn-secondary" onclick="closeMsgEditor()">Cancel</button>
+          <button class="btn btn-primary" onclick="closeMsgEditor()">Save changes</button>
         </div>
-
-        <!-- SMS preview -->
-        <div class="me-tab" id="me-preview-sms">
-          <div class="me-sms-preview-pane">
-            <div class="me-phone-wrap">
-              <div class="me-phone">
-                <div class="me-phone-notch"></div>
-                <div class="me-phone-screen">
-                  <div class="me-phone-sender">Tomer's Rental</div>
-                  <div class="me-phone-spacer"></div>
-                  <div class="me-phone-bubble-row">
-                    <div class="me-phone-bubble" id="me-phone-bubble">Your message will appear here.</div>
-                  </div>
-                  <div class="me-phone-time">Just now</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /me-preview-pane -->
-
-    </div><!-- /me-body -->
-
-    <!-- Footer -->
-    <div class="me-foot">
-      <button class="me-back-btn" onclick="closeMsgEditor()">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2L4 7l5 5"/></svg>
-        Back to preview
-      </button>
-      <div class="me-foot-right">
-        <button class="btn btn-secondary" onclick="closeMsgEditor()">Cancel</button>
-        <button class="btn btn-primary" onclick="closeMsgEditor()">Save changes</button>
       </div>
-    </div>
 
-  </div><!-- /msg-editor -->
-</div><!-- /msg-editor-overlay -->
+    </div><!-- /msg-editor -->
+  </div><!-- /msg-editor-overlay -->
+
+</div>
+
+<!-- Step 6: Message preview drawer (legacy, hidden) -->
+<div class="abh-drawer-overlay" id="abh-drawer-overlay" style="display:none">
+  <div id="abh-drawer-eyebrow"></div><div id="abh-drawer-title"></div><div id="abh-drawer-sub"></div>
+  <div id="abh-drawer-pills"></div><button id="abh-drawer-prev"></button><button id="abh-drawer-next"></button>
+  <div id="abh-ch-email"></div><div id="abh-ch-sms"></div>
+  <div id="abh-drawer-body"></div>
+</div>
 
 <!-- Annotations toggle -->
 <button class="annotation-toggle" onclick="toggleAnnotations()" id="ann-btn">Show annotations</button>
@@ -3164,12 +3129,10 @@ function openMsgEditor(flowKey, autoId, stepId) {
   renderMeModal();
   bindEmailInputs();
   document.getElementById('msg-editor-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
 }
 
 function closeMsgEditor() {
   document.getElementById('msg-editor-overlay').classList.remove('open');
-  document.body.style.overflow = '';
   document.querySelectorAll('.abh-msg.abh-active').forEach(el => el.classList.remove('abh-active'));
 }
 
@@ -3424,15 +3387,12 @@ function closeAbhDrawer() {
   if (oldOverlay) oldOverlay.classList.remove('open');
 }
 
-// Close on overlay click — full-screen, no backdrop to click
-// (kept stub for safety)
-
-// Email preview: enable scroll on hover
-document.getElementById('msg-editor-overlay').addEventListener('mouseover', function(e) {
+// Email preview: enable scroll on hover (delegated from document)
+document.addEventListener('mouseover', function(e) {
   const wrap = e.target.closest('.me-email-rendered-wrap');
   if (wrap) wrap.classList.add('scrolling');
 });
-document.getElementById('msg-editor-overlay').addEventListener('mouseout', function(e) {
+document.addEventListener('mouseout', function(e) {
   const wrap = e.target.closest('.me-email-rendered-wrap');
   if (wrap && !wrap.contains(e.relatedTarget)) wrap.classList.remove('scrolling');
 });
