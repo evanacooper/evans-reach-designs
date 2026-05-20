@@ -523,6 +523,183 @@
   }
   .path-card-body { padding: 20px 22px; }
 
+  /* ============================================== */
+  /* COMPARISON PANEL (managed vs branded explainer) */
+  /* ============================================== */
+  .compare-panel {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elevated);
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .compare-panel-header {
+    padding: 14px 20px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .compare-panel-header h3 {
+    margin: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+  }
+  .compare-panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .compare-panel-col {
+    padding: 16px 18px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .compare-panel-col:last-child { border-right: 0; }
+  .compare-panel-col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .compare-panel-col-header h4 {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .compare-panel-col-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+  }
+  .compare-panel-col[data-tone="branded"] .compare-panel-col-label {
+    background: var(--success-bg, #f0fdf4);
+    color: var(--success, #16a34a);
+    border-color: var(--success-border, #bbf7d0);
+  }
+  .compare-panel-mini-inbox {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-subtle);
+    padding: 10px 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .compare-panel-mini-inbox .mini-avatar {
+    width: 24px; height: 24px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 11px;
+    flex-shrink: 0;
+  }
+  .compare-panel-mini-inbox .mini-from {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .compare-panel-mini-inbox .mini-via {
+    font-weight: 400;
+    color: var(--warning);
+    background: var(--warning-bg);
+    padding: 0 4px;
+    border-radius: 3px;
+    margin-left: 4px;
+  }
+  .compare-panel-mini-inbox .mini-subject {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+  }
+  .compare-panel-col-note {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Side-by-side diff table under the inboxes */
+  .compare-diff {
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .compare-diff-row {
+    display: contents;
+  }
+  .compare-diff-row > * {
+    padding: 10px 18px;
+    font-size: 12.5px;
+    border-top: 1px solid var(--bg-subtle);
+  }
+  .compare-diff-row:first-child > * { border-top: 0; }
+  .compare-diff-row .label {
+    color: var(--text-muted);
+    background: var(--bg-subtle);
+    border-right: 1px solid var(--border);
+    font-weight: 500;
+  }
+  .compare-diff-row .managed-cell,
+  .compare-diff-row .branded-cell {
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .compare-diff-row .branded-cell { border-left: 1px solid var(--border); }
+  .compare-diff-row .check {
+    color: var(--success);
+    flex-shrink: 0;
+  }
+  .compare-diff-row .neutral {
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  /* Inline upgrade hint chip next to the Sending Email Address field */
+  .inline-upgrade-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .inline-upgrade-hint button {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--info);
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .inline-upgrade-hint button:hover { text-decoration: underline; }
+
   /* Soft warning chip used for deliverability nudges */
   .deliverability-chip {
     margin-top: 8px;
@@ -1926,77 +2103,152 @@ function emailStep() {
   const showVia = byo.status !== 'verified';
   const replyToPlaceholder = suggestedReplyTo(senderDomain);
   const replyToWarn = replyToCrossDomain(state.email.replyTo, senderDomain);
+  const displayInitial = (state.email.displayName || 'E').charAt(0).toUpperCase();
+  const displayName = state.email.displayName || 'Your business';
+  const businessName = state.brand.name || 'Your business';
+
+  // Only show the inline upgrade hint and the closing pitch when BYO isn't
+  // already in some other state (paused / verified). The DNS section renderer
+  // handles those cases below.
+  const showSplashCTA = byo.status !== 'verified' && !byo.paused;
 
   const content = `
     <div class="shell-main-narrow">
       <div class="step-header">
         <h1>Set up your email channel</h1>
-        <p>You have two options for sending email. We've already set up a managed domain so you can start sending immediately. You can also connect your own domain for better deliverability and brand trust.</p>
+        <p>We've set up a managed domain so you can start sending today. Fill in the sender details below — you can also connect your own domain for better deliverability, either now or anytime later from settings.</p>
       </div>
 
-      <!-- Path 1: Managed domain (primary, set up automatically) -->
-      <div class="path-card" data-tone="primary">
-        <div class="path-card-header">
-          <span class="path-card-icon">
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5l8 5 8-5"/><rect x="2" y="4" width="16" height="13" rx="2"/></svg>
-          </span>
-          <div>
-            <h2>Send right now — using a managed domain</h2>
-            <p>Already set up. Configure the sender details below and you're ready to send your first email.</p>
-          </div>
-          <span class="path-card-status-pill">Ready to send</span>
-        </div>
-        <div class="path-card-body">
-          <div class="form-group">
-            <label>Sending email address</label>
-            <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code></span>
-            <div class="sender-prefix-row">
-              <input class="form-input" type="text" value="${state.email.prefix}" data-focus-key="email.prefix"
-                oninput="state.email.prefix=this.value; render();" />
-              <span class="at-sign">@</span>
-              <span class="domain-suffix">${state.email.managedDomain}</span>
+      <!-- Educational comparison panel: managed vs branded at a glance.
+           Only shown while the user is still on the managed-default path. -->
+      ${showSplashCTA ? `
+      <section class="compare-panel" aria-label="Compare managed and branded sending domains">
+        <header class="compare-panel-header">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>
+          <h3>How your emails will be sent</h3>
+        </header>
+
+        <div class="compare-panel-grid">
+          <!-- Managed column -->
+          <div class="compare-panel-col" data-tone="managed">
+            <div class="compare-panel-col-header">
+              <h4>Managed domain</h4>
+              <span class="compare-panel-col-label">Already set up</span>
             </div>
+            <div class="compare-panel-mini-inbox">
+              <div class="mini-avatar">${displayInitial}</div>
+              <div>
+                <div class="mini-from">${displayName}<span class="mini-via">via ${state.email.managedDomain}</span></div>
+                <div class="mini-subject">marketing@${state.email.managedDomain}</div>
+              </div>
+            </div>
+            <p class="compare-panel-col-note">Recipients see your business name, but Gmail and Outlook show a "via" tag with the platform domain. Good for getting started today.</p>
           </div>
 
-          <div class="form-group">
-            <label>Display name<span class="req-asterisk">*</span></label>
-            <span class="helper">What customers see in their inbox before the email opens.</span>
-            <input class="form-input" type="text" value="${state.email.displayName}" data-focus-key="email.displayName"
-              oninput="state.email.displayName=this.value; render();" />
+          <!-- Branded column -->
+          <div class="compare-panel-col" data-tone="branded">
+            <div class="compare-panel-col-header">
+              <h4>Branded domain <span style="color:var(--text-muted); font-weight:400; font-size:12px;">(yours)</span></h4>
+              <span class="compare-panel-col-label">Optional · ~5 min</span>
+            </div>
+            <div class="compare-panel-mini-inbox">
+              <div class="mini-avatar">${displayInitial}</div>
+              <div>
+                <div class="mini-from">${displayName}</div>
+                <div class="mini-subject">marketing@send.${(state.brand.website || 'yourdomain.com').replace(/^www\./,'')}</div>
+              </div>
+            </div>
+            <p class="compare-panel-col-note">No "via" tag — fully your domain. Better inbox placement. Requires a quick DNS setup (you can do it now or from settings later).</p>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Reply-to email</label>
-            <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
-            <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.email.replyTo}" data-focus-key="email.replyTo"
-              oninput="state.email.replyTo=this.value; render();" />
-            ${replyToWarn ? `
-              <span class="deliverability-chip">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg>
-                Reply-to on a different root domain can hurt deliverability
-              </span>
-            ` : ''}
+        <!-- 3-row diff -->
+        <div class="compare-diff" role="table" aria-label="What's the same and what's different">
+          <div class="compare-diff-row" role="row">
+            <div class="label" role="rowheader">Start sending today</div>
+            <div class="managed-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
+            <div class="branded-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
           </div>
+          <div class="compare-diff-row" role="row">
+            <div class="label" role="rowheader">Sender name & reply-to editable</div>
+            <div class="managed-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
+            <div class="branded-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
+          </div>
+          <div class="compare-diff-row" role="row">
+            <div class="label" role="rowheader">Best deliverability & no "via" tag</div>
+            <div class="managed-cell" role="cell"><span class="neutral">—</span> Limited</div>
+            <div class="branded-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
+          </div>
+          <div class="compare-diff-row" role="row">
+            <div class="label" role="rowheader">DNS setup needed</div>
+            <div class="managed-cell" role="cell"><span class="neutral">—</span> Not needed</div>
+            <div class="branded-cell" role="cell"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg> ~5 minutes</div>
+          </div>
+        </div>
+      </section>
+      ` : ''}
 
-          <div style="margin-top: 24px;">
-            <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:10px;">How it appears in inbox</div>
-            <div class="inbox-preview">
-              <div class="inbox-row">
-                <div class="inbox-avatar">${(state.email.displayName || 'E').charAt(0).toUpperCase()}</div>
-                <div class="inbox-meta">
-                  <div class="inbox-from">
-                    ${state.email.displayName || 'Your business'}
-                    ${showVia ? `<span class="inbox-via">via <strong style="color:var(--warning);">${state.email.managedDomain}</strong></span>` : ''}
-                  </div>
-                  <div class="inbox-subject">${state.email.prefix || 'hello'}@${senderDomain} · Get your tickets for the 2026 Fair</div>
+      <!-- Active config: managed sender details -->
+      <section class="step-section" aria-labelledby="sender-details-title">
+        <h2 id="sender-details-title" style="font-size: 16px; font-weight: 600; margin: 0 0 4px;">Sender details</h2>
+        <p style="margin: 0 0 18px; font-size: 13.5px; color: var(--text-secondary);">Configuring your <strong>managed domain</strong> — you can start sending as soon as you complete onboarding.</p>
+
+        <div class="form-group">
+          <label>Sending email address</label>
+          <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code></span>
+          <div class="sender-prefix-row">
+            <input class="form-input" type="text" value="${state.email.prefix}" data-focus-key="email.prefix"
+              oninput="state.email.prefix=this.value; render();" />
+            <span class="at-sign">@</span>
+            <span class="domain-suffix">${state.email.managedDomain}</span>
+          </div>
+          ${showSplashCTA ? `
+            <div class="inline-upgrade-hint">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-faint);"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11h.01"/></svg>
+              Want to send from your own domain instead?
+              <button type="button" onclick="enterBYO()">Connect your domain →</button>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="form-group">
+          <label>Display name<span class="req-asterisk">*</span></label>
+          <span class="helper">What customers see in their inbox before the email opens.</span>
+          <input class="form-input" type="text" value="${state.email.displayName}" data-focus-key="email.displayName"
+            oninput="state.email.displayName=this.value; render();" />
+        </div>
+
+        <div class="form-group">
+          <label>Reply-to email</label>
+          <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
+          <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.email.replyTo}" data-focus-key="email.replyTo"
+            oninput="state.email.replyTo=this.value; render();" />
+          ${replyToWarn ? `
+            <span class="deliverability-chip">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg>
+              Reply-to on a different root domain can hurt deliverability
+            </span>
+          ` : ''}
+        </div>
+
+        <div style="margin-top: 24px;">
+          <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:10px;">How it appears in inbox</div>
+          <div class="inbox-preview">
+            <div class="inbox-row">
+              <div class="inbox-avatar">${displayInitial}</div>
+              <div class="inbox-meta">
+                <div class="inbox-from">
+                  ${displayName}
+                  ${showVia ? `<span class="inbox-via">via <strong style="color:var(--warning);">${state.email.managedDomain}</strong></span>` : ''}
                 </div>
+                <div class="inbox-subject">${state.email.prefix || 'hello'}@${senderDomain} · Get your tickets for the 2026 Fair</div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Path 2: Bring your own domain (optional, better deliverability) -->
+      <!-- Closing pitch / DNS state section -->
       ${renderOnboardingDnsSection()}
     </div>
   `;
@@ -2083,27 +2335,25 @@ function finishVerifying() {
 
 /* Splash — first-time state, BYO not started */
 function renderDnsSplashVariant() {
+  // Closing pitch for BYO at the bottom of the Email Channel page. Calm,
+  // not pushy. The explicit "do later in settings" reassurance is the most
+  // important sentence on this card — make sure it reads.
   return `
-    <div class="path-card">
-      <div class="path-card-header">
-        <span class="path-card-icon">
+    <section class="step-section" aria-labelledby="byo-pitch-title">
+      <div style="display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-elevated);">
+        <span class="path-card-icon" style="flex-shrink:0;">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l7-4 7 4-7 4-7-4z"/><path d="M3 8v3l7 4 7-4V8"/></svg>
         </span>
-        <div>
-          <h2>Send from your own domain</h2>
-          <p>Better deliverability and brand trust. Takes about 5 minutes — you can skip this for now and come back later.</p>
+        <div style="flex: 1; min-width: 0;">
+          <h2 id="byo-pitch-title" style="margin: 0 0 4px; font-size: 15px; font-weight: 600;">Want better deliverability? Connect your own domain.</h2>
+          <p style="margin: 0 0 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.55;">Your customers will see emails from <strong>your domain</strong> instead of the platform's, which lands you in more inboxes on Gmail and Outlook. The setup is a one-time DNS step — about 5 minutes — and we'll walk you through it.</p>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="enterBYO()">Connect your domain</button>
+            <span style="font-size: 12.5px; color: var(--text-muted);">or just click <strong style="color:var(--text);">Continue</strong> below — you can do this anytime from <strong style="color:var(--text);">Settings → Email Channel</strong>.</span>
+          </div>
         </div>
-        <span style="margin-left: auto; font-size: 11.5px; color: var(--text-muted); align-self: flex-start;">Optional · recommended</span>
       </div>
-      <div class="path-card-body">
-        <ul class="dns-section-bullets" style="margin: 0 0 16px;">
-          <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Higher inbox placement on Gmail and Outlook</li>
-          <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Recipients see your business, not the platform tag</li>
-          <li><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Forward setup to your IT contact if you don't have DNS access</li>
-        </ul>
-        <button class="btn btn-primary" onclick="enterBYO()">Connect your domain</button>
-      </div>
-    </div>
+    </section>
   `;
 }
 
