@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Engage Insights — Mockup</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --panel: #ffffff;
+    --border: #e8e8e3;
+    --border-strong: #d4d4cf;
+    --text: #1a1a1a;
+    --text-muted: #6b6b66;
+    --text-faint: #9a9a95;
+    --accent: #ff7a3d;
+    --accent-soft: #fff1ea;
+    --pill-automation-bg: #eef4ff;
+    --pill-automation-fg: #2952cc;
+    --pill-broadcast-bg: #f0eaff;
+    --pill-broadcast-fg: #5b3bbd;
+    --good: #2f8a4a;
+    --bad: #c43d3d;
+    --row-hover: #faf9f5;
+    --shadow: 0 1px 0 rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04);
+
+    /* Metric icon tints */
+    --tint-blue-bg: #eaf2ff;     --tint-blue-fg: #2563d9;
+    --tint-green-bg: #e8f5ec;    --tint-green-fg: #2f8a4a;
+    --tint-amber-bg: #fff4e0;    --tint-amber-fg: #b97400;
+    --tint-violet-bg: #f0eaff;   --tint-violet-fg: #6b3bd6;
+    --tint-red-bg: #fdebeb;      --tint-red-fg: #c43d3d;
+    --tint-slate-bg: #eef0f3;    --tint-slate-fg: #475569;
+    --tint-teal-bg: #e3f4f4;     --tint-teal-fg: #117a7a;
+    --tint-orange-bg: #fff0e6;   --tint-orange-fg: #d96017;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 40px 80px;
+  }
+  h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 28px;
+    letter-spacing: -0.02em;
+  }
+
+  /* Top tab strip (existing) */
+  .top-tabs {
+    display: flex;
+    gap: 4px;
+    background: #ededea;
+    border-radius: 10px;
+    padding: 4px;
+    width: fit-content;
+    margin-bottom: 28px;
+  }
+  .top-tabs button {
+    border: 0;
+    background: transparent;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .top-tabs button.active {
+    background: #ffffff;
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+  .top-tabs .info-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--text-faint);
+    color: var(--text-faint);
+    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+  .date-range {
+    border: 1px solid var(--border-strong);
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  /* Panels */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .panel h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 20px;
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .panel-header h2 { margin: 0; }
+
+  /* Top metric bar — balanced spacing */
+  .metric-bar {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr) auto 1fr;
+    align-items: center;
+    column-gap: 8px;
+    position: relative;
+  }
+  .metric-bar .section-label {
+    position: absolute;
+    top: -8px;
+    background: var(--panel);
+    padding: 0 10px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+    font-weight: 600;
+  }
+  .metric-bar .section-label.email { left: 32px; }
+  .metric-bar .section-label.sms { right: 32px; }
+  .metric {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 4px;
+  }
+  .metric-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .metric-icon svg { width: 22px; height: 22px; }
+  .metric-icon.blue   { color: var(--tint-blue-fg); }
+  .metric-icon.green  { color: var(--tint-green-fg); }
+  .metric-icon.amber  { color: var(--tint-amber-fg); }
+  .metric-icon.violet { color: var(--tint-violet-fg); }
+  .metric-icon.red    { color: var(--tint-red-fg); }
+  .metric-icon.slate  { color: var(--tint-slate-fg); }
+  .metric-icon.teal   { color: var(--tint-teal-fg); }
+  .metric-icon.orange { color: var(--tint-orange-fg); }
+  .metric-value {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .metric-label {
+    font-size: 10px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .metric-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+    margin: 0 16px;
+  }
+
+  /* Sales insights row */
+  .sales-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 32px;
+  }
+  .sales-row .metric { padding: 0 12px; }
+  .sales-row .metric:first-child { border-right: 1px solid var(--border); padding-right: 32px; }
+  .sales-row .metric:last-child { padding-left: 32px; }
+  .sales-row .metric-value { font-size: 24px; }
+
+  /* Sub-tabs */
+  .subtabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .subtabs button {
+    border: 0;
+    background: transparent;
+    padding: 14px 0;
+    margin-right: 32px;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .subtabs button.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  .subtabs button .count {
+    color: var(--text-faint);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  /* Filter row */
+  .filter-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  .search {
+    flex: 1;
+    max-width: 320px;
+    position: relative;
+  }
+  .search input {
+    width: 100%;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 8px 12px 8px 34px;
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+  }
+  .search input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .search .icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-faint);
+    display: inline-flex;
+  }
+  .segmented {
+    display: inline-flex;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+  }
+  .segmented button {
+    border: 0;
+    background: transparent;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+  }
+  .segmented button:last-child { border-right: 0; }
+  .segmented button.active {
+    background: var(--text);
+    color: #fff;
+  }
+  .filter-spacer { flex: 1; }
+  .pagination-info {
+    color: var(--text-muted);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-btn {
+    width: 30px; height: 30px;
+    border: 1px solid var(--border-strong);
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+  }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th.sortable:hover { color: var(--text); }
+  thead th.sorted { color: var(--text); }
+  thead th .sort-icon {
+    margin-left: 4px;
+    color: var(--text-faint);
+    font-size: 10px;
+  }
+  thead th.sorted .sort-icon { color: var(--accent); }
+  th.num, td.num { text-align: right; }
+  tbody td {
+    padding: 16px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr:last-child td { border-bottom: 0; }
+
+  .campaign-name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .channel-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-shrink: 0;
+    width: 28px;
+  }
+  .channel-chip {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .channel-chip svg { width: 14px; height: 14px; }
+  .channel-chip.email { background: var(--tint-blue-bg); color: var(--tint-blue-fg); }
+  .channel-chip.sms   { background: var(--tint-teal-bg); color: var(--tint-teal-fg); }
+
+  .campaign-name .name-link {
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .campaign-name .name-link:hover { color: var(--accent); text-decoration: underline; }
+  .campaign-name .subline {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .channel-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .channel-tag.email { background: var(--tint-blue-bg); color: var(--tint-blue-fg); }
+  .channel-tag.sms   { background: var(--tint-teal-bg); color: var(--tint-teal-fg); }
+
+  .pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .pill.automation { background: var(--pill-automation-bg); color: var(--pill-automation-fg); }
+  .pill.broadcast { background: var(--pill-broadcast-bg); color: var(--pill-broadcast-fg); }
+
+  .rate-good { color: var(--good); font-weight: 500; }
+  .rate-bad { color: var(--bad); font-weight: 500; }
+  .empty-dash { color: var(--text-faint); }
+  .num-strong { font-weight: 600; }
+
+  /* Sent cell with multi-channel hover tooltip */
+  .sent-cell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .sent-cell.has-breakdown { cursor: help; }
+  .sent-cell.has-breakdown .sent-value {
+    border-bottom: 1px dashed var(--text-faint);
+  }
+  .sent-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 120ms, transform 120ms;
+    text-align: left;
+    z-index: 10;
+  }
+  .sent-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 14px;
+    border: 5px solid transparent;
+    border-top-color: #1a1a1a;
+  }
+  .sent-cell:hover .sent-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .sent-tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+  }
+  .sent-tooltip-row .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .sent-tooltip-row .dot.email { background: #6ba8ff; }
+  .sent-tooltip-row .dot.sms { background: #5fbfbf; }
+  .sent-tooltip-row .label { color: #c6c6c0; min-width: 40px; }
+  .sent-tooltip-row .val { color: #fff; font-weight: 600; }
+
+  .footnote {
+    color: var(--text-faint);
+    font-size: 12px;
+    margin-top: 16px;
+  }
+
+  .tab-content.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Inline SVG icon library -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Lucide: mail -->
+    <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/>
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+    </symbol>
+    <!-- Lucide: mail-open -->
+    <symbol id="i-mail-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z"/>
+      <path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"/>
+    </symbol>
+    <!-- Lucide: undo-2 (bounce) -->
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 14 4 9l5-5"/>
+      <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>
+    </symbol>
+    <!-- Lucide: mouse-pointer-click -->
+    <symbol id="i-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 4.1 12 6"/>
+      <path d="m5.1 8-2.9-.8"/>
+      <path d="m6 12-1.9 2"/>
+      <path d="M7.2 2.2 8 5.1"/>
+      <path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/>
+    </symbol>
+    <!-- Lucide: octagon-alert (spam) -->
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 16h.01"/>
+      <path d="M12 8v4"/>
+      <path d="M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z"/>
+    </symbol>
+    <!-- Lucide: bell-off (unsub) -->
+    <symbol id="i-unsub" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.268 21a2 2 0 0 0 3.464 0"/>
+      <path d="M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742"/>
+      <path d="m2 2 20 20"/>
+      <path d="M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05"/>
+    </symbol>
+    <!-- Lucide: message-square (SMS) -->
+    <symbol id="i-sms" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+    </symbol>
+    <!-- Lucide: dollar-sign -->
+    <symbol id="i-dollar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" x2="12" y1="2" y2="22"/>
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+    </symbol>
+    <!-- Lucide: shopping-bag -->
+    <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+      <path d="M3.103 6.034h17.794"/>
+      <path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/>
+    </symbol>
+    <!-- Search -->
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </symbol>
+    <!-- Calendar -->
+    <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="page">
+
+  <h1>Engagement</h1>
+
+  <!-- Top product tabs (existing) -->
+  <div class="top-tabs">
+    <button>Automations <span class="info-dot">i</span></button>
+    <button>Broadcasts <span class="info-dot">i</span></button>
+    <button>Segments <span class="info-dot">i</span></button>
+    <button class="active">Insights <span class="info-dot">i</span></button>
+  </div>
+
+  <!-- Date range -->
+  <div class="toolbar">
+    <div class="date-range"><svg width="14" height="14"><use href="#i-cal"/></svg> 01/16/26 – 05/17/26 ▾</div>
+  </div>
+
+  <!-- Top metric bar -->
+  <div class="panel">
+    <h2>Business Insights</h2>
+    <div class="metric-bar">
+      <span class="section-label email">EMAIL</span>
+      <span class="section-label sms">SMS</span>
+
+      <div class="metric">
+        <div class="metric-icon blue"><svg><use href="#i-mail"/></svg></div>
+        <div>
+          <div class="metric-value">428,758</div>
+          <div class="metric-label">Sent</div>
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon green"><svg><use href="#i-mail-open"/></svg></div>
+        <div>
+          <div class="metric-value">12.12%</div>
+          <div class="metric-label">Open rate</div>
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon amber"><svg><use href="#i-alert"/></svg></div>
+        <div>
+          <div class="metric-value">6.00%</div>
+          <div class="metric-label">Bounce rate</div>
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon violet"><svg><use href="#i-click"/></svg></div>
+        <div>
+          <div class="metric-value">8,566</div>
+          <div class="metric-label">Clicks</div>
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon red"><svg><use href="#i-shield"/></svg></div>
+        <div>
+          <div class="metric-value">0.05%</div>
+          <div class="metric-label">Spam</div>
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon slate"><svg><use href="#i-unsub"/></svg></div>
+        <div>
+          <div class="metric-value">0.34%</div>
+          <div class="metric-label">Unsubscribed</div>
+        </div>
+      </div>
+
+      <div class="metric-divider"></div>
+
+      <div class="metric">
+        <div class="metric-icon teal"><svg><use href="#i-sms"/></svg></div>
+        <div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Sent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Business sales insights -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Business Sales Insights</h2>
+      <button class="date-range" style="background:#fff;border-color:var(--border-strong);">ⓘ Email Attribution</button>
+    </div>
+    <div class="sales-row">
+      <div class="metric">
+        <div class="metric-icon green"><svg><use href="#i-dollar"/></svg></div>
+        <div>
+          <div class="metric-value">$196,171.94</div>
+          <div class="metric-label">Total revenue</div>
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-icon orange"><svg><use href="#i-bag"/></svg></div>
+        <div>
+          <div class="metric-value">3,482</div>
+          <div class="metric-label">Total orders</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-tabbed table panel -->
+  <div class="panel">
+    <div class="subtabs">
+      <button class="active" onclick="showTab('campaigns')">Campaign Performance <span class="count">(47)</span></button>
+      <button onclick="showTab('orders')">Order History <span class="count">(3,484)</span></button>
+    </div>
+
+    <!-- TAB 1: Campaign Performance -->
+    <div class="tab-content" id="tab-campaigns">
+
+      <div class="filter-row">
+        <div class="search">
+          <span class="icon"><svg width="14" height="14"><use href="#i-search"/></svg></span>
+          <input type="text" placeholder="Search by name…" />
+        </div>
+        <div class="segmented">
+          <button class="active">All</button>
+          <button>Automations</button>
+          <button>Broadcasts</button>
+        </div>
+        <div class="filter-spacer"></div>
+        <div class="pagination-info">
+          Showing 1–10 of 47 campaigns
+          <button class="page-btn" disabled>‹</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th class="num sortable sorted">Sent <span class="sort-icon">▼</span></th>
+            <th class="num sortable">Open rate <span class="sort-icon">↕</span></th>
+            <th class="num sortable">Click rate <span class="sort-icon">↕</span></th>
+            <th class="num sortable">Bounce rate <span class="sort-icon">↕</span></th>
+            <th class="num sortable">Unsub rate <span class="sort-icon">↕</span></th>
+            <th class="num sortable">Revenue <span class="sort-icon">↕</span></th>
+            <th class="num sortable">Orders <span class="sort-icon">↕</span></th>
+            <th class="sortable">Last sent <span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">Manhattan May Marketing Newsletter</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill broadcast">Broadcast</span></td>
+            <td class="num num-strong">84,212</td>
+            <td class="num rate-good">22.4%</td>
+            <td class="num">3.1%</td>
+            <td class="num">4.8%</td>
+            <td class="num">0.21%</td>
+            <td class="num num-strong">$48,210.00</td>
+            <td class="num">812</td>
+            <td>5/15/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                  <span class="channel-chip sms"><svg><use href="#i-sms"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">Booking Confirmation</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill automation">Automation</span></td>
+            <td class="num num-strong">
+              <span class="sent-cell has-breakdown">
+                <span class="sent-value">62,118</span>
+                <span class="sent-tooltip">
+                  <span class="sent-tooltip-row"><span class="dot email"></span><span class="label">Email</span><span class="val">54,402</span></span>
+                  <span class="sent-tooltip-row"><span class="dot sms"></span><span class="label">SMS</span><span class="val">7,716</span></span>
+                </span>
+              </span>
+            </td>
+            <td class="num rate-good">68.2%</td>
+            <td class="num rate-good">14.7%</td>
+            <td class="num">2.1%</td>
+            <td class="num">0.04%</td>
+            <td class="num num-strong">$22,541.50</td>
+            <td class="num">438</td>
+            <td>5/17/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">West Wichita May Marketing</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill broadcast">Broadcast</span></td>
+            <td class="num num-strong">41,887</td>
+            <td class="num rate-good">18.9%</td>
+            <td class="num">2.4%</td>
+            <td class="num">5.2%</td>
+            <td class="num">0.38%</td>
+            <td class="num num-strong">$31,408.00</td>
+            <td class="num">521</td>
+            <td>5/12/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                  <span class="channel-chip sms"><svg><use href="#i-sms"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">Post-Visit Review Request</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill automation">Automation</span></td>
+            <td class="num num-strong">
+              <span class="sent-cell has-breakdown">
+                <span class="sent-value">38,402</span>
+                <span class="sent-tooltip">
+                  <span class="sent-tooltip-row"><span class="dot email"></span><span class="label">Email</span><span class="val">30,118</span></span>
+                  <span class="sent-tooltip-row"><span class="dot sms"></span><span class="label">SMS</span><span class="val">8,284</span></span>
+                </span>
+              </span>
+            </td>
+            <td class="num rate-good">42.1%</td>
+            <td class="num rate-good">9.3%</td>
+            <td class="num">3.6%</td>
+            <td class="num">0.18%</td>
+            <td class="num num-strong">$14,820.00</td>
+            <td class="num">289</td>
+            <td>5/17/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">Columbia May Marketing Newsletter</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill broadcast">Broadcast</span></td>
+            <td class="num num-strong">29,440</td>
+            <td class="num">11.2%</td>
+            <td class="num">1.8%</td>
+            <td class="num rate-bad">7.1%</td>
+            <td class="num">0.42%</td>
+            <td class="num num-strong">$8,914.00</td>
+            <td class="num">142</td>
+            <td>5/12/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">Memorial Day Promo</a>
+                  <div class="subline">
+                    <span>Completed</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill broadcast">Broadcast</span></td>
+            <td class="num num-strong">26,118</td>
+            <td class="num rate-good">24.6%</td>
+            <td class="num">4.2%</td>
+            <td class="num">4.1%</td>
+            <td class="num">0.29%</td>
+            <td class="num num-strong">$19,422.00</td>
+            <td class="num">388</td>
+            <td>5/1/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">Birthday Wishes</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill automation">Automation</span></td>
+            <td class="num num-strong">18,944</td>
+            <td class="num rate-good">39.4%</td>
+            <td class="num">6.1%</td>
+            <td class="num">2.8%</td>
+            <td class="num">0.12%</td>
+            <td class="num num-strong">$6,210.00</td>
+            <td class="num">98</td>
+            <td>5/17/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip sms"><svg><use href="#i-sms"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">SMS Appointment Reminder</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill automation">Automation</span></td>
+            <td class="num num-strong">12,408</td>
+            <td class="num empty-dash">—</td>
+            <td class="num empty-dash">—</td>
+            <td class="num empty-dash">—</td>
+            <td class="num empty-dash">—</td>
+            <td class="num num-strong">$4,118.00</td>
+            <td class="num">62</td>
+            <td>5/17/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">Win-Back: 60-Day Inactive</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill automation">Automation</span></td>
+            <td class="num num-strong">9,212</td>
+            <td class="num">9.8%</td>
+            <td class="num">1.4%</td>
+            <td class="num">5.9%</td>
+            <td class="num rate-bad">0.71%</td>
+            <td class="num num-strong">$2,488.00</td>
+            <td class="num">41</td>
+            <td>5/16/2026</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="campaign-name">
+                <span class="channel-stack">
+                  <span class="channel-chip email"><svg><use href="#i-mail"/></svg></span>
+                  <span class="channel-chip sms"><svg><use href="#i-sms"/></svg></span>
+                </span>
+                <div>
+                  <a href="#" class="name-link">New Customer Welcome Series</a>
+                  <div class="subline">
+                    <span>Active</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="pill automation">Automation</span></td>
+            <td class="num num-strong">
+              <span class="sent-cell has-breakdown">
+                <span class="sent-value">6,841</span>
+                <span class="sent-tooltip">
+                  <span class="sent-tooltip-row"><span class="dot email"></span><span class="label">Email</span><span class="val">5,210</span></span>
+                  <span class="sent-tooltip-row"><span class="dot sms"></span><span class="label">SMS</span><span class="val">1,631</span></span>
+                </span>
+              </span>
+            </td>
+            <td class="num rate-good">52.3%</td>
+            <td class="num rate-good">11.8%</td>
+            <td class="num">2.4%</td>
+            <td class="num">0.08%</td>
+            <td class="num num-strong">$3,820.00</td>
+            <td class="num">71</td>
+            <td>5/17/2026</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="footnote">Archived and draft campaigns are hidden. Rates are calculated over the selected date range. Rate columns reflect email engagement; SMS-only campaigns show “—”. For multi-channel campaigns, total sent expands to show per-channel volume.</div>
+    </div>
+
+    <!-- TAB 2: Order History (existing, renamed) -->
+    <div class="tab-content hidden" id="tab-orders">
+      <div class="filter-row">
+        <div class="filter-spacer"></div>
+        <div class="pagination-info">
+          Showing 1–10 of 3,484 orders
+          <button class="page-btn" disabled>‹</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Automation</th>
+            <th>Customer</th>
+            <th class="num">Amount</th>
+            <th>Channel</th>
+            <th>Sent date</th>
+            <th>Order date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Manhattan May Marketing Newsletter</td>
+            <td>Christin Sager<br><span style="color:var(--text-faint);font-size:11px;">cdawnsager@yahoo.com</span></td>
+            <td class="num">$55.00</td>
+            <td>Email</td>
+            <td>4/28/2026</td>
+            <td>4/28/2026</td>
+          </tr>
+          <tr>
+            <td>West Wichita May Marketing</td>
+            <td>Jackie Bearden<br><span style="color:var(--text-faint);font-size:11px;">jsbearden2807@gmail.com</span></td>
+            <td class="num">$29.00</td>
+            <td>Email</td>
+            <td>5/12/2026</td>
+            <td>5/14/2026</td>
+          </tr>
+          <tr>
+            <td colspan="6" style="text-align:center;color:var(--text-faint);padding:20px;">(existing order history table — unchanged)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById('tab-' + name).classList.remove('hidden');
+    document.querySelectorAll('.subtabs button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
