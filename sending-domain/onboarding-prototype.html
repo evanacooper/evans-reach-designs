@@ -1678,7 +1678,8 @@ const state = {
 const STEPS = [
   { key: 'brand', label: 'Brand' },
   { key: 'business', label: 'Business Info' },
-  { key: 'email', label: 'Email Channel' },
+  { key: 'senderDetails', label: 'Sender Details' },
+  { key: 'byo', label: 'Bring Your Domain' },
   { key: 'sms', label: 'SMS' },
   { key: 'merge', label: 'Merge Fields' },
   { key: 'automations', label: 'Automations' },
@@ -1695,9 +1696,9 @@ const BYO_SUBSTEPS = [
    STEP NAVIGATION
    ========================================================= */
 function goToStep(key) {
-  // Leaving the email step while the inline DNS wizard is open?
+  // Leaving the BYO step while the inline DNS wizard is open?
   // Pause the wizard so the user can resume on return.
-  if (state.step === 'email' && key !== 'email') {
+  if (state.step === 'byo' && key !== 'byo') {
     if (state.byo.status === 'in-progress' && state.byo.subStep) {
       state.byo.paused = true;
       state.byo.pausedAt = state.byo.subStep;
@@ -1757,8 +1758,8 @@ function exitBYOPaused() {
   }
   state.byo.status = state.byo.paused ? 'in-progress' : 'none';
   state.byo.subStep = null;
-  // Stay on email step
-  state.step = 'email';
+  // Stay on the Bring Your Domain step
+  state.step = 'byo';
   render();
 }
 
@@ -1867,11 +1868,11 @@ function shellHeader() {
   let subtitle;
   if (state.step === 'complete') {
     subtitle = 'All set — your workspace is ready.';
-  } else if (state.step === 'email' && state.byo.status === 'verifying') {
-    subtitle = `Email Channel › Connect DNS › Verifying`;
-  } else if (state.step === 'email' && state.byo.subStep) {
+  } else if (state.step === 'byo' && state.byo.status === 'verifying') {
+    subtitle = `Bring Your Domain › Connect DNS › Verifying`;
+  } else if (state.step === 'byo' && state.byo.subStep) {
     const subLabel = BYO_SUBSTEPS.find(s => s.key === state.byo.subStep)?.label ?? '';
-    subtitle = `Email Channel › Connect DNS › ${subLabel}`;
+    subtitle = `Bring Your Domain › Connect DNS › ${subLabel}`;
   } else {
     subtitle = `Step ${stepIdx + 1} of ${STEPS.length} · ${STEPS[stepIdx]?.label ?? ''}`;
   }
@@ -1956,7 +1957,7 @@ function subJourneySidebar({ activeKey, completedKeys = [], showVerifying = fals
         <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: var(--text-muted);">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
         </span>
-        Email Channel
+        Bring Your Domain
       </button>
       <ul style="list-style: none; margin: 4px 0 0; padding: 0 0 0 22px; border-left: 1px dashed var(--border-strong); margin-left: 22px; display: flex; flex-direction: column; gap: 2px;">
         ${items.map((s, i) => {
@@ -2096,160 +2097,76 @@ function businessStep() {
   return shellWrap({ content, footerOpts: { canContinue } });
 }
 
-function emailStep() {
+/* =========================================================
+   STEP: Sender Details
+   ---------------------------------------------------------
+   Pure form. The managed domain is preset; the user edits prefix,
+   display name, reply-to. Inbox preview shows the result. No
+   BYO surfaces on this step — the next step is entirely about
+   that choice.
+   ========================================================= */
+function senderDetailsStep() {
   const byo = state.byo;
-  // Sender preview uses the BYO domain once verified; otherwise the managed domain
   const senderDomain = byo.status === 'verified' ? `${byo.subdomain}.${byo.rootDomain}` : state.email.managedDomain;
   const showVia = byo.status !== 'verified';
   const replyToPlaceholder = suggestedReplyTo(senderDomain);
   const replyToWarn = replyToCrossDomain(state.email.replyTo, senderDomain);
   const displayInitial = (state.email.displayName || 'E').charAt(0).toUpperCase();
   const displayName = state.email.displayName || 'Your business';
-  const businessName = state.brand.name || 'Your business';
-
-  // Only show the inline upgrade hint and the closing pitch when BYO isn't
-  // already in some other state (paused / verified). The DNS section renderer
-  // handles those cases below.
-  const showSplashCTA = byo.status !== 'verified' && !byo.paused;
 
   const content = `
     <div class="shell-main-narrow">
       <div class="step-header">
-        <h1>Set up your email channel</h1>
-        <p>We've set up a managed domain so you can start sending today. Fill in the sender details below — you can also connect your own domain for better deliverability, either now or anytime later from settings.</p>
+        <h1>Set up your sender details</h1>
+        <p>This is who your customers see in their inbox. We've already set up a sending domain for you — you can configure the rest below.</p>
       </div>
 
-      <!-- Educational comparison panel: managed vs branded at a glance.
-           Only shown while the user is still on the managed-default path. -->
-      ${showSplashCTA ? `
-      <section class="compare-panel" aria-label="Compare managed and branded sending domains">
-        <header class="compare-panel-header">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>
-          <h3>How your emails will be sent</h3>
-        </header>
+      <div class="form-group">
+        <label>Sending email address</label>
+        <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code></span>
+        <div class="sender-prefix-row">
+          <input class="form-input" type="text" value="${state.email.prefix}" data-focus-key="email.prefix"
+            oninput="state.email.prefix=this.value; render();" />
+          <span class="at-sign">@</span>
+          <span class="domain-suffix">${state.email.managedDomain}</span>
+        </div>
+      </div>
 
-        <div class="compare-panel-grid">
-          <!-- Managed column -->
-          <div class="compare-panel-col" data-tone="managed">
-            <div class="compare-panel-col-header">
-              <h4>Managed domain</h4>
-              <span class="compare-panel-col-label">Already set up</span>
-            </div>
-            <div class="compare-panel-mini-inbox">
-              <div class="mini-avatar">${displayInitial}</div>
-              <div>
-                <div class="mini-from">${displayName}<span class="mini-via">via ${state.email.managedDomain}</span></div>
-                <div class="mini-subject">marketing@${state.email.managedDomain}</div>
+      <div class="form-group">
+        <label>Display name<span class="req-asterisk">*</span></label>
+        <span class="helper">What customers see in their inbox before the email opens.</span>
+        <input class="form-input" type="text" value="${state.email.displayName}" data-focus-key="email.displayName"
+          oninput="state.email.displayName=this.value; render();" />
+      </div>
+
+      <div class="form-group">
+        <label>Reply-to email</label>
+        <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
+        <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.email.replyTo}" data-focus-key="email.replyTo"
+          oninput="state.email.replyTo=this.value; render();" />
+        ${replyToWarn ? `
+          <span class="deliverability-chip">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg>
+            Reply-to on a different root domain can hurt deliverability
+          </span>
+        ` : ''}
+      </div>
+
+      <div style="margin-top: 24px;">
+        <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:10px;">How it appears in inbox</div>
+        <div class="inbox-preview">
+          <div class="inbox-row">
+            <div class="inbox-avatar">${displayInitial}</div>
+            <div class="inbox-meta">
+              <div class="inbox-from">
+                ${displayName}
+                ${showVia ? `<span class="inbox-via">via <strong style="color:var(--warning);">${state.email.managedDomain}</strong></span>` : ''}
               </div>
-            </div>
-            <p class="compare-panel-col-note">Recipients see your business name, but Gmail and Outlook show a "via" tag with the platform domain. Good for getting started today.</p>
-          </div>
-
-          <!-- Branded column -->
-          <div class="compare-panel-col" data-tone="branded">
-            <div class="compare-panel-col-header">
-              <h4>Branded domain <span style="color:var(--text-muted); font-weight:400; font-size:12px;">(yours)</span></h4>
-              <span class="compare-panel-col-label">Optional · ~5 min</span>
-            </div>
-            <div class="compare-panel-mini-inbox">
-              <div class="mini-avatar">${displayInitial}</div>
-              <div>
-                <div class="mini-from">${displayName}</div>
-                <div class="mini-subject">marketing@send.${(state.brand.website || 'yourdomain.com').replace(/^www\./,'')}</div>
-              </div>
-            </div>
-            <p class="compare-panel-col-note">No "via" tag — fully your domain. Better inbox placement. Requires a quick DNS setup (you can do it now or from settings later).</p>
-          </div>
-        </div>
-
-        <!-- 3-row diff -->
-        <div class="compare-diff" role="table" aria-label="What's the same and what's different">
-          <div class="compare-diff-row" role="row">
-            <div class="label" role="rowheader">Start sending today</div>
-            <div class="managed-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
-            <div class="branded-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
-          </div>
-          <div class="compare-diff-row" role="row">
-            <div class="label" role="rowheader">Sender name & reply-to editable</div>
-            <div class="managed-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
-            <div class="branded-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
-          </div>
-          <div class="compare-diff-row" role="row">
-            <div class="label" role="rowheader">Best deliverability & no "via" tag</div>
-            <div class="managed-cell" role="cell"><span class="neutral">—</span> Limited</div>
-            <div class="branded-cell" role="cell"><svg class="check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg> Yes</div>
-          </div>
-          <div class="compare-diff-row" role="row">
-            <div class="label" role="rowheader">DNS setup needed</div>
-            <div class="managed-cell" role="cell"><span class="neutral">—</span> Not needed</div>
-            <div class="branded-cell" role="cell"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg> ~5 minutes</div>
-          </div>
-        </div>
-      </section>
-      ` : ''}
-
-      <!-- Active config: managed sender details -->
-      <section class="step-section" aria-labelledby="sender-details-title">
-        <h2 id="sender-details-title" style="font-size: 16px; font-weight: 600; margin: 0 0 4px;">Sender details</h2>
-        <p style="margin: 0 0 18px; font-size: 13.5px; color: var(--text-secondary);">Configuring your <strong>managed domain</strong> — you can start sending as soon as you complete onboarding.</p>
-
-        <div class="form-group">
-          <label>Sending email address</label>
-          <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code></span>
-          <div class="sender-prefix-row">
-            <input class="form-input" type="text" value="${state.email.prefix}" data-focus-key="email.prefix"
-              oninput="state.email.prefix=this.value; render();" />
-            <span class="at-sign">@</span>
-            <span class="domain-suffix">${state.email.managedDomain}</span>
-          </div>
-          ${showSplashCTA ? `
-            <div class="inline-upgrade-hint">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-faint);"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11h.01"/></svg>
-              Want to send from your own domain instead?
-              <button type="button" onclick="enterBYO()">Connect your domain →</button>
-            </div>
-          ` : ''}
-        </div>
-
-        <div class="form-group">
-          <label>Display name<span class="req-asterisk">*</span></label>
-          <span class="helper">What customers see in their inbox before the email opens.</span>
-          <input class="form-input" type="text" value="${state.email.displayName}" data-focus-key="email.displayName"
-            oninput="state.email.displayName=this.value; render();" />
-        </div>
-
-        <div class="form-group">
-          <label>Reply-to email</label>
-          <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
-          <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.email.replyTo}" data-focus-key="email.replyTo"
-            oninput="state.email.replyTo=this.value; render();" />
-          ${replyToWarn ? `
-            <span class="deliverability-chip">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg>
-              Reply-to on a different root domain can hurt deliverability
-            </span>
-          ` : ''}
-        </div>
-
-        <div style="margin-top: 24px;">
-          <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:10px;">How it appears in inbox</div>
-          <div class="inbox-preview">
-            <div class="inbox-row">
-              <div class="inbox-avatar">${displayInitial}</div>
-              <div class="inbox-meta">
-                <div class="inbox-from">
-                  ${displayName}
-                  ${showVia ? `<span class="inbox-via">via <strong style="color:var(--warning);">${state.email.managedDomain}</strong></span>` : ''}
-                </div>
-                <div class="inbox-subject">${state.email.prefix || 'hello'}@${senderDomain} · Get your tickets for the 2026 Fair</div>
-              </div>
+              <div class="inbox-subject">${state.email.prefix || 'hello'}@${senderDomain} · Get your tickets for the 2026 Fair</div>
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- Closing pitch / DNS state section -->
-      ${renderOnboardingDnsSection()}
+      </div>
     </div>
   `;
 
@@ -2257,16 +2174,87 @@ function emailStep() {
 }
 
 /* =========================================================
-   DNS CONNECTION SECTION on the Email step
+   STEP: Bring Your Domain
    ---------------------------------------------------------
-   Only three variants live here now: splash, paused, configured.
-   The wizard and verifying states are full-page sub-journey
-   renderings (emailSubJourneyPage) with their own sidebar.
+   The page is the decision. Slim comparison panel + single
+   primary CTA + explicit "do later in settings" reassurance.
+   When BYO is paused/verified or the sub-journey is open, the
+   appropriate state UI replaces the splash content.
+   ========================================================= */
+function bringYourDomainStep() {
+  const byo = state.byo;
+  const displayInitial = (state.email.displayName || 'E').charAt(0).toUpperCase();
+  const displayName = state.email.displayName || 'Your business';
+
+  // When BYO is paused or verified, the DNS section variant takes the page.
+  // Otherwise we render the slim comparison + CTA.
+  const showSplash = byo.status !== 'verified' && !byo.paused;
+
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Bring your own domain</h1>
+        <p>Optional. Connecting your own sending domain improves deliverability and removes the "via" tag from your customers' inboxes. You can do this now or anytime later from <strong>Settings → Email Channel</strong>.</p>
+      </div>
+
+      ${showSplash ? `
+        <!-- Slim comparison: managed vs branded, side-by-side -->
+        <section class="compare-panel" aria-label="Compare managed and branded sending domains">
+          <div class="compare-panel-grid">
+            <div class="compare-panel-col" data-tone="managed">
+              <div class="compare-panel-col-header">
+                <h4>Managed domain</h4>
+                <span class="compare-panel-col-label">Already set up</span>
+              </div>
+              <div class="compare-panel-mini-inbox">
+                <div class="mini-avatar">${displayInitial}</div>
+                <div>
+                  <div class="mini-from">${displayName}<span class="mini-via">via ${state.email.managedDomain}</span></div>
+                  <div class="mini-subject">${state.email.prefix || 'marketing'}@${state.email.managedDomain}</div>
+                </div>
+              </div>
+            </div>
+            <div class="compare-panel-col" data-tone="branded">
+              <div class="compare-panel-col-header">
+                <h4>Your own domain</h4>
+                <span class="compare-panel-col-label">Optional · ~5 min</span>
+              </div>
+              <div class="compare-panel-mini-inbox">
+                <div class="mini-avatar">${displayInitial}</div>
+                <div>
+                  <div class="mini-from">${displayName}</div>
+                  <div class="mini-subject">${state.email.prefix || 'marketing'}@send.${(state.brand.website || 'yourdomain.com').replace(/^www\./,'')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Primary CTA + skip reassurance -->
+        <div style="margin-top: 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="enterBYO()">Connect your domain</button>
+          <span style="font-size: 13px; color: var(--text-muted);">or click <strong style="color:var(--text);">Continue</strong> below to skip — you can do this anytime in settings.</span>
+        </div>
+      ` : renderOnboardingDnsSection()}
+    </div>
+  `;
+
+  return shellWrap({ content, footerOpts: { canContinue: true } });
+}
+
+/* =========================================================
+   DNS CONNECTION SECTION on the Bring Your Domain step
+   ---------------------------------------------------------
+   Returns the paused or configured variant. The splash (offer)
+   state lives inline in bringYourDomainStep() so it doesn't go
+   through this dispatcher. The wizard and verifying states are
+   full-page sub-journey renderings (emailSubJourneyPage).
    ========================================================= */
 function renderOnboardingDnsSection() {
   const byo = state.byo;
   if (byo.status === 'verified') return renderDnsConfiguredVariant();
   if (byo.paused) return renderDnsPausedVariant();
+  // Fallback (shouldn't be reached — bringYourDomainStep handles the splash inline)
   return renderDnsSplashVariant();
 }
 
@@ -2845,10 +2833,11 @@ function render() {
   let content;
   if (state.step === 'brand') content = brandStep();
   else if (state.step === 'business') content = businessStep();
-  else if (state.step === 'email') {
+  else if (state.step === 'senderDetails') content = senderDetailsStep();
+  else if (state.step === 'byo') {
     // Sub-journey mode: full-pane swap with the BYO sub-step sidebar
     const inSubJourney = state.byo.subStep || state.byo.status === 'verifying';
-    content = inSubJourney ? emailSubJourneyPage() : emailStep();
+    content = inSubJourney ? emailSubJourneyPage() : bringYourDomainStep();
   }
   else if (state.step === 'sms') content = smsStep();
   else if (state.step === 'merge') content = mergeStep();
