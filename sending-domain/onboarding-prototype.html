@@ -1649,11 +1649,10 @@ const state = {
   byo: {
     // 'none' | 'in-progress' | 'verifying' | 'verified'
     status: 'none',
-    // sub-step: 'root' | 'subdomain' | 'dmarc' | 'connect' | 'verifying'
+    // sub-step: 'root' | 'subdomain' | 'connect' | 'verifying'
     subStep: null,
     rootDomain: 'muskingumcofair.com',
     subdomain: 'send',
-    dmarcOn: true,
     // BYO-specific sender identity. Each connected domain owns its own
     // prefix/displayName/replyTo. We seed these from the managed config
     // when entering the sub-journey so users start from a sensible default.
@@ -1698,7 +1697,6 @@ const STEPS = [
 const BYO_SUBSTEPS = [
   { key: 'root', label: 'Root domain' },
   { key: 'subdomain', label: 'Subdomain' },
-  { key: 'dmarc', label: 'DMARC' },
   { key: 'connect', label: 'Connect' },
 ];
 
@@ -1871,42 +1869,17 @@ function replyToCrossDomain(replyTo, sendingDomain) {
 /* =========================================================
    SHELL — settings-style sidebar with step circle markers
    ========================================================= */
-/* Descriptive subtitle for each step of onboarding. Not a step counter —
-   the sidebar already shows progress. This describes what the user is
-   doing right now in plain language, matching the tone we use in other
-   product onboarding flows (Reputation, etc.). */
-const STEP_SUBTITLES = {
-  brand: 'Set up your business basics so we can personalize your messages.',
-  business: 'Tell us about your business — required for email and SMS compliance.',
-  senderDetails: 'Configure the name and reply-to address your customers see in their inbox.',
-  byo: 'Improve deliverability and brand trust by sending from your own domain.',
-  sms: 'Set up your SMS provider to start sending personalized text messages.',
-  automations: 'Pick which automated messages to turn on so your customers stay engaged.',
-};
+/* Static header subtitle — one sentence about Engage, the same on every
+   screen. The sidebar shows progress, the right pane shows the step.
+   The header just frames what we're doing here. */
+const ONBOARDING_SUBTITLE = 'Configure how your business connects with customers over email and SMS. Settings can be changed anytime.';
 
 function shellHeader() {
-  let subtitle;
-  if (state.step === 'complete') {
-    subtitle = 'All set — your workspace is ready.';
-  } else if (state.step === 'byo' && state.byo.status === 'verifying') {
-    subtitle = "We're publishing and verifying your DNS records — usually takes 1–5 minutes.";
-  } else if (state.step === 'byo' && state.byo.subStep) {
-    // Per-sub-step descriptions inside the Connect DNS sub-journey
-    const subSubtitles = {
-      root: 'Confirm the root domain your customers know you by.',
-      subdomain: 'Pick a sending subdomain and configure how your emails appear.',
-      dmarc: 'Add a DMARC record to protect your sending reputation.',
-      connect: 'Connect with Entri to publish your DNS records automatically.',
-    };
-    subtitle = subSubtitles[state.byo.subStep] ?? STEP_SUBTITLES.byo;
-  } else {
-    subtitle = STEP_SUBTITLES[state.step] ?? '';
-  }
   return `
     <header class="shell-topbar">
       <div class="shell-title">
         <h1>Engage Setup</h1>
-        <p>${subtitle}</p>
+        <p>${ONBOARDING_SUBTITLE}</p>
       </div>
       <button class="close-btn" onclick="state.closed=true; render();" aria-label="Close">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l10 10M14 4L4 14"/></svg>
@@ -2329,7 +2302,6 @@ function emailSubJourneyPage() {
   let content;
   if (byo.subStep === 'root') content = renderSubJourneyRoot();
   else if (byo.subStep === 'subdomain') content = renderSubJourneySubdomain();
-  else if (byo.subStep === 'dmarc') content = renderSubJourneyDmarc();
   else if (byo.subStep === 'connect') content = renderSubJourneyConnect();
 
   // The Connect sub-step has its own primary actions (Connect with Entri /
@@ -2535,27 +2507,6 @@ function renderSubJourneySubdomain() {
   `;
 }
 
-function renderSubJourneyDmarc() {
-  return `
-    <div class="shell-main-narrow">
-      <div class="step-header">
-        <h1>Add a DMARC record</h1>
-        <p>DMARC tells inbox providers like Gmail what to do with mail that fails authentication. Required for senders at scale.</p>
-      </div>
-      <div class="dmarc-card">
-        <div class="dmarc-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
-        </div>
-        <div class="dmarc-content">
-          <h4>Add DMARC record <span class="recommended-pill">Recommended</span></h4>
-          <p>Protects your sending reputation and meets Gmail and Yahoo's bulk sender requirements.</p>
-        </div>
-        <button class="toggle" data-on="${state.byo.dmarcOn}" onclick="state.byo.dmarcOn=!state.byo.dmarcOn; render();"></button>
-      </div>
-    </div>
-  `;
-}
-
 function renderSubJourneyConnect() {
   return `
     <div class="connect-screen">
@@ -2635,7 +2586,6 @@ function renderSubJourneyVerifying() {
               </div>
               <span class="timestamp">${renderLabel(rpState)}</span>
             </div>
-            ${byo.dmarcOn ? `
             <div class="verifying-row">
               <div class="verifying-icon" data-state="${dmarcState}">${renderIcon(dmarcState)}</div>
               <div>
@@ -2643,7 +2593,7 @@ function renderSubJourneyVerifying() {
                 <div class="verifying-row-meta">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_dmarc.${byo.subdomain}</code></div>
               </div>
               <span class="timestamp">${renderLabel(dmarcState)}</span>
-            </div>` : ''}
+            </div>
           </div>
           ${p < 3 ? `
             <div style="padding: 14px 24px; background: var(--bg-subtle); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: var(--text-muted);">
@@ -2826,7 +2776,7 @@ function resetPrototype() {
   state.brand.website = 'muskingumcofair.com';
   state.business = { dba: 'Muskingum County Fair', address1: '', address2: '', city: '', state: '', zip: '', country: 'United States' };
   state.email = { prefix: 'marketing', displayName: 'Muskingum County Fair', replyTo: '', managedDomain: 'muskingum-county-fair.fairs-mail.com' };
-  state.byo = { status: 'none', subStep: null, rootDomain: 'muskingumcofair.com', subdomain: 'send', dmarcOn: true, prefix: 'marketing', displayName: '', replyTo: '', paused: false, pausedAt: null, verifyProgress: 0 };
+  state.byo = { status: 'none', subStep: null, rootDomain: 'muskingumcofair.com', subdomain: 'send', prefix: 'marketing', displayName: '', replyTo: '', paused: false, pausedAt: null, verifyProgress: 0 };
   state.merge = { firstName: '', lastName: '' };
   state.automations = { welcome: true, birthday: true, thankyou: false };
   state.showEntriModal = false;

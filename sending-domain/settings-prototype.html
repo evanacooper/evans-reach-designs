@@ -1438,7 +1438,6 @@ const state = {
     subStep: null,
     rootDomain: 'muskingumcofair.com',
     subdomain: 'send',
-    dmarcOn: true,
     // BYO-specific sender identity, collected in the Subdomain sub-step.
     // Seeded from the managed domain on startAddDomain() and then editable
     // before Entri launches. Mirrors onboarding's sub-journey behavior.
@@ -1521,7 +1520,6 @@ const SETTINGS_TABS = [
 const BYO_SUBSTEPS = [
   { key: 'root', label: 'Root domain' },
   { key: 'subdomain', label: 'Subdomain' },
-  { key: 'dmarc', label: 'DMARC' },
   { key: 'connect', label: 'Connect' },
 ];
 
@@ -1541,7 +1539,7 @@ function loadDemoScenario(key) {
   state.tab = 'email-channel';
   state.selectedDomainId = null;
   state.pendingEdits = null;
-  state.byo = { subStep: null, rootDomain: 'muskingumcofair.com', subdomain: 'send', dmarcOn: true, paused: false, pausedAt: null, verifyProgress: 0, isVerifying: false, inlineForDomainId: null };
+  state.byo = { subStep: null, rootDomain: 'muskingumcofair.com', subdomain: 'send', paused: false, pausedAt: null, verifyProgress: 0, isVerifying: false, inlineForDomainId: null };
 
   // Default identity used for all baseline domains in demo scenarios
   const defaultIdentity = (prefix) => ({
@@ -1637,7 +1635,6 @@ function startAddDomain() {
     // on the new BYO root domain rather than copying the managed reply-to.
     state.byo.replyTo = '';
   }
-  state.byo.dmarcOn = true;
   render();
 }
 
@@ -1701,7 +1698,6 @@ function reconnectDisconnected(id) {
   state.byo.subdomain = d.fullDomain.split('.')[0];
   state.byo.rootDomain = d.fullDomain.split('.').slice(1).join('.');
   state.byo.subStep = 'root';
-  state.byo.dmarcOn = true;
   state.byo.inlineForDomainId = id;
   state.byo.paused = false;
   state.byo.pausedAt = null;
@@ -1720,7 +1716,6 @@ function startInlineDnsWizard(domainId) {
   state.byo.subdomain = 'send';
   state.byo.rootDomain = 'muskingumcofair.com';
   state.byo.subStep = 'root';
-  state.byo.dmarcOn = true;
   state.byo.inlineForDomainId = domainId;
   state.byo.paused = false;
   state.byo.pausedAt = null;
@@ -2285,7 +2280,6 @@ function renderDnsSectionWizard(d) {
   let body;
   if (sub === 'root') body = renderInlineWizardRoot();
   else if (sub === 'subdomain') body = renderInlineWizardSubdomain();
-  else if (sub === 'dmarc') body = renderInlineWizardDmarc();
   else if (sub === 'connect') body = renderInlineWizardConnect();
 
   const isConnect = sub === 'connect';
@@ -2365,25 +2359,6 @@ function renderInlineWizardSubdomain() {
             oninput="state.byo.subdomain=this.value; render();" />
           <span class="domain-suffix">.${state.byo.rootDomain}</span>
         </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderInlineWizardDmarc() {
-  return `
-    <h3>Add a DMARC record</h3>
-    <p>DMARC tells inbox providers how to handle mail that fails authentication. Required for senders at scale.</p>
-    <div class="dns-wizard-content-body">
-      <div class="dmarc-card">
-        <div class="dmarc-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
-        </div>
-        <div class="dmarc-content">
-          <h4>Add DMARC record <span class="recommended-pill">Recommended</span></h4>
-          <p>Protects your sending reputation and meets Gmail and Yahoo's bulk sender requirements.</p>
-        </div>
-        <button class="toggle" data-on="${state.byo.dmarcOn}" onclick="state.byo.dmarcOn=!state.byo.dmarcOn; render();"></button>
       </div>
     </div>
   `;
@@ -2686,33 +2661,6 @@ function byoSubdomainSubstep() {
   `;
 }
 
-function byoDmarcSubstep() {
-  return `
-    <main class="shell-main">
-      <div class="step-header">
-        <h2>Add a DMARC record</h2>
-        <p>DMARC tells inbox providers like Gmail what to do with mail that fails authentication. Required for senders at scale.</p>
-      </div>
-      <div style="max-width: 600px;">
-        <div class="dmarc-card">
-          <div class="dmarc-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
-          </div>
-          <div class="dmarc-content">
-            <h4>Add DMARC record <span class="recommended-pill">Recommended</span></h4>
-            <p>Protects your sending reputation and meets Gmail and Yahoo's bulk sender requirements.</p>
-          </div>
-          <button class="toggle" data-on="${state.byo.dmarcOn}" onclick="state.byo.dmarcOn=!state.byo.dmarcOn; render();"></button>
-        </div>
-      </div>
-      <div style="margin-top: 32px; display: flex; justify-content: space-between; gap: 16px; padding-top: 24px; border-top: 1px solid var(--border);">
-        <button class="btn btn-ghost" onclick="byoBack()">← Back</button>
-        <button class="btn btn-primary" onclick="byoNext()">Continue</button>
-      </div>
-    </main>
-  `;
-}
-
 function byoConnectSubstep() {
   return `
     <main class="shell-main">
@@ -2787,15 +2735,14 @@ function byoVerifyingScreen() {
               </div>
               <span class="timestamp">${renderLabel(rpState)}</span>
             </div>
-            ${state.byo.dmarcOn ? `
-              <div class="verifying-row">
-                <div class="verifying-icon" data-state="${dmarcState}">${renderIcon(dmarcState)}</div>
-                <div>
-                  <div class="label">DMARC policy</div>
-                  <div class="desc">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_dmarc.${state.byo.subdomain}</code></div>
-                </div>
-                <span class="timestamp">${renderLabel(dmarcState)}</span>
-              </div>` : ''}
+            <div class="verifying-row">
+              <div class="verifying-icon" data-state="${dmarcState}">${renderIcon(dmarcState)}</div>
+              <div>
+                <div class="label">DMARC policy</div>
+                <div class="desc">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_dmarc.${state.byo.subdomain}</code></div>
+              </div>
+              <span class="timestamp">${renderLabel(dmarcState)}</span>
+            </div>
           </div>
           <div class="verifying-foot">
             ${p < 3 ? `<div class="spinner"></div><span>You can leave this page — we'll update once verification finishes.</span>` : `<span style="color:var(--success); font-weight:500;">All records verified.</span>`}
@@ -2899,7 +2846,6 @@ function render() {
     let sub;
     if (state.byo.subStep === 'root') sub = byoRootSubstep();
     else if (state.byo.subStep === 'subdomain') sub = byoSubdomainSubstep();
-    else if (state.byo.subStep === 'dmarc') sub = byoDmarcSubstep();
     else if (state.byo.subStep === 'connect') sub = byoConnectSubstep();
     body = `<div class="shell-body" data-mode="byo">${byoSidebar()}${sub}</div>`;
   } else {
