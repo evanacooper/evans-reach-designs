@@ -168,6 +168,12 @@
   }
   .step-item[data-state="complete"] { color: var(--text); }
 
+  /* Step markers: no numbers.
+     - Upcoming = hollow ring (thin border, transparent fill)
+     - Active   = filled solid dot in the primary text color
+     - Complete = green checkmark circle (unchanged)
+     We render the marker as an empty span and use ::before to draw
+     the inner dot/check, so the marker's own dimensions stay fixed. */
   .step-item-marker {
     width: 22px;
     height: 22px;
@@ -178,25 +184,30 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-faint);
+    font-size: 0; /* hide any text content (step numbers) */
+    color: transparent;
+    position: relative;
   }
   .step-item[data-state="active"] .step-item-marker {
     border-color: var(--text);
+    background: var(--bg-elevated);
+  }
+  .step-item[data-state="active"] .step-item-marker::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
     background: var(--text);
-    color: white;
   }
   .step-item[data-state="complete"] .step-item-marker {
     border-color: var(--success);
     background: var(--success);
-    color: white;
-    font-size: 0;
   }
   .step-item[data-state="complete"] .step-item-marker::before {
     content: "✓";
     font-size: 12px;
     font-weight: 700;
+    color: white;
   }
 
   .shell-main {
@@ -1681,7 +1692,6 @@ const STEPS = [
   { key: 'senderDetails', label: 'Sender Details' },
   { key: 'byo', label: 'Bring Your Domain' },
   { key: 'sms', label: 'SMS' },
-  { key: 'merge', label: 'Merge Fields' },
   { key: 'automations', label: 'Automations' },
 ];
 
@@ -1902,7 +1912,7 @@ function stepSidebar() {
         const onclick = clickable && !isActive ? `onclick="goToStep('${s.key}')"` : '';
         return `
           <button class="step-item" data-state="${stateAttr}" data-clickable="${clickable}" ${onclick} ${clickable ? '' : 'disabled'}>
-            <span class="step-item-marker">${isComplete ? '' : (i + 1)}</span>
+            <span class="step-item-marker" aria-hidden="true"></span>
             ${s.label}
           </button>
         `;
@@ -1960,20 +1970,29 @@ function subJourneySidebar({ activeKey, completedKeys = [], showVerifying = fals
         Bring Your Domain
       </button>
       <ul style="list-style: none; margin: 4px 0 0; padding: 0 0 0 22px; border-left: 1px dashed var(--border-strong); margin-left: 22px; display: flex; flex-direction: column; gap: 2px;">
-        ${items.map((s, i) => {
+        ${items.map((s) => {
           const isActive = s.key === activeKey;
           const isComplete = completedKeys.includes(s.key);
           const stateAttr = isComplete ? 'complete' : (isActive ? 'active' : 'upcoming');
+          // Step marker: no numbers.
+          //   Upcoming = hollow ring; Active = filled dot inside hollow ring; Complete = green check.
+          let markerInner = '';
+          let markerStyle = 'width: 16px; height: 16px; border-radius: 999px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; position: relative;';
+          if (stateAttr === 'active') {
+            markerStyle += ' background: var(--bg-elevated); border: 1.5px solid var(--text);';
+            markerInner = '<span style="width: 7px; height: 7px; border-radius: 999px; background: var(--text);"></span>';
+          } else if (stateAttr === 'complete') {
+            markerStyle += ' background: var(--success); border: 1.5px solid var(--success); color: white; font-size: 10px; font-weight: 700;';
+            markerInner = '✓';
+          } else {
+            markerStyle += ' background: var(--bg-elevated); border: 1.5px solid var(--border-strong);';
+          }
           return `<li style="display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 13px;${
             stateAttr === 'active' ? ' background: var(--bg-elevated); color: var(--text); font-weight: 500; box-shadow: var(--shadow-card);'
             : stateAttr === 'complete' ? ' color: var(--text);'
             : ' color: var(--text-muted);'
           }">
-            <span style="width: 16px; height: 16px; border-radius: 999px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600;${
-              stateAttr === 'active' ? ' background: var(--primary); border: 1.5px solid var(--primary); color: white;'
-              : stateAttr === 'complete' ? ' background: var(--success); border: 1.5px solid var(--success); color: white;'
-              : ' background: var(--bg-elevated); border: 1.5px solid var(--border-strong); color: var(--text-faint);'
-            }">${stateAttr === 'complete' ? '✓' : (stateAttr === 'active' ? (i + 1) : (i + 1))}</span>
+            <span style="${markerStyle}">${markerInner}</span>
             ${s.label}
           </li>`;
         }).join('')}
@@ -2217,7 +2236,7 @@ function bringYourDomainStep() {
             <div class="compare-panel-col" data-tone="branded">
               <div class="compare-panel-col-header">
                 <h4>Your own domain</h4>
-                <span class="compare-panel-col-label">Optional · ~5 min</span>
+                <span class="compare-panel-col-label" data-tone="recommended">Recommended</span>
               </div>
               <div class="compare-panel-mini-inbox">
                 <div class="mini-avatar">${displayInitial}</div>
@@ -2840,7 +2859,6 @@ function render() {
     content = inSubJourney ? emailSubJourneyPage() : bringYourDomainStep();
   }
   else if (state.step === 'sms') content = smsStep();
-  else if (state.step === 'merge') content = mergeStep();
   else if (state.step === 'automations') content = automationsStep();
   else if (state.step === 'complete') content = completionScreen();
 
