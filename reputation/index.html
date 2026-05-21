@@ -2621,10 +2621,9 @@ const state = {
   // BYO sub-journey
   byo: {
     status: 'none', // 'none' | 'in-progress' | 'verifying' | 'verified'
-    subStep: null,  // 'root' | 'subdomain' | 'dmarc' | 'connect'
+    subStep: null,  // 'root' | 'subdomain' | 'connect'
     rootDomain: 'tomersrental.com',
     subdomain: 'send',
-    dmarcOn: true,
     prefix: 'reviews',
     displayName: "Tomer's Rental",
     replyTo: '',
@@ -3090,7 +3089,6 @@ function selectFlow(flowId) {
 const BYO_SUBSTEPS = [
   { key: 'root', label: 'Root domain' },
   { key: 'subdomain', label: 'Subdomain' },
-  { key: 'dmarc', label: 'DMARC' },
   { key: 'connect', label: 'Connect' },
 ];
 
@@ -3402,12 +3400,11 @@ function byoSubJourneyContent() {
               <div><div class="label">Return-Path</div><div class="verifying-row-meta">CNAME for <code style="font-family:var(--font-mono);font-size:11.5px;">pm-bounces.${byo.subdomain}</code></div></div>
               <span class="timestamp">${lbl(rpState)}</span>
             </div>
-            ${byo.dmarcOn ? `
             <div class="verifying-row">
               <div class="verifying-icon" data-state="${dmarcState}">${icon(dmarcState)}</div>
               <div><div class="label">DMARC policy</div><div class="verifying-row-meta">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_dmarc.${byo.subdomain}</code></div></div>
               <span class="timestamp">${lbl(dmarcState)}</span>
-            </div>` : ''}
+            </div>
           </div>
           ${p < 3 ? `<div style="padding:14px 24px;background:var(--bg-subtle);border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--text-muted);"><div class="spinner"></div><span>You can continue setting up — we'll update when verification finishes.</span></div>` : ''}
         </div>
@@ -3489,21 +3486,6 @@ function byoSubJourneyContent() {
             </div>
           </div>
         </div>
-      </div>
-    `;
-  } else if (byo.subStep === 'dmarc') {
-    subContent = `
-      <div class="step-header">
-        <h1>Add a DMARC record</h1>
-        <p>DMARC tells inbox providers like Gmail what to do with mail that fails authentication. Required for senders at scale.</p>
-      </div>
-      <div class="dmarc-card">
-        <div class="dmarc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
-        <div class="dmarc-content">
-          <h4>Add DMARC record <span class="recommended-pill">Recommended</span></h4>
-          <p>Protects your sending reputation and meets Gmail and Yahoo's bulk sender requirements.</p>
-        </div>
-        <button class="toggle" data-on="${byo.dmarcOn}" onclick="state.byo.dmarcOn=!state.byo.dmarcOn; renderChannelStep();"></button>
       </div>
     `;
   } else if (byo.subStep === 'connect') {
