@@ -1871,20 +1871,36 @@ function replyToCrossDomain(replyTo, sendingDomain) {
 /* =========================================================
    SHELL — settings-style sidebar with step circle markers
    ========================================================= */
+/* Descriptive subtitle for each step of onboarding. Not a step counter —
+   the sidebar already shows progress. This describes what the user is
+   doing right now in plain language, matching the tone we use in other
+   product onboarding flows (Reputation, etc.). */
+const STEP_SUBTITLES = {
+  brand: 'Set up your business basics so we can personalize your messages.',
+  business: 'Tell us about your business — required for email and SMS compliance.',
+  senderDetails: 'Configure the name and reply-to address your customers see in their inbox.',
+  byo: 'Improve deliverability and brand trust by sending from your own domain.',
+  sms: 'Set up your SMS provider to start sending personalized text messages.',
+  automations: 'Pick which automated messages to turn on so your customers stay engaged.',
+};
+
 function shellHeader() {
-  // Compose a contextual subtitle so the topbar reads like the settings shell.
-  // During the Connect DNS sub-journey the subtitle reflects the sub-step.
-  const stepIdx = STEPS.findIndex(s => s.key === state.step);
   let subtitle;
   if (state.step === 'complete') {
     subtitle = 'All set — your workspace is ready.';
   } else if (state.step === 'byo' && state.byo.status === 'verifying') {
-    subtitle = `Bring Your Domain › Connect DNS › Verifying`;
+    subtitle = "We're publishing and verifying your DNS records — usually takes 1–5 minutes.";
   } else if (state.step === 'byo' && state.byo.subStep) {
-    const subLabel = BYO_SUBSTEPS.find(s => s.key === state.byo.subStep)?.label ?? '';
-    subtitle = `Bring Your Domain › Connect DNS › ${subLabel}`;
+    // Per-sub-step descriptions inside the Connect DNS sub-journey
+    const subSubtitles = {
+      root: 'Confirm the root domain your customers know you by.',
+      subdomain: 'Pick a sending subdomain and configure how your emails appear.',
+      dmarc: 'Add a DMARC record to protect your sending reputation.',
+      connect: 'Connect with Entri to publish your DNS records automatically.',
+    };
+    subtitle = subSubtitles[state.byo.subStep] ?? STEP_SUBTITLES.byo;
   } else {
-    subtitle = `Step ${stepIdx + 1} of ${STEPS.length} · ${STEPS[stepIdx]?.label ?? ''}`;
+    subtitle = STEP_SUBTITLES[state.step] ?? '';
   }
   return `
     <header class="shell-topbar">
