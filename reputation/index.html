@@ -6,7 +6,7 @@
 <title>Reputation Setup — Review Flow Mockup</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -613,6 +613,8 @@
     transition: all 0.15s;
   }
   .btn-link:hover { color: var(--color-text-primary); text-decoration-color: currentColor; }
+
+  .btn-large { padding: 11px 20px; font-size: 14px; }
 
   .btn-destructive-icon {
     width: 34px; height: 34px;
@@ -1865,6 +1867,160 @@
 }
 .me-back-btn:hover { color: var(--color-text-primary); }
 .me-back-btn svg { flex-shrink: 0; }
+
+/* ── Ported from sending-domain: Sender Details / BYO / SMS steps ── */
+/* CSS variable aliases so ported code uses the same tokens */
+:root {
+  --bg: #fafafa;
+  --bg-elevated: #ffffff;
+  --bg-subtle: #f9fafb;
+  --text: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #6b7280;
+  --text-faint: #9ca3af;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --border-focus: #111827;
+  --info: #2563eb;
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+  --success-pill-bg: #dcfce7;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+
+.step-header { margin-bottom: 28px; }
+.step-header h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 8px; line-height: 1.2; }
+.step-header p { margin: 0; color: var(--text-secondary); font-size: 14px; max-width: 580px; line-height: 1.55; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.form-group label { font-size: 13px; font-weight: 600; color: var(--text); }
+.form-group .helper { font-size: 12px; color: var(--text-muted); margin-top: -2px; }
+.form-input {
+  width: 100%; appearance: none; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); padding: 9px 12px; font: inherit;
+  font-size: 14px; background: var(--bg-elevated); color: var(--text);
+  outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.form-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(17,24,39,.07); }
+.req-asterisk { color: var(--color-destructive); margin-left: 2px; }
+
+.sender-prefix-row { display: flex; align-items: stretch; gap: 0; }
+.sender-prefix-row input { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; max-width: 200px; }
+.sender-prefix-row .at-sign {
+  display: inline-flex; align-items: center; padding: 0 10px;
+  background: var(--bg-subtle); border: 1px solid var(--border-strong);
+  border-left: 0; border-right: 0; color: var(--text-muted); font-size: 14px;
+}
+.sender-prefix-row .domain-suffix {
+  display: inline-flex; align-items: center; padding: 0 12px;
+  background: var(--bg-subtle); border: 1px solid var(--border-strong);
+  border-top-left-radius: 0; border-bottom-left-radius: 0;
+  font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); flex: 1;
+}
+.subdomain-row { display: flex; align-items: stretch; }
+.subdomain-row input { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; max-width: 180px; }
+.subdomain-row .domain-suffix {
+  display: inline-flex; align-items: center; padding: 0 12px;
+  background: var(--bg-subtle); border: 1px solid var(--border-strong);
+  border-top-left-radius: 0; border-bottom-left-radius: 0;
+  font-family: var(--font-mono); font-size: 14px; color: var(--text-muted);
+}
+
+.inbox-preview { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-top: 10px; }
+.inbox-row {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+  background: var(--bg-elevated); border-radius: var(--radius-sm); border: 1px solid var(--border);
+}
+.inbox-avatar {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px;
+  background: linear-gradient(135deg, #14b8a6, #0d9488); color: white;
+  display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;
+}
+.inbox-meta { flex: 1; min-width: 0; }
+.inbox-from { font-size: 12.5px; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.inbox-via { font-weight: 400; color: var(--text-faint); font-size: 11.5px; }
+.inbox-subject { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+.deliverability-chip {
+  margin-top: 8px; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--color-warning); background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border); padding: 4px 10px; border-radius: var(--radius-sm);
+}
+
+.compare-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-elevated); overflow: hidden; margin-bottom: 28px; }
+.compare-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.compare-panel-col { padding: 16px 18px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+.compare-panel-col:last-child { border-right: 0; }
+.compare-panel-col-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.compare-panel-col-header h4 { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text); }
+.compare-panel-col-label { font-size: 11px; font-weight: 500; color: var(--text-muted); padding: 2px 8px; border-radius: 999px; background: var(--bg-subtle); border: 1px solid var(--border); }
+.compare-panel-col[data-tone="branded"] .compare-panel-col-label { background: var(--color-success-bg); color: var(--color-success); border-color: var(--color-success-border); }
+.compare-panel-mini-inbox { border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-subtle); padding: 10px 12px; display: flex; align-items: flex-start; gap: 10px; }
+.compare-panel-mini-inbox .mini-avatar { width: 24px; height: 24px; border-radius: 999px; background: linear-gradient(135deg, #14b8a6, #0d9488); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; flex-shrink: 0; }
+.compare-panel-mini-inbox .mini-from { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.compare-panel-mini-inbox .mini-via { font-weight: 400; color: var(--color-warning); background: var(--color-warning-bg); padding: 0 4px; border-radius: 3px; margin-left: 4px; }
+.compare-panel-mini-inbox .mini-subject { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+
+.info-banner { display: flex; align-items: flex-start; gap: 10px; background: var(--info-bg); border: 1px solid var(--info-border); border-radius: var(--radius-md); padding: 12px 14px; color: #1e3a8a; font-size: 13px; }
+.info-banner svg { flex-shrink: 0; color: var(--info); margin-top: 1px; }
+
+.preview-chip { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.preview-chip-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); }
+.preview-chip-value { font-family: var(--font-mono); font-size: 14px; color: var(--text); font-weight: 500; }
+
+.dmarc-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; }
+.dmarc-icon { width: 32px; height: 32px; border-radius: var(--radius-sm); background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+.dmarc-content h4 { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.dmarc-content p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+.recommended-pill { background: var(--bg-subtle); color: var(--text); border: 1px solid var(--border); padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+.toggle { position: relative; width: 36px; height: 20px; background: var(--text); border-radius: 999px; flex-shrink: 0; cursor: pointer; margin-top: 4px; border: 0; padding: 0; }
+.toggle::after { content: ""; position: absolute; top: 2px; left: 18px; width: 16px; height: 16px; background: white; border-radius: 999px; transition: left 120ms ease; }
+.toggle[data-on="false"] { background: var(--border-strong); }
+.toggle[data-on="false"]::after { left: 2px; }
+
+.connect-screen { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: center; margin-top: 20px; }
+.connect-screen ul { list-style: none; margin: 16px 0 24px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.connect-screen li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.connect-screen li svg { color: var(--text); flex-shrink: 0; }
+.connect-actions { display: flex; gap: 10px; }
+.connect-fineprint { margin-top: 16px; font-size: 12px; color: var(--text-muted); }
+.connect-art { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); height: 220px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.connect-art::before { content: ""; position: absolute; top: 24px; right: 24px; width: 80px; height: 80px; background-image: radial-gradient(var(--border-strong) 1.5px, transparent 1.5px); background-size: 12px 12px; opacity: 0.5; }
+.connect-art-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-card); }
+.connect-art-card.primary { transform: rotate(-5deg) translateX(20px); z-index: 2; }
+.connect-art-card.secondary { transform: rotate(5deg) translateX(-20px); border-style: dashed; background: transparent; }
+
+.verifying-list { padding: 8px 0; }
+.verifying-row { display: grid; grid-template-columns: 28px 1fr auto; gap: 14px; align-items: center; padding: 14px 24px; }
+.verifying-row + .verifying-row { border-top: 1px solid var(--bg-subtle); }
+.verifying-icon { width: 22px; height: 22px; border-radius: 999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.verifying-icon[data-state="ok"] { background: var(--success-pill-bg); color: var(--color-success); }
+.verifying-icon[data-state="pending"] { background: var(--bg-subtle); color: var(--text-faint); border: 1.5px dashed var(--border-strong); }
+.verifying-icon[data-state="working"] { background: var(--info-bg); color: var(--info); }
+.verifying-row .label { font-weight: 500; font-size: 13.5px; }
+.verifying-row .timestamp { font-size: 11.5px; color: var(--text-faint); font-family: var(--font-mono); }
+.verifying-row-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.spinner { width: 14px; height: 14px; border: 2px solid var(--border-strong); border-top-color: var(--info); border-radius: 999px; animation: spin 800ms linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.sms-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px 32px; text-align: center; }
+.sms-card .icon-circle { width: 44px; height: 44px; border-radius: 999px; background: var(--bg-subtle); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; color: var(--text-secondary); }
+.sms-card h3 { font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+.sms-card p { font-size: 13px; color: var(--text-secondary); margin: 0 0 4px; max-width: 420px; margin-inline: auto; }
+.sms-card .timing { font-size: 12.5px; color: var(--text-muted); margin: 0 0 18px; }
+
+.path-card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-elevated); overflow: hidden; margin-bottom: 20px; }
+.path-card-header { padding: 18px 22px; display: flex; align-items: flex-start; gap: 14px; border-bottom: 1px solid var(--border); background: var(--bg-subtle); }
+.path-card-header h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+.path-card-header p { margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.path-card-icon { width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); flex-shrink: 0; }
+.path-card-body { padding: 18px 22px; font-size: 13px; color: var(--text-secondary); }
+.path-card-status-pill { margin-left: auto; background: var(--success-pill-bg); color: #166534; border: 1px solid var(--color-success-border); padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
+
+/* Dynamic step panel — rendered by JS for Sender Details, BYO, SMS */
+#panel-channels {
+  padding: 36px 48px 32px;
+}
 </style>
 </head>
 <body>
@@ -2144,7 +2300,13 @@
       </div>
 
       <!-- ═══════════════════════════════════════════ -->
-      <!-- STEP 6: Preview Communications             -->
+      <!-- STEPS 4-6 dynamic: Sender Details / BYO / SMS -->
+      <!-- rendered by renderChannelStep() into this div -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div class="step-panel" id="panel-channels" role="region" aria-label="Channel setup"></div>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- STEP 7: Preview Communications             -->
       <!-- ═══════════════════════════════════════════ -->
       <div class="step-panel" id="panel-step6" role="region" aria-label="Preview communications">
         <div class="prev6-top">
@@ -2449,6 +2611,27 @@ const state = {
   previewScenario: 'smart',
   previewChannel: 'email',
   previewActiveUnit: null,
+  // Email channel
+  email: {
+    prefix: 'reviews',
+    displayName: "Tomer's Rental",
+    replyTo: '',
+    managedDomain: 'tomers-rental.reviews-mail.com',
+  },
+  // BYO sub-journey
+  byo: {
+    status: 'none', // 'none' | 'in-progress' | 'verifying' | 'verified'
+    subStep: null,  // 'root' | 'subdomain' | 'dmarc' | 'connect'
+    rootDomain: 'tomersrental.com',
+    subdomain: 'send',
+    dmarcOn: true,
+    prefix: 'reviews',
+    displayName: "Tomer's Rental",
+    replyTo: '',
+    paused: false,
+    pausedAt: null,
+    verifyProgress: 0,
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2462,9 +2645,11 @@ function getSteps() {
       warn: needsGoogle && state.gbpSkipped ? true : false },
     { id: 'step3', label: 'Map Locations', panel: 'panel-step3',
       hidden: !needsGoogle || (!state.gbpConnected && !state.gbpSkipped) },
-    { id: 'step4', label: 'Communication Channels', panel: null },
-    { id: 'step5', label: 'Customize Branding', panel: null },
-    { id: 'step6', label: 'Preview Communications', panel: 'panel-step6' },
+    { id: 'step4', label: 'Sender Details', panel: 'panel-channels', channelStep: 'senderDetails' },
+    { id: 'step5', label: 'Bring Your Domain', panel: 'panel-channels', channelStep: 'byo' },
+    { id: 'step6', label: 'SMS', panel: 'panel-channels', channelStep: 'sms' },
+    { id: 'step7', label: 'Customize Branding', panel: null },
+    { id: 'step8', label: 'Preview Communications', panel: 'panel-step6' },
   ].filter(s => !s.hidden);
   return steps;
 }
@@ -2900,6 +3085,516 @@ function selectFlow(flowId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// BYO SUBSTEPS + CHANNEL STEP RENDERERS
+// ═══════════════════════════════════════════════════════════════════════════
+const BYO_SUBSTEPS = [
+  { key: 'root', label: 'Root domain' },
+  { key: 'subdomain', label: 'Subdomain' },
+  { key: 'dmarc', label: 'DMARC' },
+  { key: 'connect', label: 'Connect' },
+];
+
+function rootDomainOf(host) {
+  if (!host) return '';
+  const parts = host.split('.').filter(Boolean);
+  return parts.length >= 2 ? parts.slice(-2).join('.') : host;
+}
+function suggestedReplyTo(sendingDomain) {
+  const root = rootDomainOf(sendingDomain);
+  return root ? `info@${root}` : '';
+}
+function replyToCrossDomain(replyTo, sendingDomain) {
+  if (!replyTo || !replyTo.includes('@') || !sendingDomain) return false;
+  const replyHost = replyTo.split('@')[1] || '';
+  return rootDomainOf(replyHost) !== rootDomainOf(sendingDomain);
+}
+
+function enterBYO() {
+  if (!state.byo.pausedAt && !state.byo.paused) {
+    if (!state.byo.displayName) state.byo.displayName = state.email.displayName;
+    if (!state.byo.prefix) state.byo.prefix = state.email.prefix;
+  }
+  state.byo.status = 'in-progress';
+  state.byo.paused = false;
+  state.byo.subStep = state.byo.pausedAt || 'root';
+  state.byo.pausedAt = null;
+  renderChannelStep();
+}
+function exitBYOPaused() {
+  if (state.byo.subStep && state.byo.status === 'in-progress') {
+    state.byo.paused = true;
+    state.byo.pausedAt = state.byo.subStep;
+  }
+  state.byo.status = state.byo.paused ? 'in-progress' : 'none';
+  state.byo.subStep = null;
+  renderChannelStep();
+}
+function byoNext() {
+  const order = BYO_SUBSTEPS.map(s => s.key);
+  const idx = order.indexOf(state.byo.subStep);
+  if (idx < order.length - 1) {
+    state.byo.subStep = order[idx + 1];
+  }
+  renderChannelStep();
+}
+function byoBack() {
+  const order = BYO_SUBSTEPS.map(s => s.key);
+  const idx = order.indexOf(state.byo.subStep);
+  if (idx === 0) {
+    exitBYOPaused();
+  } else {
+    state.byo.subStep = order[idx - 1];
+    renderChannelStep();
+  }
+}
+function entriSuccess() {
+  state.byo.status = 'verifying';
+  state.byo.subStep = null;
+  state.byo.verifyProgress = 0;
+  renderChannelStep();
+  setTimeout(() => { state.byo.verifyProgress = 1; renderChannelStep(); }, 1800);
+  setTimeout(() => { state.byo.verifyProgress = 2; renderChannelStep(); }, 3600);
+  setTimeout(() => { state.byo.verifyProgress = 3; renderChannelStep(); }, 5400);
+}
+function finishVerifying() {
+  state.byo.status = 'verified';
+  state.byo.subStep = null;
+  renderChannelStep();
+}
+function dismissResume() {
+  state.byo.paused = false;
+  state.byo.pausedAt = null;
+  state.byo.subStep = null;
+  state.byo.status = 'none';
+  renderChannelStep();
+}
+
+/* Render the current channel sub-step into #panel-channels */
+function renderChannelStep() {
+  const steps = getSteps();
+  const step = steps[state.currentStep];
+  if (!step || step.panel !== 'panel-channels') return;
+
+  const panel = document.getElementById('panel-channels');
+  if (!panel) return;
+
+  const key = step.channelStep;
+
+  // BYO: if the sub-journey is open, show sub-journey sidebar overlay via inner HTML
+  if (key === 'byo' && (state.byo.subStep || state.byo.status === 'verifying')) {
+    panel.innerHTML = byoSubJourneyContent();
+  } else if (key === 'senderDetails') {
+    panel.innerHTML = senderDetailsContent();
+  } else if (key === 'byo') {
+    panel.innerHTML = bringYourDomainContent();
+  } else if (key === 'sms') {
+    panel.innerHTML = smsContent();
+  }
+
+  // Update footer buttons for sub-journey
+  updateChannelFooter(key);
+}
+
+function updateChannelFooter(key) {
+  const nextBtn = document.getElementById('btn-next');
+  const prevBtn = document.getElementById('btn-previous');
+  const isSubJourney = key === 'byo' && (state.byo.subStep || state.byo.status === 'verifying');
+
+  if (isSubJourney) {
+    // Sub-journey: footer controls are inside the rendered HTML; hide modal footer buttons
+    nextBtn.style.display = 'none';
+    prevBtn.style.display = 'none';
+  } else {
+    nextBtn.style.display = 'inline-flex';
+    prevBtn.style.display = state.currentStep > 0 ? 'inline-flex' : 'none';
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Next';
+  }
+}
+
+function senderDetailsContent() {
+  const byo = state.byo;
+  const senderDomain = byo.status === 'verified'
+    ? `${byo.subdomain}.${byo.rootDomain}`
+    : state.email.managedDomain;
+  const showVia = byo.status !== 'verified';
+  const replyToPlaceholder = suggestedReplyTo(senderDomain);
+  const replyToWarn = replyToCrossDomain(state.email.replyTo, senderDomain);
+  const displayInitial = (state.email.displayName || 'T').charAt(0).toUpperCase();
+  const displayName = state.email.displayName || 'Your business';
+  return `
+    <div class="step-header">
+      <h1>Set up your sender details</h1>
+      <p>This is who your customers see in their inbox. We've already set up a sending domain for you — you can configure the rest below.</p>
+    </div>
+    <div class="form-group">
+      <label>Sending email address</label>
+      <span class="helper">Edit the prefix to match your team — common choices: <code>reviews</code>, <code>hello</code>, <code>info</code></span>
+      <div class="sender-prefix-row">
+        <input class="form-input" type="text" value="${state.email.prefix}"
+          oninput="state.email.prefix=this.value; document.getElementById('inbox-subject-preview').textContent=this.value+'@'+document.getElementById('inbox-domain-preview').textContent+' · We'd love your feedback on your recent visit'" />
+        <span class="at-sign">@</span>
+        <span class="domain-suffix" id="inbox-domain-preview">${state.email.managedDomain}</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Display name<span class="req-asterisk">*</span></label>
+      <span class="helper">What customers see in their inbox before the email opens.</span>
+      <input class="form-input" type="text" value="${state.email.displayName}"
+        oninput="state.email.displayName=this.value; document.getElementById('inbox-from-preview').textContent=this.value||'Your business'" />
+    </div>
+    <div class="form-group">
+      <label>Reply-to email</label>
+      <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
+      <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.email.replyTo}"
+        oninput="state.email.replyTo=this.value;" />
+      ${replyToWarn ? `<span class="deliverability-chip"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg> Reply-to on a different root domain can hurt deliverability</span>` : ''}
+    </div>
+    <div style="margin-top: 24px;">
+      <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-faint); margin-bottom:10px;">How it appears in inbox</div>
+      <div class="inbox-preview">
+        <div class="inbox-row">
+          <div class="inbox-avatar">${displayInitial}</div>
+          <div class="inbox-meta">
+            <div class="inbox-from">
+              <span id="inbox-from-preview">${displayName}</span>
+              ${showVia ? `<span class="inbox-via">via <strong style="color:var(--color-warning);">${state.email.managedDomain}</strong></span>` : ''}
+            </div>
+            <div class="inbox-subject"><span id="inbox-subject-preview">${state.email.prefix || 'reviews'}@${senderDomain} · We'd love your feedback on your recent visit</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bringYourDomainContent() {
+  const byo = state.byo;
+  const displayInitial = (state.email.displayName || 'T').charAt(0).toUpperCase();
+  const displayName = state.email.displayName || 'Your business';
+  const showSplash = byo.status !== 'verified' && !byo.paused;
+
+  if (!showSplash) {
+    // Paused or verified state
+    if (byo.status === 'verified') {
+      return `
+        <div class="step-header">
+          <h1>Bring your own domain</h1>
+          <p>Optional. Connecting your own sending domain improves deliverability and removes the "via" tag from your customers' inboxes.</p>
+        </div>
+        <div class="path-card">
+          <div class="path-card-header">
+            <span class="path-card-icon" style="background:var(--color-success-bg);border-color:var(--color-success-border);color:var(--color-success);">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+            </span>
+            <div>
+              <h2>Your domain is connected</h2>
+              <p>Outbound mail is DKIM-signed under <code style="font-family:var(--font-mono);font-size:12px;">${byo.subdomain}.${byo.rootDomain}</code>. Recipients see your business — no platform tag.</p>
+            </div>
+            <span class="path-card-status-pill">Verified</span>
+          </div>
+          <div class="path-card-body">When you finish setup, your branded domain becomes the default sender. You can manage both domains anytime from Settings → Email Channel.</div>
+        </div>
+      `;
+    }
+    // Paused
+    const pausedSubLabel = BYO_SUBSTEPS.find(s => s.key === byo.pausedAt)?.label || 'Subdomain';
+    return `
+      <div class="step-header">
+        <h1>Bring your own domain</h1>
+        <p>Optional. Connecting your own sending domain improves deliverability and removes the "via" tag from your customers' inboxes.</p>
+      </div>
+      <div class="path-card">
+        <div class="path-card-header">
+          <span class="path-card-icon" style="background:var(--color-warning-bg);border-color:var(--color-warning-border);color:var(--color-warning);">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l2.5 2.5"/></svg>
+          </span>
+          <div>
+            <h2>Send from your own domain — paused</h2>
+            <p>You started connecting <code style="font-family:var(--font-mono);font-size:12px;">${byo.subdomain}.${byo.rootDomain}</code> and paused at ${pausedSubLabel}. Your choices are saved.</p>
+          </div>
+        </div>
+        <div class="path-card-body" style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="enterBYO()">Resume setup</button>
+          <button class="btn btn-secondary" onclick="dismissResume()">Remove in-progress domain</button>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="step-header">
+      <h1>Bring your own domain</h1>
+      <p>Optional. Connecting your own sending domain improves deliverability and removes the "via" tag from your customers' inboxes. You can do this now or anytime later from <strong>Settings → Email Channel</strong>.</p>
+    </div>
+    <section class="compare-panel" aria-label="Compare managed and branded sending domains">
+      <div class="compare-panel-grid">
+        <div class="compare-panel-col" data-tone="managed">
+          <div class="compare-panel-col-header">
+            <h4>Managed domain</h4>
+            <span class="compare-panel-col-label">Already set up</span>
+          </div>
+          <div class="compare-panel-mini-inbox">
+            <div class="mini-avatar">${displayInitial}</div>
+            <div>
+              <div class="mini-from">${displayName}<span class="mini-via">via ${state.email.managedDomain}</span></div>
+              <div class="mini-subject">${state.email.prefix || 'reviews'}@${state.email.managedDomain}</div>
+            </div>
+          </div>
+        </div>
+        <div class="compare-panel-col" data-tone="branded">
+          <div class="compare-panel-col-header">
+            <h4>Your own domain</h4>
+            <span class="compare-panel-col-label" data-tone="recommended">Recommended</span>
+          </div>
+          <div class="compare-panel-mini-inbox">
+            <div class="mini-avatar">${displayInitial}</div>
+            <div>
+              <div class="mini-from">${displayName}</div>
+              <div class="mini-subject">${state.email.prefix || 'reviews'}@send.${(byo.rootDomain || 'yourdomain.com').replace(/^www\./,'')}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div style="margin-top:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="enterBYO()">Connect your domain</button>
+      <span style="font-size:13px;color:var(--text-muted);">or click <strong style="color:var(--text);">Next</strong> below to skip — you can do this anytime in settings.</span>
+    </div>
+  `;
+}
+
+function byoSubJourneyContent() {
+  const byo = state.byo;
+  // Verifying mode
+  if (byo.status === 'verifying') {
+    const p = byo.verifyProgress;
+    const verifyDone = p >= 3;
+    const dkimState = p >= 1 ? 'ok' : 'working';
+    const rpState = p >= 2 ? 'ok' : (p >= 1 ? 'working' : 'pending');
+    const dmarcState = p >= 3 ? 'ok' : (p >= 2 ? 'working' : 'pending');
+    const icon = (st) => st === 'ok'
+      ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.5 2.5L10 3.5"/></svg>`
+      : st === 'working' ? `<div class="spinner" style="border-top-color:var(--info);"></div>` : '';
+    const lbl = (st) => st === 'ok' ? 'verified just now' : (st === 'working' ? 'checking…' : 'pending');
+    return `
+      <div class="step-header">
+        <h1>${p < 3 ? 'Verifying your domain' : 'Domain verified'}</h1>
+        <p>${p < 3 ? 'Entri is publishing your DNS records. This usually takes 1–5 minutes.' : 'All records are live. Your branded sending domain is ready to use.'}</p>
+      </div>
+      <div class="dns-section" style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+        <div class="dns-section-header" style="padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);">
+          <span style="width:28px;height:28px;border-radius:999px;background:${p<3?'var(--info-bg)':'var(--success-pill-bg)'};color:${p<3?'var(--info)':'var(--color-success)'};display:inline-flex;align-items:center;justify-content:center;">
+            ${p < 3 ? '<div class="spinner" style="width:12px;height:12px;"></div>' : '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>'}
+          </span>
+          <span style="font-size:13.5px;font-weight:600;">${byo.subdomain}.${byo.rootDomain}</span>
+          <span style="margin-left:auto;font-size:12px;color:var(--text-muted);">${p<3?'usually 1–5 minutes':'all records verified'}</span>
+        </div>
+        <div style="padding:0;">
+          <div class="verifying-list">
+            <div class="verifying-row">
+              <div class="verifying-icon" data-state="${dkimState}">${icon(dkimState)}</div>
+              <div><div class="label">DKIM signing key</div><div class="verifying-row-meta">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_domainkey.${byo.subdomain}</code></div></div>
+              <span class="timestamp">${lbl(dkimState)}</span>
+            </div>
+            <div class="verifying-row">
+              <div class="verifying-icon" data-state="${rpState}">${icon(rpState)}</div>
+              <div><div class="label">Return-Path</div><div class="verifying-row-meta">CNAME for <code style="font-family:var(--font-mono);font-size:11.5px;">pm-bounces.${byo.subdomain}</code></div></div>
+              <span class="timestamp">${lbl(rpState)}</span>
+            </div>
+            ${byo.dmarcOn ? `
+            <div class="verifying-row">
+              <div class="verifying-icon" data-state="${dmarcState}">${icon(dmarcState)}</div>
+              <div><div class="label">DMARC policy</div><div class="verifying-row-meta">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_dmarc.${byo.subdomain}</code></div></div>
+              <span class="timestamp">${lbl(dmarcState)}</span>
+            </div>` : ''}
+          </div>
+          ${p < 3 ? `<div style="padding:14px 24px;background:var(--bg-subtle);border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--text-muted);"><div class="spinner"></div><span>You can continue setting up — we'll update when verification finishes.</span></div>` : ''}
+        </div>
+      </div>
+      <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+        <button class="btn btn-primary" onclick="finishVerifying()">${verifyDone ? 'Continue →' : 'Continue while verifying →'}</button>
+      </div>
+    `;
+  }
+
+  // Wizard sub-step
+  const order = BYO_SUBSTEPS.map(s => s.key);
+  const currentIdx = order.indexOf(byo.subStep);
+  let subContent = '';
+  if (byo.subStep === 'root') {
+    subContent = `
+      <div class="step-header">
+        <h1>What's your root domain?</h1>
+        <p>This is the domain your customers know you by — usually the same as your website.</p>
+      </div>
+      <div class="form-group">
+        <label>Root domain</label>
+        <input class="form-input" type="text" value="${byo.rootDomain}" oninput="state.byo.rootDomain=this.value;" />
+        <span class="helper">For example: tomersrental.com</span>
+      </div>
+      <div class="info-banner" style="margin-top:12px;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6.5v4M10 13.5h.01"/></svg>
+        <div>We pulled this from your business website. Looks wrong? Edit above.</div>
+      </div>
+    `;
+  } else if (byo.subStep === 'subdomain') {
+    const fullDomain = `${byo.subdomain}.${byo.rootDomain}`;
+    const replyToWarn = replyToCrossDomain(byo.replyTo, fullDomain);
+    subContent = `
+      <div class="step-header">
+        <h1>Configure your sending domain</h1>
+        <p>Pick a subdomain and set the sender details your customers will see in their inbox.</p>
+      </div>
+      <div class="preview-chip">
+        <svg width="14" height="14" style="color:var(--text-muted);" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.5"/><path d="M2 10s2.5-5 8-5 8 5 8 5-2.5 5-8 5-8-5-8-5z"/></svg>
+        <div><div class="preview-chip-label">Sending domain preview</div><div class="preview-chip-value">${fullDomain}</div></div>
+      </div>
+      <div class="form-group">
+        <label>Sending subdomain</label>
+        <span class="helper">Common choices: <code>send</code>, <code>email</code>, <code>notifications</code>.</span>
+        <div class="subdomain-row">
+          <input class="form-input" type="text" value="${byo.subdomain}" oninput="state.byo.subdomain=this.value; renderChannelStep();" />
+          <span class="domain-suffix">.${byo.rootDomain}</span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:24px;">
+        <label>Sending email address</label>
+        <span class="helper">Edit the prefix — common choices: <code>reviews</code>, <code>hello</code>, <code>info</code>.</span>
+        <div class="sender-prefix-row">
+          <input class="form-input" type="text" value="${byo.prefix}" oninput="state.byo.prefix=this.value;" />
+          <span class="at-sign">@</span>
+          <span class="domain-suffix">${fullDomain}</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Display name<span class="req-asterisk">*</span></label>
+        <span class="helper">What customers see in their inbox before the email opens.</span>
+        <input class="form-input" type="text" value="${byo.displayName}" oninput="state.byo.displayName=this.value;" />
+      </div>
+      <div class="form-group">
+        <label>Reply-to email</label>
+        <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
+        <input class="form-input" type="email" placeholder="${suggestedReplyTo(fullDomain)}" value="${byo.replyTo}" oninput="state.byo.replyTo=this.value;" />
+        ${replyToWarn ? `<span class="deliverability-chip"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg> Reply-to on a different root domain can hurt deliverability</span>` : ''}
+      </div>
+      <div style="margin-top:24px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-faint);margin-bottom:10px;">How it appears in inbox</div>
+        <div class="inbox-preview">
+          <div class="inbox-row">
+            <div class="inbox-avatar">${(byo.displayName || 'T').charAt(0).toUpperCase()}</div>
+            <div class="inbox-meta">
+              <div class="inbox-from">${byo.displayName || 'Your business'}</div>
+              <div class="inbox-subject">${byo.prefix || 'reviews'}@${fullDomain} · We'd love your feedback on your recent visit</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (byo.subStep === 'dmarc') {
+    subContent = `
+      <div class="step-header">
+        <h1>Add a DMARC record</h1>
+        <p>DMARC tells inbox providers like Gmail what to do with mail that fails authentication. Required for senders at scale.</p>
+      </div>
+      <div class="dmarc-card">
+        <div class="dmarc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
+        <div class="dmarc-content">
+          <h4>Add DMARC record <span class="recommended-pill">Recommended</span></h4>
+          <p>Protects your sending reputation and meets Gmail and Yahoo's bulk sender requirements.</p>
+        </div>
+        <button class="toggle" data-on="${byo.dmarcOn}" onclick="state.byo.dmarcOn=!state.byo.dmarcOn; renderChannelStep();"></button>
+      </div>
+    `;
+  } else if (byo.subStep === 'connect') {
+    subContent = `
+      <div class="connect-screen">
+        <div>
+          <h1 style="font-size:26px;font-weight:600;margin:0 0 8px;letter-spacing:-0.02em;">Connect with Entri</h1>
+          <p style="margin:0;color:var(--text-secondary);font-size:15px;">Entri logs into your DNS provider for you and adds the right records — no copy-paste, no mistakes.</p>
+          <ul>
+            <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Fast, secure setup</li>
+            <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Detects your DNS provider automatically</li>
+            <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Forward to your IT contact if you don't have access</li>
+          </ul>
+          <div class="connect-actions">
+            <button class="btn btn-primary btn-large" onclick="entriSuccess()">Connect with Entri</button>
+            <button class="btn btn-secondary btn-large" onclick="alert('In production: shows manual DNS records to copy/paste')">Set up manually</button>
+          </div>
+          <p class="connect-fineprint">By selecting "Connect with Entri" you agree to Entri's Terms of Service and Privacy Policy.</p>
+        </div>
+        <div class="connect-art" aria-hidden="true">
+          <div class="connect-art-card secondary"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M10 10h20v20H10z" stroke="#9ca3af" stroke-width="2" stroke-dasharray="2 3"/></svg></div>
+          <div class="connect-art-card primary"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14" fill="var(--color-accent)"/><path d="M14 20l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Sub-journey wrapper: sidebar + content + its own footer
+  const subSteps = [...BYO_SUBSTEPS];
+  const sidebarItems = subSteps.map((s) => {
+    const isActive = s.key === byo.subStep;
+    const isComplete = order.indexOf(s.key) < currentIdx;
+    let dotStyle = 'width:16px;height:16px;border-radius:999px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;';
+    let dotInner = '';
+    if (isActive) {
+      dotStyle += 'background:var(--bg-elevated);border:1.5px solid var(--color-text-primary);';
+      dotInner = '<span style="width:7px;height:7px;border-radius:999px;background:var(--color-text-primary);"></span>';
+    } else if (isComplete) {
+      dotStyle += 'background:var(--color-success);border:1.5px solid var(--color-success);color:white;font-size:10px;font-weight:700;';
+      dotInner = '✓';
+    } else {
+      dotStyle += 'background:var(--bg-elevated);border:1.5px solid var(--border-strong);';
+    }
+    return `<li style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:var(--radius-sm);font-size:13px;${isActive?'background:var(--bg-elevated);color:var(--color-text-primary);font-weight:500;box-shadow:var(--shadow-card);':isComplete?'color:var(--color-text-primary);':'color:var(--text-muted);'}">
+      <span style="${dotStyle}">${dotInner}</span>${s.label}</li>`;
+  }).join('');
+
+  const isConnect = byo.subStep === 'connect';
+  return `
+    <div style="display:grid;grid-template-columns:200px 1fr;min-height:500px;">
+      <div style="background:var(--bg-subtle);border-right:1px solid var(--border);padding:18px 12px;">
+        <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-faint);padding:0 10px 8px;">Email setup</div>
+        <button onclick="exitBYOPaused()" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--color-text-primary);width:100%;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;color:var(--text-muted);">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
+          </span>Bring Your Domain
+        </button>
+        <ul style="list-style:none;margin:4px 0 0;padding:0 0 0 22px;border-left:1px dashed var(--border-strong);margin-left:22px;display:flex;flex-direction:column;gap:2px;">${sidebarItems}</ul>
+      </div>
+      <div style="padding:32px 40px;overflow-y:auto;">
+        ${subContent}
+        <div style="margin-top:28px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:18px;">
+          <button class="btn btn-ghost" onclick="byoBack()">← Back</button>
+          ${isConnect
+            ? `<span style="font-size:12px;color:var(--text-muted);">Choose an option above to continue</span>`
+            : `<button class="btn btn-primary" onclick="byoNext()">Continue</button>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function smsContent() {
+  return `
+    <div class="step-header">
+      <h1>SMS Channel</h1>
+      <p>Set up your SMS provider to start sending personalized review requests to your customers via text.</p>
+    </div>
+    <div class="sms-card">
+      <div class="icon-circle">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10a2 2 0 012 2v8a2 2 0 01-2 2h-3l-3 2v-2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+      </div>
+      <h3>Request your SMS sending number</h3>
+      <p>Before you can send messages, we need to verify your business info with our SMS provider. Once approved, we'll assign you a phone number to send SMS review requests.</p>
+      <p class="timing">This usually takes 3–7 business days.</p>
+      <button class="btn btn-secondary" onclick="alert('In production: submits business info to SMS provider for approval')">Request approval</button>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
 function goNext() {
@@ -2938,7 +3633,7 @@ function jumpToStep(index) {
       setTimeout(() => panel.classList.remove('fade-in'), 300);
     }
   } else {
-    // Placeholder for unimplemented steps
+    // Placeholder for unimplemented steps (step7: Customize Branding)
     const p2 = document.getElementById('panel-step2');
     p2.classList.add('active');
     p2.innerHTML = `
@@ -2950,9 +3645,8 @@ function jumpToStep(index) {
   }
 
   if (step && step.panel === 'panel-step2') renderStep2();
-  if (step && step.panel === 'panel-step6') {
-    renderGrid();
-  }
+  if (step && step.panel === 'panel-channels') renderChannelStep();
+  if (step && step.panel === 'panel-step6') renderGrid();
 
   // Resize modal for preview step
   const modal = document.getElementById('main-modal');
@@ -2962,7 +3656,14 @@ function jumpToStep(index) {
     modal.classList.remove('wide');
   }
 
-  document.getElementById('btn-previous').style.display = index > 0 ? 'inline-flex' : 'none';
+  // Channel steps manage their own footer visibility
+  if (step && step.panel === 'panel-channels') {
+    updateChannelFooter(step.channelStep);
+  } else {
+    document.getElementById('btn-previous').style.display = index > 0 ? 'inline-flex' : 'none';
+    document.getElementById('btn-next').style.display = 'inline-flex';
+  }
+
   const nextBtn = document.getElementById('btn-next');
   nextBtn.textContent = index === steps.length - 1 ? 'Save Changes' : 'Next';
   if (step && step.id === 'step1') {
@@ -3042,36 +3743,36 @@ const SCENARIOS = {
     state.gbpSkipped = false;
   },
   'preview-smart': () => {
-    state.currentStep = 5; // last step (index may vary by flow, handled below)
     state.selectedFlow = 'smart_routing';
     state.gbpConnected = true;
     state.gbpSkipped = false;
     state.previewScenario = 'smart';
     state.previewChannel = 'email';
+    state.currentStep = getSteps().length - 1;
   },
   'preview-internal': () => {
-    state.currentStep = 4;
     state.selectedFlow = 'internal_only';
     state.gbpConnected = false;
     state.gbpSkipped = false;
     state.previewScenario = 'internal';
     state.previewChannel = 'email';
+    state.currentStep = getSteps().length - 1;
   },
   'preview-google': () => {
-    state.currentStep = 5;
     state.selectedFlow = 'google_only';
     state.gbpConnected = true;
     state.gbpSkipped = false;
     state.previewScenario = 'google';
     state.previewChannel = 'email';
+    state.currentStep = getSteps().length - 1;
   },
   'preview-both': () => {
-    state.currentStep = 5;
     state.selectedFlow = 'internal_then_google';
     state.gbpConnected = true;
     state.gbpSkipped = false;
     state.previewScenario = 'both';
     state.previewChannel = 'email';
+    state.currentStep = getSteps().length - 1;
   },
 };
 
