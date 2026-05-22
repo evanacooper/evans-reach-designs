@@ -1743,18 +1743,18 @@ const state = {
    STEP LIBRARY — keys + sidebar labels (noun, not verb)
    ═══════════════════════════════════════════════════════════════════════ */
 const ALL_STEPS = [
-  { key: 'account-status', label: 'Account status' },
-  { key: 'connect-gads',   label: 'Ads account' },
+  { key: 'account-status', label: 'Account Status' },
+  { key: 'connect-gads',   label: 'Ads Account' },
   { key: 'connect-gbp',    label: 'Google Business' },
   { key: 'locations',      label: 'Locations' },
   { key: 'gtm',            label: 'Tag Manager',    showIf: (s) => s.gtmRequired },
   { key: 'goal',           label: 'Goal' },
-  { key: 'service-area',   label: 'Service area' },
-  { key: 'about',          label: 'About your restaurant' },
+  { key: 'service-area',   label: 'Service Area' },
+  { key: 'about',          label: 'About Your Restaurant' },
   { key: 'budget',         label: 'Budget' },
-  { key: 'ad-copy',        label: 'Ad copy' },
-  { key: 'pixel',          label: 'Tracking pixel', showIf: (s) => s.pixelRequired },
-  { key: 'review',         label: 'Review & submit' },
+  { key: 'ad-copy',        label: 'Ad Copy' },
+  { key: 'pixel',          label: 'Tracking Pixel', showIf: (s) => s.pixelRequired },
+  { key: 'review',         label: 'Review & Submit' },
 ];
 
 function visibleSteps() {
@@ -2001,9 +2001,9 @@ function connectGads() {
 function gadsCreateSubSteps() {
   const showBilling = scenario.billing === 'operator-pays';
   const all = [
-    { key: 'business-info',    label: 'Business info' },
-    { key: 'your-info',        label: 'Your info' },
-    { key: 'account-settings', label: 'Account settings' },
+    { key: 'business-info',    label: 'Business Info' },
+    { key: 'your-info',        label: 'Your Info' },
+    { key: 'account-settings', label: 'Account Settings' },
     { key: 'billing',          label: 'Billing',           show: showBilling },
     { key: 'create',           label: 'Create' },
   ];
@@ -2123,7 +2123,7 @@ function gadsSubJourneySidebar() {
         <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: var(--text-secondary);">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
         </span>
-        Ads account
+        Ads Account
       </button>
       <ul style="list-style: none; margin: 4px 0 0; padding: 0 0 0 11px; border-left: 1px dashed var(--border-strong); margin-left: 22px; display: flex; flex-direction: column; gap: 2px;">
         ${subItems}
