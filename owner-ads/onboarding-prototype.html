@@ -1,1548 +1,2358 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acquire — Unified Onboarding Prototype</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Acquire Onboarding — Unified Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    /* Backgrounds */
+    --bg-page:    #ececec;
+    --bg-subtle:  #f9fafb;
+    --bg-surface: #ffffff;
+    --bg-muted:   #f5f5f5;
 
-:root {
-  --primary: hsl(210 30% 25%);
-  --bg: hsl(220 13% 97%);
-  --fg: hsl(225 15% 16%);
-  --muted-fg: hsl(220 10% 45%);
-  --subtle-fg: hsl(220 10% 35%);
-  --border: hsl(220 13% 90%);
-  --border-strong: hsl(220 13% 82%);
-  --card: hsl(0 0% 100%);
-  --shell: hsl(220 14% 96%);
-  --field: hsl(0 0% 100%);
-  --radius: 0.625rem;
+    /* Borders */
+    --border:        #e5e7eb;
+    --border-strong: #d1d5db;
+    --border-focus:  #6366f1;
 
-  /* Brand palette — overridden per scenario */
-  --brand: hsl(142 70% 32%);
-  --brand-strong: hsl(142 72% 26%);
-  --brand-bg: hsl(142 76% 96%);
-  --brand-bg-2: hsl(142 65% 92%);
-  --brand-border: hsl(142 55% 78%);
-  --brand-fg-on-bg: hsl(142 72% 22%);
+    /* Text */
+    --text-primary:   #111827;
+    --text-secondary: #6b7280;
+    --text-muted:     #9ca3af;
 
-  --amber: hsl(38 92% 50%);
-  --amber-bg: hsl(38 100% 96%);
-  --amber-border: hsl(38 90% 80%);
-  --amber-fg: hsl(28 85% 35%);
+    /* Semantic */
+    --success:        #16a34a;
+    --success-bg:     #f0fdf4;
+    --success-border: #bbf7d0;
+    --success-pill-bg: #dcfce7;
+    --warning:        #d97706;
+    --warning-bg:     #fffbeb;
+    --warning-border: #fde68a;
+    --info:           #2563eb;
+    --info-bg:        #eff6ff;
+    --info-border:    #bfdbfe;
 
-  --blue: hsl(217 91% 50%);
-  --blue-bg: hsl(217 100% 97%);
-  --blue-border: hsl(217 80% 85%);
-  --blue-fg: hsl(217 80% 36%);
+    /* Radii */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
 
-  --red: hsl(0 72% 50%);
-  --red-bg: hsl(0 86% 97%);
-  --red-border: hsl(0 75% 88%);
-  --red-fg: hsl(0 70% 38%);
-}
+    /* Shadow */
+    --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04);
 
-/* Scenario-driven brand overrides */
-body[data-scenario="owner-multi"], body[data-scenario="owner-single"] {
-  --brand: hsl(142 70% 32%);
-  --brand-strong: hsl(142 72% 26%);
-  --brand-bg: hsl(142 76% 96%);
-  --brand-bg-2: hsl(142 65% 92%);
-  --brand-border: hsl(142 55% 78%);
-  --brand-fg-on-bg: hsl(142 72% 22%);
-}
-body[data-scenario="tableside"] {
-  --brand: hsl(217 80% 42%);
-  --brand-strong: hsl(217 80% 32%);
-  --brand-bg: hsl(217 100% 96%);
-  --brand-bg-2: hsl(217 90% 92%);
-  --brand-border: hsl(217 70% 82%);
-  --brand-fg-on-bg: hsl(217 80% 30%);
-}
+    /* Fonts */
+    --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
 
-html, body {
-  min-height: 100%;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--fg);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-}
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    background: var(--bg-page);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+    padding: 56px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.back-link {
-  position: fixed; top: 12px; left: 12px; z-index: 9999;
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
-  color: #64748b; background: white; border: 1px solid #e2e8f0;
-  padding: 5px 11px; border-radius: 6px; text-decoration: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-.back-link:hover { color: #1e293b; background: #f8fafc; }
+  /* Floating back-to-project link */
+  .back-link {
+    position: fixed; top: 12px; left: 12px; z-index: 9999;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500;
+    color: #64748b; background: white; border: 1px solid #e2e8f0;
+    padding: 5px 11px; border-radius: 6px; text-decoration: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .back-link:hover { color: #1e293b; background: #f8fafc; }
 
-/* Scenario toggle bar — review chrome */
-.scenario-bar {
-  position: sticky; top: 0; z-index: 60;
-  background: linear-gradient(180deg, hsla(220,14%,96%,0.96), hsla(220,14%,96%,0.85));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-}
-.scenario-inner {
-  max-width: 1180px; margin: 0 auto;
-  padding: 12px 24px 12px 140px;
-  display: flex; align-items: center; gap: 16px;
-  font-size: 12.5px; flex-wrap: wrap;
-}
-.scenario-label {
-  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--muted-fg);
-}
-.scenario-tabs {
-  display: flex; gap: 4px;
-  background: white; border: 1px solid var(--border); border-radius: 999px;
-  padding: 4px;
-}
-.scenario-tab {
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px; font-weight: 600;
-  color: var(--muted-fg);
-  cursor: pointer;
-  border: none; background: transparent; font-family: inherit;
-  white-space: nowrap;
-}
-.scenario-tab:hover { color: var(--fg); }
-.scenario-tab.active { background: var(--brand-bg); color: var(--brand-fg-on-bg); }
-.scenario-note { color: var(--muted-fg); font-size: 12px; }
-.scenario-note strong { color: var(--fg); font-weight: 600; }
+  /* Scenario toggle bar — review-only chrome, NOT part of shell */
+  .scenario-bar {
+    position: fixed; top: 12px; right: 12px; z-index: 9999;
+    display: flex; align-items: center; gap: 10px;
+    background: white; border: 1px solid #e2e8f0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    font-size: 12px;
+  }
+  .scenario-bar-label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; color: #94a3b8;
+  }
+  .scenario-tabs {
+    display: inline-flex; gap: 2px;
+    background: #f1f5f9; padding: 3px; border-radius: 6px;
+  }
+  .scenario-tab {
+    padding: 4px 9px;
+    background: transparent;
+    color: #64748b;
+    border: 0;
+    border-radius: 4px;
+    font-family: inherit; font-size: 11.5px; font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .scenario-tab:hover { color: #0f172a; }
+  .scenario-tab[data-active="true"] {
+    background: white;
+    color: #0f172a;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
 
-/* Partner shell chrome */
-.shell-top {
-  background: white;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; padding: 0 24px;
-  gap: 20px;
-  height: 56px;
-}
-.brand {
-  display: flex; align-items: center; gap: 9px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800; letter-spacing: -.01em; font-size: 15px;
-  color: var(--brand-strong);
-}
-.brand-mark {
-  width: 26px; height: 26px;
-  background: var(--brand); color: white;
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800;
-}
-.shell-nav { display: flex; gap: 2px; font-size: 13px; }
-.shell-nav-item {
-  padding: 8px 12px; border-radius: 6px;
-  color: var(--muted-fg); font-weight: 500;
-}
-.shell-nav-item.active { background: var(--brand-bg); color: var(--brand-fg-on-bg); }
-.shell-spacer { flex: 1; }
-.shell-right { display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--muted-fg); }
-.shell-loc {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px;
-}
-.shell-avatar {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: linear-gradient(135deg, #f5a623, #e63946);
-  color: white; font-weight: 700; font-size: 11px;
-  display: flex; align-items: center; justify-content: center;
-}
+  /* ============================================== */
+  /* SHELL                                          */
+  /* ============================================== */
+  .stage { width: 100%; max-width: 1180px; }
 
-/* Wizard container */
-.flow {
-  max-width: 920px; margin: 0 auto; padding: 32px 24px 100px;
-  width: 100%;
-}
+  .shell {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    max-width: 1180px;
+    min-height: 720px;
+    width: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+  }
 
-.flow-head { margin-bottom: 24px; }
-.flow-eyebrow {
-  font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--brand-fg-on-bg); margin-bottom: 8px;
-}
-.flow-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 28px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15;
-  margin-bottom: 8px;
-}
-.flow-subtitle {
-  font-size: 15px; color: var(--muted-fg); line-height: 1.55;
-  max-width: 640px;
-}
+  .shell-topbar {
+    padding: 22px 36px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .shell-title h1 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 2px;
+    color: var(--text-primary);
+  }
+  .shell-title p {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+  .close-btn {
+    color: var(--text-muted);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .close-btn:hover { color: var(--text-primary); }
 
-/* Stepper */
-.stepper {
-  display: flex; align-items: center;
-  margin: 24px 0 28px;
-  background: white; border: 1px solid var(--border); border-radius: 999px;
-  padding: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.stepper::-webkit-scrollbar { display: none; }
+  .shell-body {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 0;
+    overflow: hidden;
+  }
 
-.stepper-item {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 7px 12px; border-radius: 999px;
-  font-size: 12px; font-weight: 600;
-  color: var(--muted-fg); cursor: pointer;
-  white-space: nowrap;
-  transition: background .15s, color .15s;
-  border: none; background: transparent; font-family: inherit;
-  flex-shrink: 0;
-}
-.stepper-item:hover { color: var(--fg); background: hsl(220 14% 96%); }
-.stepper-item.done { color: var(--brand-fg-on-bg); }
-.stepper-item.done .stepper-dot { background: var(--brand); border-color: var(--brand); color: white; }
-.stepper-item.active { background: var(--brand-bg); color: var(--brand-fg-on-bg); }
-.stepper-item.active .stepper-dot { background: var(--brand); border-color: var(--brand); color: white; }
-.stepper-dot {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: white; border: 1.5px solid var(--border-strong);
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700;
-  color: var(--muted-fg);
-  flex-shrink: 0;
-}
+  /* ============================================== */
+  /* SIDEBAR                                        */
+  /* ============================================== */
+  .shell-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: var(--bg-subtle);
+    padding: 24px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+  }
+  .sidebar-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 0 12px 10px;
+  }
 
-.skipped-pill {
-  display: inline-flex; align-items: center;
-  padding: 6px 10px; margin: 0 2px;
-  border-radius: 999px;
-  font-size: 11px; font-weight: 600;
-  color: var(--muted-fg);
-  background: hsl(220 14% 96%);
-  border: 1px dashed var(--border-strong);
-  white-space: nowrap; flex-shrink: 0;
-}
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .step-item:hover:not([data-clickable="false"]) { background: rgba(15, 23, 42, 0.04); }
+  .step-item[data-clickable="false"] { cursor: not-allowed; }
+  .step-item[data-state="active"] {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-weight: 600;
+    box-shadow: var(--shadow-card);
+  }
+  .step-item[data-state="complete"] { color: var(--text-primary); }
 
-/* Step container */
-.step { display: none; }
-.step.active { display: block; }
+  .step-marker {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border-strong);
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    color: transparent;
+    position: relative;
+  }
+  .step-item[data-state="active"] .step-marker { border-color: var(--text-primary); }
+  .step-item[data-state="active"] .step-marker::before {
+    content: ""; width: 10px; height: 10px; border-radius: 999px;
+    background: var(--text-primary);
+  }
+  .step-item[data-state="complete"] .step-marker {
+    background: var(--success); border-color: var(--success);
+  }
+  .step-item[data-state="complete"] .step-marker::before {
+    content: "✓"; font-size: 12px; font-weight: 700; color: white;
+  }
 
-.step-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 28px 32px 32px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 6px 24px rgba(15, 30, 22, 0.04);
-}
+  /* ============================================== */
+  /* MAIN CONTENT                                   */
+  /* ============================================== */
+  .shell-main {
+    padding: 36px 48px 32px;
+    overflow-y: auto;
+    max-width: 100%;
+    min-height: 540px;
+  }
+  .shell-main-narrow { max-width: 640px; }
+  .shell-main-wide { max-width: 880px; }
 
-.step-card h2 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 22px; font-weight: 800; letter-spacing: -.015em; line-height: 1.2;
-  margin-bottom: 6px;
-}
-.step-card p.lead {
-  font-size: 14.5px; color: var(--subtle-fg); line-height: 1.55;
-  margin-bottom: 22px; max-width: 660px;
-}
+  .step-header { margin-bottom: 28px; }
+  .step-header h1 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 8px;
+    color: var(--text-primary);
+  }
+  .step-header p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    max-width: 580px;
+    margin: 0 0 24px;
+  }
 
-/* Choice cards (Step 1 prior-ads, etc.) */
-.choice-stack {
-  display: flex; flex-direction: column; gap: 10px;
-  margin-bottom: 6px;
-}
-.choice-card {
-  display: grid; grid-template-columns: 24px 1fr;
-  gap: 12px; align-items: start;
-  padding: 16px 18px;
-  background: var(--field);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  cursor: pointer;
-  font-family: inherit; text-align: left;
-  transition: border-color .15s, background .15s;
-  width: 100%;
-}
-.choice-card:hover { border-color: var(--brand-border); }
-.choice-card.selected { border-color: var(--brand); background: var(--brand-bg); }
-.choice-radio {
-  width: 20px; height: 20px; border-radius: 50%;
-  border: 2px solid var(--border-strong);
-  margin-top: 2px; position: relative; flex-shrink: 0;
-}
-.choice-card.selected .choice-radio { border-color: var(--brand); }
-.choice-card.selected .choice-radio::after {
-  content: ""; position: absolute; inset: 3px;
-  background: var(--brand); border-radius: 50%;
-}
-.choice-card .label {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 15px; margin-bottom: 3px;
-}
-.choice-card .sub {
-  font-size: 13px; color: var(--muted-fg); line-height: 1.45;
-}
+  /* Uppercase section labels (instead of h2/h3) */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+  }
 
-/* Warning callout */
-.warning-callout {
-  background: var(--amber-bg);
-  border: 1px solid var(--amber-border);
-  border-left: 4px solid var(--amber);
-  border-radius: 10px;
-  padding: 16px 18px;
-  margin: 18px 0;
-  display: grid; grid-template-columns: 26px 1fr; gap: 12px;
-  align-items: start;
-}
-.warning-callout .icon {
-  color: var(--amber-fg);
-  display: flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px;
-  background: white; border: 1px solid var(--amber-border); border-radius: 50%;
-  font-weight: 700;
-}
-.warning-callout .body { font-size: 13.5px; color: var(--amber-fg); line-height: 1.55; }
-.warning-callout .body strong { color: hsl(28 90% 25%); font-weight: 700; }
+  /* ============================================== */
+  /* FOOTER                                         */
+  /* ============================================== */
+  .shell-footer {
+    border-top: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-surface);
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .shell-footer .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: auto;
+    margin-right: 12px;
+  }
 
-.pause-block {
-  margin-top: 18px;
-  padding: 18px;
-  background: var(--shell);
-  border-radius: 10px;
-  border: 1px dashed var(--border-strong);
-  display: none;
-}
-.pause-block.visible { display: block; }
-.pause-block h4 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 14px; font-weight: 700; margin-bottom: 8px;
-}
-.pause-block ol {
-  margin: 0 0 14px 18px; font-size: 13px; color: var(--subtle-fg); line-height: 1.7;
-}
-.pause-confirm {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px;
-  background: white; border: 1px solid var(--border); border-radius: 8px;
-  cursor: pointer; font-size: 13px;
-}
-.pause-confirm input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--brand); }
+  /* ============================================== */
+  /* BUTTONS                                        */
+  /* ============================================== */
+  .btn {
+    appearance: none;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 120ms ease, border-color 120ms ease, opacity 120ms;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--text-primary);
+    color: white;
+  }
+  .btn-primary:hover:not(:disabled) { background: #1f2937; }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-secondary:hover { border-color: var(--text-primary); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 8px 12px;
+  }
+  .btn-ghost:hover { color: var(--text-primary); }
+  .btn-large { padding: 11px 20px; }
+  .btn-block { width: 100%; justify-content: center; }
 
-/* OAuth connect card (used for Ads and GBP) */
-.oauth-card {
-  background: var(--shell);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px;
-  text-align: center;
-  margin-bottom: 14px;
-}
-.oauth-logo {
-  width: 56px; height: 56px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  margin: 0 auto 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
-  font-size: 26px; color: white;
-}
-.oauth-logo.google {
-  background-image: conic-gradient(from 0deg, #4285f4 0deg 90deg, #34a853 90deg 180deg, #fbbc05 180deg 270deg, #ea4335 270deg 360deg);
-}
-.oauth-logo.gads {
-  background: linear-gradient(135deg, #4285f4, #34a853);
-}
-.oauth-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 17px; font-weight: 700; margin-bottom: 6px;
-}
-.oauth-sub {
-  font-size: 13.5px; color: var(--muted-fg); margin-bottom: 18px;
-  line-height: 1.55; max-width: 480px; margin-left: auto; margin-right: auto;
-}
+  /* ============================================== */
+  /* FORM PRIMITIVES                                */
+  /* ============================================== */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .form-input, textarea.form-input {
+    width: 100%;
+    appearance: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    font: inherit;
+    font-size: 14px;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-family: inherit;
+    resize: vertical;
+  }
+  .form-input:focus, textarea.form-input:focus {
+    outline: none;
+    border-color: var(--border-strong);
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.06);
+  }
+  .helper {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .form-row > .form-group { margin-bottom: 0; }
 
-.oauth-connected {
-  display: none;
-  background: var(--brand-bg);
-  border: 1px solid var(--brand-border);
-  border-radius: 12px;
-  padding: 18px 20px;
-  margin-bottom: 14px;
-}
-.oauth-connected.visible { display: block; }
-.oauth-conn-head {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 14px;
-}
-.oauth-conn-icon {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--brand); color: white;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800;
-}
-.oauth-conn-text { flex: 1; }
-.oauth-conn-text .biz {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 15px;
-}
-.oauth-conn-text .addr {
-  font-size: 12.5px; color: var(--brand-fg-on-bg);
-}
-.oauth-conn-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  padding-top: 14px; border-top: 1px solid var(--brand-border);
-}
-.oauth-conn-stat { font-size: 12px; color: var(--brand-fg-on-bg); }
-.oauth-conn-stat strong {
-  display: block; font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 18px; font-weight: 700; color: var(--brand-strong);
-  margin-bottom: 1px;
-}
+  /* Inline prefix/suffix wrap for URL fields */
+  .input-with-prefix {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-surface);
+  }
+  .input-with-prefix:focus-within { box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.06); }
+  .input-with-prefix .prefix {
+    background: var(--bg-subtle);
+    border-right: 1px solid var(--border);
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .input-with-prefix input {
+    border: 0;
+    padding: 9px 12px;
+    flex: 1;
+    font: inherit;
+    font-size: 14px;
+    background: transparent;
+    color: var(--text-primary);
+  }
+  .input-with-prefix input:focus { outline: none; }
 
-/* Location mapping grid (Step 4) */
-.locmap-grid { display: flex; flex-direction: column; gap: 8px; }
-.locmap-row {
-  display: grid; grid-template-columns: 32px 1fr 36px 1fr;
-  gap: 16px;
-  padding: 14px 16px;
-  background: var(--field);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  align-items: center;
-  transition: border-color .15s, opacity .15s;
-}
-.locmap-row.excluded { opacity: 0.5; }
-.locmap-row.unmapped { border-color: var(--amber-border); background: var(--amber-bg); }
-.locmap-include {
-  width: 20px; height: 20px;
-  accent-color: var(--brand);
-  cursor: pointer;
-}
-.locmap-loc { font-size: 13px; }
-.locmap-loc .name { font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
-.locmap-loc .addr { color: var(--muted-fg); font-size: 12px; margin-top: 2px; }
-.locmap-arrow {
-  display: flex; align-items: center; justify-content: center;
-  color: var(--muted-fg); font-size: 18px;
-}
-.locmap-gbp-mapped {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 12px;
-  background: var(--brand-bg);
-  border: 1px solid var(--brand-border);
-  border-radius: 8px;
-  font-size: 13px;
-  position: relative;
-}
-.locmap-gbp-mapped .check {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--brand); color: white;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-size: 11px;
-}
-.locmap-gbp-mapped .text { flex: 1; min-width: 0; }
-.locmap-gbp-mapped .text .name {
-  font-weight: 700; color: var(--brand-fg-on-bg);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.locmap-gbp-mapped .text .addr { font-size: 11.5px; color: var(--brand-fg-on-bg); }
-.locmap-gbp-mapped .clear {
-  cursor: pointer; color: var(--brand-fg-on-bg); padding: 2px;
-}
-.locmap-gbp-picker {
-  width: 100%; padding: 10px 12px;
-  background: white; border: 1.5px dashed var(--border-strong);
-  border-radius: 8px;
-  font-family: inherit; font-size: 13px; color: var(--muted-fg);
-  cursor: pointer;
-}
-.locmap-gbp-picker select {
-  width: 100%; border: none; background: transparent;
-  font-family: inherit; font-size: 13px;
-  color: var(--fg);
-}
-.locmap-summary {
-  margin-top: 14px;
-  padding: 12px 16px;
-  background: var(--brand-bg);
-  border: 1px solid var(--brand-border);
-  border-radius: 10px;
-  font-size: 13px; color: var(--brand-fg-on-bg);
-  font-weight: 600;
-  display: flex; align-items: center; gap: 8px;
-}
+  /* ============================================== */
+  /* CHOICE CARDS (Step 1 prior-ads, etc.)          */
+  /* ============================================== */
+  .choice-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .choice-card {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    width: 100%;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .choice-card:hover { border-color: var(--border-strong); }
+  .choice-card[data-selected="true"] {
+    border-color: var(--text-primary);
+    background: var(--bg-subtle);
+  }
+  .choice-radio {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border-strong);
+    margin-top: 2px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .choice-card[data-selected="true"] .choice-radio { border-color: var(--text-primary); }
+  .choice-card[data-selected="true"] .choice-radio::after {
+    content: ""; position: absolute; inset: 3px;
+    background: var(--text-primary); border-radius: 999px;
+  }
+  .choice-card .label {
+    font-size: 14px; font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+  .choice-card .sub {
+    font-size: 13px; color: var(--text-secondary);
+    line-height: 1.5;
+  }
 
-/* Sticky multi-location footer */
-.multi-location-footer {
-  position: sticky; bottom: 0; z-index: 30;
-  margin: 24px -32px -32px; padding: 14px 32px;
-  background: linear-gradient(0deg, white, white 60%, transparent);
-  display: none;
-}
-.multi-location-footer.visible { display: flex; align-items: center; gap: 10px; }
-.multi-location-footer .badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 13px;
-  background: var(--brand-bg);
-  border: 1px solid var(--brand-border);
-  color: var(--brand-fg-on-bg);
-  border-radius: 999px;
-  font-size: 12.5px; font-weight: 700;
-}
-.multi-location-footer .extra {
-  font-size: 12px; color: var(--muted-fg);
-}
+  /* ============================================== */
+  /* INFO + WARNING BANNERS                         */
+  /* ============================================== */
+  .info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+  .info-banner svg { color: var(--info); flex-shrink: 0; margin-top: 1px; }
+  .info-banner strong { color: var(--text-primary); font-weight: 600; }
 
-/* GTM card (Step 5) */
-.gtm-card {
-  background: var(--shell);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 22px 24px;
-}
-.gtm-card .options { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-.gtm-card .option {
-  padding: 14px 16px;
-  background: white;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  font-family: inherit; text-align: left;
-}
-.gtm-card .option:hover { border-color: var(--brand-border); }
-.gtm-card .option.selected { border-color: var(--brand); background: var(--brand-bg); }
-.gtm-card .option .name {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 14px; margin-bottom: 3px;
-}
-.gtm-card .option .sub { font-size: 12.5px; color: var(--muted-fg); }
+  .warning-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--warning);
+    margin-bottom: 20px;
+  }
+  .warning-banner svg { color: var(--warning); flex-shrink: 0; margin-top: 1px; }
+  .warning-banner strong { color: #a16207; font-weight: 700; }
 
-/* Goal grid (Step 6) */
-.goal-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-  margin-bottom: 8px;
-}
-.goal-card {
-  background: var(--field);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  padding: 18px 18px 16px;
-  cursor: pointer; text-align: left;
-  font-family: inherit;
-  transition: border-color .15s, background .15s, transform .12s;
-}
-.goal-card:hover { border-color: var(--brand-border); transform: translateY(-1px); }
-.goal-card.selected { border-color: var(--brand); background: var(--brand-bg); }
-.goal-card.selected .goal-icon { background: var(--brand); color: white; }
-.goal-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: var(--brand-bg); color: var(--brand-strong);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 14px; font-size: 18px;
-}
-.goal-name {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 15px; margin-bottom: 4px;
-}
-.goal-desc {
-  font-size: 12.5px; color: var(--muted-fg); line-height: 1.45;
-}
+  .success-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--success);
+  }
+  .success-banner svg { color: var(--success); flex-shrink: 0; margin-top: 1px; }
+  .success-banner strong { color: #15803d; font-weight: 700; }
 
-/* Field grouping (used across steps) */
-.field { margin-bottom: 16px; }
-.field-label {
-  display: block;
-  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
-  color: var(--muted-fg);
-  margin-bottom: 6px;
-}
-.field-label .sub {
-  font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted-fg);
-}
-.input, textarea.input {
-  width: 100%;
-  background: var(--field);
-  border: 1.5px solid var(--border);
-  border-radius: 9px;
-  padding: 10px 12px;
-  font-size: 14px; font-family: inherit; color: var(--fg);
-  transition: border-color .15s;
-  resize: vertical;
-}
-.input:focus, textarea.input:focus {
-  outline: none; border-color: var(--brand);
-  box-shadow: 0 0 0 3px var(--brand-bg-2);
-}
-.input.with-prefix { padding-left: 36px; }
-.input-wrap { position: relative; }
-.input-prefix {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--muted-fg); font-size: 14px; pointer-events: none;
-}
-.field-help {
-  font-size: 12.5px; color: var(--muted-fg); margin-top: 6px; line-height: 1.5;
-}
+  /* ============================================== */
+  /* PAUSE-AND-CONFIRM PANEL (Step 1)               */
+  /* ============================================== */
+  .pause-panel {
+    margin-top: 16px;
+    padding: 18px;
+    background: var(--bg-subtle);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+  }
+  .pause-panel h4 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+  }
+  .pause-panel ol {
+    margin: 0 0 14px 18px;
+    padding: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .pause-confirm {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .pause-confirm input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--text-primary);
+  }
 
-.two-col {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-}
+  /* ============================================== */
+  /* OAUTH CONNECT CARD                             */
+  /* ============================================== */
+  .oauth-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .oauth-logo {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+  }
+  .oauth-logo[data-provider="gads"] {
+    background-image: conic-gradient(from 0deg, #4285f4 0deg 90deg, #34a853 90deg 180deg, #fbbc05 180deg 270deg, #ea4335 270deg 360deg);
+  }
+  .oauth-logo[data-provider="gbp"] {
+    background-image: conic-gradient(from 0deg, #4285f4 0deg 90deg, #34a853 90deg 180deg, #fbbc05 180deg 270deg, #ea4335 270deg 360deg);
+  }
+  .oauth-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+  }
+  .oauth-sub {
+    font-size: 13px; color: var(--text-secondary);
+    max-width: 380px; margin: 0 auto 18px; line-height: 1.55;
+  }
 
-/* Per-location card collapse (Step 7) */
-.location-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-bottom: 10px;
-  overflow: hidden;
-}
-.location-card-head {
-  padding: 12px 16px;
-  background: var(--shell);
-  display: flex; align-items: center; justify-content: space-between;
-  cursor: pointer;
-  border-bottom: 1px solid transparent;
-}
-.location-card.expanded .location-card-head { border-bottom-color: var(--border); }
-.location-card-head .name {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 14px;
-}
-.location-card-head .summary {
-  font-size: 12px; color: var(--muted-fg); margin-top: 2px;
-}
-.location-card-head .chev { color: var(--muted-fg); transition: transform .2s; }
-.location-card.expanded .location-card-head .chev { transform: rotate(180deg); }
-.location-card-body {
-  padding: 18px 16px;
-  display: none;
-}
-.location-card.expanded .location-card-body { display: block; }
-.apply-all-link {
-  display: none;
-  margin-top: 10px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--brand);
-  cursor: pointer;
-  text-decoration: underline;
-}
-.apply-all-link.visible { display: inline-block; }
+  .oauth-connected {
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+  }
+  .oauth-conn-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .oauth-conn-icon {
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    background: var(--success);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .oauth-conn-text .biz {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 14.5px;
+    color: var(--text-primary);
+  }
+  .oauth-conn-text .meta {
+    font-size: 12.5px; color: #15803d;
+    margin-top: 1px;
+  }
+  .oauth-conn-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--success-border);
+  }
+  .oauth-conn-stat {
+    font-size: 12px;
+    color: #15803d;
+  }
+  .oauth-conn-stat strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: #15803d;
+  }
+  .oauth-disconnect {
+    background: none; border: 0; padding: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .oauth-disconnect:hover { color: var(--text-primary); text-decoration: underline; }
 
-/* Service area map */
-.area-card {
-  background: var(--shell);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center;
-}
-.area-map {
-  width: 120px; height: 120px; border-radius: 10px;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(10,138,60,0.15) 0%, rgba(10,138,60,0.15) 40%, transparent 41%),
-    radial-gradient(circle at 50% 50%, rgba(10,138,60,0.6) 0%, rgba(10,138,60,0.6) 4px, transparent 5px),
-    linear-gradient(135deg, hsl(120 15% 92%), hsl(140 12% 88%));
-  border: 1px solid var(--border);
-  position: relative;
-}
-body[data-scenario="tableside"] .area-map {
-  background:
-    radial-gradient(circle at 50% 50%, rgba(33,86,200,0.18) 0%, rgba(33,86,200,0.18) 40%, transparent 41%),
-    radial-gradient(circle at 50% 50%, rgba(33,86,200,0.7) 0%, rgba(33,86,200,0.7) 4px, transparent 5px),
-    linear-gradient(135deg, hsl(220 15% 92%), hsl(220 12% 88%));
-}
-.area-info .where { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-.area-info .addr { font-size: 12.5px; color: var(--muted-fg); margin-bottom: 12px; }
-.radius-row { display: flex; align-items: center; gap: 10px; }
-.radius-row input[type="range"] { flex: 1; accent-color: var(--brand); }
-.radius-value {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 14px;
-  min-width: 60px;
-}
+  /* ============================================== */
+  /* LOCATION MAPPING GRID (Step 4)                 */
+  /* ============================================== */
+  .locmap-grid {
+    display: flex; flex-direction: column;
+    gap: 6px;
+  }
+  .locmap-row {
+    display: grid;
+    grid-template-columns: 24px 1fr 32px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: opacity 120ms ease, background 120ms ease, border-color 120ms ease;
+  }
+  .locmap-row[data-excluded="true"] {
+    opacity: 0.55;
+    background: var(--bg-subtle);
+  }
+  .locmap-row[data-unmapped="true"] {
+    border-color: var(--warning-border);
+    background: var(--warning-bg);
+  }
+  .locmap-include {
+    width: 18px; height: 18px;
+    accent-color: var(--text-primary);
+    cursor: pointer;
+  }
+  .locmap-loc .name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .locmap-loc .addr {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .locmap-arrow {
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .locmap-gbp-mapped {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 10px;
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: #15803d;
+  }
+  .locmap-gbp-mapped .check {
+    width: 16px; height: 16px;
+    border-radius: 999px;
+    background: var(--success);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 10px; font-weight: 700;
+  }
+  .locmap-gbp-mapped .text { flex: 1; min-width: 0; }
+  .locmap-gbp-mapped .name {
+    font-weight: 600;
+    color: #15803d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .locmap-gbp-mapped .addr {
+    font-size: 11.5px;
+    color: #15803d;
+  }
+  .locmap-gbp-mapped .clear {
+    background: none; border: 0; cursor: pointer;
+    color: #15803d;
+    padding: 2px;
+    font-size: 14px;
+  }
+  .locmap-gbp-picker select {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--bg-surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .locmap-excluded-text {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .locmap-summary {
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .locmap-summary strong { color: var(--text-primary); }
 
-.targeting-tabs {
-  display: inline-flex; background: white; border: 1px solid var(--border); border-radius: 999px;
-  padding: 4px; gap: 2px; margin-bottom: 12px;
-}
-.targeting-tab {
-  padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
-  color: var(--muted-fg); background: transparent; border: none;
-  cursor: pointer; font-family: inherit;
-}
-.targeting-tab.active { background: var(--brand-bg); color: var(--brand-fg-on-bg); }
+  /* ============================================== */
+  /* GTM OPTIONS (Step 5)                           */
+  /* ============================================== */
+  .gtm-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 
-/* About-your-business (Step 8) */
-.detected-vertical {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 5px 10px;
-  background: var(--brand-bg);
-  border: 1px solid var(--brand-border);
-  color: var(--brand-fg-on-bg);
-  font-size: 12.5px; font-weight: 600;
-  border-radius: 999px;
-  margin-bottom: 14px;
-}
-.detected-vertical .change-link {
-  color: var(--brand-fg-on-bg);
-  text-decoration: underline;
-  cursor: pointer;
-  font-weight: 600;
-  margin-left: 4px;
-}
-.regen-link {
-  font-size: 12.5px; color: var(--brand);
-  cursor: pointer; font-weight: 600;
-  display: inline-flex; align-items: center; gap: 4px;
-  margin-top: 8px;
-}
-.regen-link:hover { text-decoration: underline; }
+  /* ============================================== */
+  /* GOAL CARDS (Step 6)                            */
+  /* ============================================== */
+  .goal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .goal-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .goal-card:hover { border-color: var(--border-strong); }
+  .goal-card[data-selected="true"] {
+    border-color: var(--text-primary);
+    background: var(--bg-subtle);
+  }
+  .goal-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+  .goal-card[data-selected="true"] .goal-icon {
+    background: var(--text-primary);
+    color: white;
+  }
+  .goal-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14.5px;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+  }
+  .goal-desc {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
 
-/* Budget slider (Step 9) */
-.budget-display {
-  display: flex; align-items: baseline; justify-content: space-between;
-  background: var(--shell);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px 20px;
-  margin-bottom: 16px;
-}
-.budget-display .amt {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 36px; font-weight: 800; letter-spacing: -.02em;
-}
-.budget-display .amt small {
-  font-size: 14px; font-weight: 500; color: var(--muted-fg); margin-left: 4px;
-}
-.budget-display .rec {
-  font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
-  background: var(--brand-bg); color: var(--brand-fg-on-bg);
-  border: 1px solid var(--brand-border);
-  padding: 4px 10px; border-radius: 999px;
-}
-.budget-slider { width: 100%; accent-color: var(--brand); height: 4px; }
-.budget-scale {
-  display: flex; justify-content: space-between;
-  margin-top: 10px; font-size: 11.5px; color: var(--muted-fg);
-}
-.budget-projection {
-  margin-top: 16px;
-  padding: 14px 16px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 13.5px; line-height: 1.55; color: var(--subtle-fg);
-}
-.budget-projection strong { color: var(--fg); font-weight: 600; }
-.budget-billing {
-  margin-top: 14px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: white;
-  font-size: 13px;
-}
-.budget-billing.covered { background: var(--brand-bg); border-color: var(--brand-border); color: var(--brand-fg-on-bg); }
+  /* ============================================== */
+  /* PER-LOCATION CARD COLLAPSE (Step 7)            */
+  /* ============================================== */
+  .location-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .location-card-head {
+    padding: 12px 16px;
+    background: var(--bg-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+  }
+  .location-card[data-expanded="true"] .location-card-head { border-bottom-color: var(--border); }
+  .location-card-head .name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text-primary);
+  }
+  .location-card-head .summary {
+    font-size: 12px; color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .location-card-head .chev {
+    color: var(--text-muted);
+    transition: transform 200ms;
+  }
+  .location-card[data-expanded="true"] .location-card-head .chev { transform: rotate(180deg); }
+  .location-card-body {
+    padding: 18px 16px;
+    display: none;
+  }
+  .location-card[data-expanded="true"] .location-card-body { display: block; }
+  .apply-all-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    text-decoration: underline;
+    background: none; border: 0; padding: 0;
+    font-family: inherit;
+  }
+  .apply-all-link:hover { color: var(--text-secondary); }
 
-/* Step 10 — review ad */
-.review-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
+  /* Service area map */
+  .area-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+  .area-map {
+    width: 120px; height: 120px;
+    border-radius: var(--radius-sm);
+    background:
+      radial-gradient(circle at 50% 50%, rgba(17,24,39,0.10) 0%, rgba(17,24,39,0.10) 40%, transparent 41%),
+      radial-gradient(circle at 50% 50%, rgba(17,24,39,0.45) 0%, rgba(17,24,39,0.45) 4px, transparent 5px),
+      linear-gradient(135deg, hsl(220 15% 92%), hsl(220 10% 88%));
+    border: 1px solid var(--border);
+  }
+  .area-info .where {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+  .area-info .addr {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+  .radius-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .radius-row input[type="range"] {
+    flex: 1; accent-color: var(--text-primary);
+  }
+  .radius-value {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    min-width: 60px;
+    color: var(--text-primary);
+  }
+  .targeting-tabs {
+    display: inline-flex;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    gap: 2px;
+    margin-bottom: 12px;
+  }
+  .targeting-tab {
+    padding: 5px 11px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 0;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .targeting-tab[data-active="true"] {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
 
-.headlines-stack { display: flex; flex-direction: column; gap: 8px; }
-.headline-line {
-  display: grid; grid-template-columns: 1fr 28px; gap: 6px;
-  align-items: center;
-}
-.headline-line .input { font-size: 13.5px; }
-.regen-btn {
-  width: 28px; height: 28px; border-radius: 7px;
-  background: white;
-  border: 1px solid var(--border);
-  color: var(--brand);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px;
-  transition: background .15s;
-}
-.regen-btn:hover { background: var(--brand-bg); }
+  /* ============================================== */
+  /* DETECTED VERTICAL CHIP (Step 8)                */
+  /* ============================================== */
+  .vertical-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+  }
+  .vertical-chip svg { color: var(--success); flex-shrink: 0; }
+  .vertical-chip strong { color: var(--text-primary); font-weight: 600; }
+  .vertical-chip .change-link {
+    background: none; border: 0;
+    color: var(--text-primary);
+    font-size: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    margin-left: 2px;
+  }
+  .regen-link {
+    background: none; border: 0; padding: 0;
+    color: var(--text-primary);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: underline;
+    margin-top: 4px;
+  }
+  .regen-link:hover { color: var(--text-secondary); }
 
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px;
-  background: white;
-  border: 1px solid var(--brand-border);
-  color: var(--brand-fg-on-bg);
-  border-radius: 999px;
-  font-size: 12px; font-weight: 600;
-}
-.chip .x { color: var(--muted-fg); cursor: pointer; }
-.add-chip {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px;
-  background: var(--shell);
-  border: 1px dashed var(--border-strong);
-  color: var(--muted-fg);
-  border-radius: 999px;
-  font-size: 12px; font-weight: 600;
-  cursor: pointer;
-}
+  /* ============================================== */
+  /* BUDGET (Step 9)                                */
+  /* ============================================== */
+  .budget-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 22px;
+    margin-bottom: 16px;
+  }
+  .budget-display .amt {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+  .budget-display .amt small {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-left: 4px;
+  }
+  .budget-rec-pill {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid var(--success-border);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .budget-slider {
+    width: 100%;
+    accent-color: var(--text-primary);
+    height: 4px;
+  }
+  .budget-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+  .budget-projection {
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  .budget-projection strong { color: var(--text-primary); font-weight: 600; }
+  .budget-coverage {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: #15803d;
+  }
+  .budget-coverage strong { color: #15803d; font-weight: 700; }
 
-.preview-pane {
-  background: var(--shell);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-}
-.preview-eyebrow {
-  font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--muted-fg); margin-bottom: 12px;
-}
+  /* ============================================== */
+  /* AD COPY REVIEW (Step 10)                       */
+  /* ============================================== */
+  .ai-banner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    margin-bottom: 20px;
+  }
+  .ai-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--text-primary);
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ai-banner-title {
+    font-weight: 600; font-size: 13.5px;
+    color: var(--text-primary);
+    margin-bottom: 1px;
+  }
+  .ai-banner-sub {
+    color: var(--text-secondary); font-size: 12.5px;
+    line-height: 1.45;
+  }
 
-.search-ad {
-  background: white; border-radius: 10px; padding: 14px;
-  margin-bottom: 12px;
-  border: 1px solid hsl(220 13% 95%);
-}
-.search-ad-head {
-  display: grid; grid-template-columns: auto auto 1fr; gap: 8px; align-items: center;
-  margin-bottom: 8px;
-}
-.search-sponsored { font-size: 11px; font-weight: 700; color: var(--fg); }
-.search-favicon {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: linear-gradient(135deg, #f5a623, #e63946); color: white; font-weight: 800;
-  display: inline-flex; align-items: center; justify-content: center; font-size: 11px;
-}
-.search-domain { font-size: 12.5px; color: var(--fg); font-weight: 600; }
-.search-domain-sub { font-size: 11px; color: var(--muted-fg); }
-.search-headline {
-  color: #1a0dab; font-size: 16px; line-height: 1.25; margin-bottom: 4px; font-weight: 500;
-}
-.search-desc { color: #4d5156; font-size: 12.5px; line-height: 1.4; margin-bottom: 8px; }
-.search-sitelinks { display: flex; gap: 12px; font-size: 11.5px; color: #1a73e8; }
+  .review-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .headlines-stack { display: flex; flex-direction: column; gap: 6px; }
+  .headline-line {
+    display: grid;
+    grid-template-columns: 1fr 28px;
+    gap: 6px;
+    align-items: center;
+  }
+  .headline-line input { font-size: 13px; padding: 7px 10px; }
+  .regen-btn {
+    width: 28px; height: 28px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+  .regen-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
 
-.map-card {
-  background: white;
-  border-radius: 10px;
-  padding: 12px;
-  border: 1px solid hsl(220 13% 95%);
-}
-.map-card-head { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px; }
-.map-pin-mini { width: 10px; height: 14px; background: #ea4335; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: inline-block; }
-.map-card-title { font-weight: 700; font-size: 13px; }
-.map-card-meta { font-size: 11px; color: var(--muted-fg); }
-.map-card-badge {
-  font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
-  background: hsl(220 13% 94%); color: var(--subtle-fg);
-  padding: 3px 8px; border-radius: 999px; font-weight: 700;
-}
-.map-card-row { display: flex; gap: 6px; }
-.map-card-action {
-  flex: 1; text-align: center;
-  background: hsl(220 13% 96%); color: var(--subtle-fg);
-  font-size: 11px; font-weight: 600;
-  padding: 6px 0; border-radius: 999px;
-}
-.map-card-action.primary { background: var(--brand); color: white; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--text-primary);
+  }
+  .chip .x { color: var(--text-muted); cursor: pointer; }
+  .add-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px dashed var(--border-strong);
+    color: var(--text-muted);
+    border-radius: 999px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .add-chip:hover { color: var(--text-primary); border-color: var(--text-primary); }
 
-/* AI banner */
-.ai-banner {
-  display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center;
-  padding: 14px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, hsl(142 60% 96%), hsl(180 50% 96%));
-  border: 1px dashed var(--brand-border);
-  margin: 12px 0 18px;
-}
-body[data-scenario="tableside"] .ai-banner {
-  background: linear-gradient(135deg, hsl(217 80% 96%), hsl(250 60% 96%));
-}
-.ai-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--brand), hsl(170 60% 40%));
-  color: white; font-weight: 800; font-size: 18px;
-  display: flex; align-items: center; justify-content: center;
-}
-.ai-banner-title { font-weight: 700; font-size: 14px; }
-.ai-banner-sub { color: var(--subtle-fg); font-size: 12.5px; line-height: 1.45; }
-.ai-banner-btn {
-  background: var(--brand); color: white;
-  padding: 9px 14px; border-radius: 9px;
-  font-size: 13px; font-weight: 700;
-  border: none; cursor: pointer; font-family: inherit;
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.ai-banner-btn:hover { background: var(--brand-strong); }
+  /* Preview pane (Google) */
+  .preview-pane {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+  }
+  .preview-eyebrow {
+    font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .search-ad {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .search-ad-head {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .search-sponsored { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+  .search-favicon {
+    width: 20px; height: 20px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #f5a623, #e63946);
+    color: white;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .search-domain { font-size: 12px; color: var(--text-primary); font-weight: 600; }
+  .search-domain-sub { font-size: 10.5px; color: var(--text-secondary); }
+  .search-headline {
+    color: #1a0dab;
+    font-size: 15px;
+    line-height: 1.25;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .search-desc {
+    color: #4d5156;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .search-sitelinks {
+    display: flex;
+    gap: 12px;
+    font-size: 11.5px;
+    color: #1a73e8;
+  }
+  .map-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px;
+  }
+  .map-card-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .map-pin-mini {
+    width: 10px; height: 14px;
+    background: #ea4335;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+  }
+  .map-card-title { font-weight: 600; font-size: 12.5px; }
+  .map-card-meta { font-size: 10.5px; color: var(--text-secondary); }
+  .map-card-badge {
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+  .map-card-row { display: flex; gap: 6px; }
+  .map-card-action {
+    flex: 1;
+    text-align: center;
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 0;
+    border-radius: 999px;
+  }
+  .map-card-action.primary {
+    background: var(--text-primary);
+    color: white;
+  }
 
-/* Step 11 — pixel installation */
-.pixel-card {
-  background: var(--shell);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 14px;
-}
-.pixel-snippet-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.pixel-snippet-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 14px;
-}
-.pixel-snippet-sub {
-  font-size: 12px; color: var(--muted-fg);
-  margin-top: 2px;
-}
-.pixel-snippet-sub code {
-  background: hsl(220 13% 92%);
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-family: 'Menlo', 'Monaco', monospace;
-  font-size: 11px;
-}
-.pixel-snippet {
-  background: hsl(220 20% 14%);
-  color: hsl(150 60% 70%);
-  padding: 12px 14px;
-  border-radius: 8px;
-  font-family: 'Menlo', 'Monaco', monospace;
-  font-size: 11.5px;
-  line-height: 1.55;
-  overflow-x: auto;
-  margin: 0;
-}
-.pixel-platform-help { margin-bottom: 14px; }
-.pixel-platform-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 13px;
-  margin-bottom: 8px;
-  color: var(--subtle-fg);
-}
-.pixel-platforms {
-  display: grid; grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-.pixel-platform {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px; font-weight: 600;
-  cursor: pointer; font-family: inherit;
-  color: var(--subtle-fg);
-}
-.pixel-platform:hover { border-color: var(--brand-border); color: var(--fg); }
-.pixel-platform .name { font-family: 'Plus Jakarta Sans', sans-serif; }
-.pixel-platform .chev { color: var(--muted-fg); }
-.pixel-confirm-options {
-  display: flex; flex-direction: column;
-  gap: 8px;
-}
-.pixel-confirm-card {
-  display: grid; grid-template-columns: 20px 1fr;
-  gap: 12px; align-items: start;
-  padding: 14px 16px;
-  background: white;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-}
-.pixel-confirm-card:hover { border-color: var(--brand-border); }
-.pixel-confirm-card.selected { border-color: var(--brand); background: var(--brand-bg); }
-.pixel-confirm-card input[type="checkbox"] {
-  width: 18px; height: 18px; margin-top: 1px;
-  accent-color: var(--brand);
-  flex-shrink: 0;
-}
-.pixel-confirm-card .label {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 14px;
-  margin-bottom: 3px;
-}
-.pixel-confirm-card .sub {
-  font-size: 12.5px; color: var(--muted-fg); line-height: 1.45;
-}
-.pixel-defer-card {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-  background: white;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer; font-family: inherit; text-align: left;
-  color: var(--fg);
-  width: 100%;
-}
-.pixel-defer-card:hover { border-color: var(--brand-border); }
-.pixel-defer-card .label {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 14px;
-  margin-bottom: 3px;
-}
-.pixel-defer-card .sub {
-  font-size: 12.5px; color: var(--muted-fg); line-height: 1.45;
-}
-.pixel-defer-card svg { color: var(--brand); flex-shrink: 0; }
+  /* ============================================== */
+  /* PIXEL INSTALL (Step 11)                        */
+  /* ============================================== */
+  .pixel-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .pixel-snippet-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .pixel-snippet-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text-primary);
+  }
+  .pixel-snippet-sub {
+    font-size: 12px; color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .pixel-snippet-sub code {
+    background: var(--bg-surface);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px solid var(--border);
+  }
+  .pixel-snippet {
+    background: #0f172a;
+    color: #6ee7b7;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .pixel-platforms {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .pixel-platform {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .pixel-platform:hover { color: var(--text-primary); border-color: var(--border-strong); }
+  .pixel-platform .name { font-weight: 500; color: var(--text-primary); }
+  .pixel-confirm-options {
+    display: flex; flex-direction: column;
+    gap: 8px;
+  }
+  .pixel-confirm-card {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    width: 100%;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .pixel-confirm-card:hover { border-color: var(--border-strong); }
+  .pixel-confirm-card[data-selected="true"] {
+    border-color: var(--text-primary);
+    background: var(--bg-subtle);
+  }
+  .pixel-confirm-card input[type="checkbox"] {
+    width: 18px; height: 18px;
+    margin-top: 1px;
+    accent-color: var(--text-primary);
+    flex-shrink: 0;
+  }
+  .pixel-confirm-card .label {
+    font-size: 14px; font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+  .pixel-confirm-card .sub {
+    font-size: 12.5px; color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .pixel-defer-card {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    width: 100%;
+    transition: border-color 120ms ease;
+  }
+  .pixel-defer-card:hover { border-color: var(--border-strong); }
+  .pixel-defer-card .label {
+    font-size: 14px; font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+  .pixel-defer-card .sub {
+    font-size: 12.5px; color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .pixel-defer-card svg { color: var(--text-secondary); flex-shrink: 0; }
 
-/* Step 12 — submit */
-.summary-card {
-  background: var(--shell);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px 22px;
-  margin-bottom: 16px;
-}
-.summary-card h3 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 14px; font-weight: 700; margin-bottom: 12px;
-}
-.summary-row {
-  display: grid; grid-template-columns: 140px 1fr;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px;
-}
-.summary-row:last-child { border-bottom: none; }
-.summary-row .key { color: var(--muted-fg); font-weight: 600; }
-.summary-row .val { font-weight: 600; }
+  .copy-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .copy-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
 
-.timeline {
-  background: var(--shell);
-  border-radius: 14px;
-  padding: 20px;
-  margin: 0 auto 18px;
-  max-width: 680px;
-  border: 1px solid var(--border);
-}
-.timeline-head {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 14px; margin-bottom: 14px;
-}
-.timeline-track {
-  position: relative;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
-  padding: 0 12px;
-}
-.timeline-track::before {
-  content: ""; position: absolute; top: 8px; left: 12px; right: 12px; height: 2px;
-  background: linear-gradient(90deg, var(--brand) 12%, var(--border) 12%);
-  border-radius: 2px;
-}
-.timeline-step { position: relative; }
-.timeline-step .dot {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: white; border: 2px solid var(--border-strong);
-  margin: 0 auto 10px; position: relative; z-index: 2;
-}
-.timeline-step.now .dot {
-  background: var(--brand); border-color: var(--brand);
-  box-shadow: 0 0 0 4px var(--brand-bg);
-}
-.timeline-step .week {
-  text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .04em;
-  color: var(--muted-fg); text-transform: uppercase; margin-bottom: 2px;
-}
-.timeline-step.now .week { color: var(--brand-strong); }
-.timeline-step .what {
-  text-align: center; font-size: 11.5px; color: var(--subtle-fg);
-  line-height: 1.4;
-}
-.timeline-expectations {
-  margin-top: 16px; padding-top: 16px;
-  border-top: 1px solid var(--border);
-  font-size: 13px; color: var(--subtle-fg); line-height: 1.55;
-}
-.timeline-expectations strong { color: var(--fg); font-weight: 600; }
+  /* ============================================== */
+  /* REVIEW & SUBMIT (Step 12)                      */
+  /* ============================================== */
+  .summary-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+  }
+  .summary-card h3 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+  }
+  .summary-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .key { color: var(--text-secondary); }
+  .summary-row .val { color: var(--text-primary); font-weight: 500; }
 
-.terms-confirm {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 12px 14px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  margin-bottom: 18px;
-  cursor: pointer;
-}
-.terms-confirm input[type="checkbox"] {
-  width: 18px; height: 18px;
-  accent-color: var(--brand);
-  margin-top: 1px;
-  flex-shrink: 0;
-}
-.terms-confirm .text { font-size: 13px; }
-.terms-confirm .text a { color: var(--brand); }
+  .timeline {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .timeline-head {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+  }
+  .timeline-track {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 0 12px;
+  }
+  .timeline-track::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--text-primary) 12%, var(--border) 12%);
+    border-radius: 2px;
+  }
+  .timeline-step { position: relative; }
+  .timeline-step .dot {
+    width: 18px; height: 18px;
+    border-radius: 999px;
+    background: var(--bg-surface);
+    border: 2px solid var(--border-strong);
+    margin: 0 auto 10px;
+    position: relative; z-index: 2;
+  }
+  .timeline-step[data-state="now"] .dot {
+    background: var(--text-primary);
+    border-color: var(--text-primary);
+    box-shadow: 0 0 0 4px var(--bg-subtle);
+  }
+  .timeline-step .week {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .timeline-step[data-state="now"] .week { color: var(--text-primary); }
+  .timeline-step .what {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .timeline-expectations {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .timeline-expectations strong { color: var(--text-primary); font-weight: 600; }
 
-/* Launch success state */
-.launch-success {
-  text-align: center;
-  padding: 36px 20px 32px;
-}
-.launch-emoji {
-  font-size: 48px; line-height: 1;
-  margin-bottom: 10px;
-  display: inline-block;
-  animation: launch-float 2.4s ease-in-out infinite;
-}
-@keyframes launch-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-.launch-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 26px; font-weight: 800; letter-spacing: -.02em;
-  margin-bottom: 8px;
-}
-.launch-sub {
-  font-size: 14.5px; color: var(--muted-fg); line-height: 1.55;
-  max-width: 500px; margin: 0 auto 28px;
-}
-.launch-next {
-  text-align: left;
-  max-width: 500px;
-  margin: 0 auto 24px;
-  padding: 18px 20px;
-  background: var(--shell);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-.launch-next .head {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700; font-size: 13px;
-  text-transform: uppercase; letter-spacing: .08em;
-  color: var(--muted-fg); margin-bottom: 10px;
-}
-.launch-next ol {
-  margin: 0; padding-left: 20px;
-  font-size: 13.5px; line-height: 1.7;
-  color: var(--subtle-fg);
-}
+  .terms-confirm {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .terms-confirm input[type="checkbox"] {
+    width: 16px; height: 16px;
+    margin-top: 1px;
+    accent-color: var(--text-primary);
+    flex-shrink: 0;
+  }
+  .terms-confirm .text {
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .terms-confirm .text a {
+    color: var(--text-primary);
+    text-decoration: underline;
+  }
 
-/* Footer / nav buttons */
-.flow-footer {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-top: 24px;
-}
-.flow-footer .save-resume {
-  font-size: 12.5px; color: var(--muted-fg);
-  cursor: pointer; text-decoration: underline;
-}
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-size: 14px; font-weight: 600;
-  border: 1px solid var(--border);
-  background: white; color: var(--fg);
-  cursor: pointer; font-family: inherit;
-  transition: background .15s, border-color .15s, transform .1s;
-  text-decoration: none;
-}
-.btn:hover { background: var(--shell); }
-.btn.primary {
-  background: var(--brand); color: white; border-color: var(--brand);
-}
-.btn.primary:hover { background: var(--brand-strong); border-color: var(--brand-strong); }
-.btn.primary:disabled, .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn.ghost { border: none; background: transparent; color: var(--muted-fg); }
-.btn.ghost:hover { background: var(--shell); color: var(--fg); }
-.btn.large { padding: 12px 24px; font-size: 14.5px; }
+  /* ============================================== */
+  /* SUCCESS STATE (after submit)                   */
+  /* ============================================== */
+  .success-pane {
+    text-align: center;
+    padding: 56px 32px 40px;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+  .success-emoji {
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 14px;
+    display: inline-block;
+    animation: float 2.4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .success-pane h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+    color: var(--text-primary);
+  }
+  .success-pane p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0 0 28px;
+    line-height: 1.55;
+  }
+  .success-next {
+    text-align: left;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 22px;
+    margin-bottom: 24px;
+  }
+  .success-next h3 {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin: 0 0 10px;
+  }
+  .success-next ol {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
 
-/* Confetti */
-.confetti-layer {
-  position: fixed; inset: 0; pointer-events: none; z-index: 70;
-  overflow: hidden;
-  display: none;
-}
-.confetti-layer.on { display: block; }
-.confetti-piece {
-  position: absolute; top: -20px;
-  width: 8px; height: 12px;
-  border-radius: 2px;
-  animation: confetti-fall 3.2s linear forwards;
-}
-@keyframes confetti-fall {
-  0% { transform: translateY(0) rotate(0); opacity: 1; }
-  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
-}
+  /* Confetti */
+  .confetti-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+    overflow: hidden;
+    display: none;
+  }
+  .confetti-layer.on { display: block; }
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    width: 8px;
+    height: 12px;
+    border-radius: 2px;
+    animation: confetti-fall 3.2s linear forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+  }
 
-/* Responsive */
-@media (max-width: 720px) {
-  .goal-grid, .review-grid, .two-col { grid-template-columns: 1fr; }
-  .area-card { grid-template-columns: 1fr; }
-  .area-map { width: 100%; height: 140px; }
-  .shell-top { padding: 0 12px; }
-  .shell-nav { display: none; }
-  .step-card { padding: 22px; }
-  .scenario-inner { padding-left: 24px; }
-}
+  @media (max-width: 880px) {
+    .goal-grid { grid-template-columns: 1fr; }
+    .review-grid { grid-template-columns: 1fr; }
+    .area-card { grid-template-columns: 1fr; }
+    .area-map { width: 100%; height: 120px; }
+    .pixel-platforms { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    body { padding: 24px 12px; }
+    .shell-body { grid-template-columns: 1fr; }
+    .shell-sidebar { border-right: 0; border-bottom: 1px solid var(--border); }
+    .shell-main { padding: 24px; }
+  }
 </style>
 </head>
-<body data-scenario="owner-multi">
+<body>
 
 <a class="back-link" href="index.html">
   <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2L3 6.5l5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  Owner Ads project
+  Project
 </a>
 
-<!-- Scenario chooser -->
 <div class="scenario-bar">
-  <div class="scenario-inner">
-    <span class="scenario-label">Scenario</span>
-    <div class="scenario-tabs" id="scenario-tabs">
-      <button class="scenario-tab active" data-sc="owner-multi">Owner Lite · multi-location</button>
-      <button class="scenario-tab" data-sc="owner-single">Owner Lite · single-location</button>
-      <button class="scenario-tab" data-sc="tableside">Full Acquire · Tableside</button>
-    </div>
-    <span class="scenario-note">Same wizard, different partner config. <strong>This bar is review-only — the operator won't see it.</strong></span>
+  <span class="scenario-bar-label">Scenario</span>
+  <div class="scenario-tabs" id="scenario-tabs">
+    <button class="scenario-tab" data-active="true" data-sc="owner-multi">Owner · multi</button>
+    <button class="scenario-tab" data-active="false" data-sc="owner-single">Owner · single</button>
+    <button class="scenario-tab" data-active="false" data-sc="tableside">Tableside · full</button>
   </div>
 </div>
 
-<header class="shell-top">
-  <div class="brand"><span class="brand-mark" id="brand-mark">O</span><span id="brand-name">Owner</span></div>
-  <nav class="shell-nav">
-    <span class="shell-nav-item">Orders</span>
-    <span class="shell-nav-item">Menu</span>
-    <span class="shell-nav-item">Customers</span>
-    <span class="shell-nav-item active">Marketing</span>
-    <span class="shell-nav-item">Settings</span>
-  </nav>
-  <div class="shell-spacer"></div>
-  <div class="shell-right">
-    <div class="shell-loc" id="shell-loc">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5C4 1.5 2.5 3 2.5 5c0 2.5 3.5 5.5 3.5 5.5s3.5-3 3.5-5.5c0-2-1.5-3.5-3.5-3.5z" stroke="currentColor" stroke-width="1.3"/><circle cx="6" cy="5" r="1.3" stroke="currentColor" stroke-width="1.3"/></svg>
-      <span id="shell-loc-text">3 locations</span>
+<div class="stage">
+  <div id="app"><!-- rendered by JS --></div>
+</div>
+
+<div class="confetti-layer" id="confetti"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   SCENARIOS — partner+tenant configs that vary content (not chrome style)
+   ═══════════════════════════════════════════════════════════════════════ */
+const SCENARIOS = {
+  'owner-multi': {
+    productName: 'Owner Ads',
+    accountOwnership: 'reach-owned',
+    billing: 'reach-pays',
+    billingPartnerName: 'Owner',
+    gtmRequired: false,
+    pixelRequired: false,
+    locations: [
+      { id: 'court', name: "Junior's Pizzeria — Court St", addr: '318 Court St, Brooklyn, NY', gbpDefault: 'court' },
+      { id: '5th',   name: "Junior's Pizzeria — 5th Ave",  addr: '425 5th Ave, Brooklyn, NY',  gbpDefault: '5th' },
+      { id: 'astor', name: "Junior's Pizzeria — Astoria",  addr: '28-12 Steinway St, Astoria, NY', gbpDefault: 'astor' },
+    ],
+    gbpLocations: [
+      { id: 'court', title: "Junior's Pizzeria",              addr: '318 Court St, Brooklyn, NY' },
+      { id: '5th',   title: "Junior's Pizzeria — Park Slope", addr: '425 5th Ave, Brooklyn, NY' },
+      { id: 'astor', title: "Junior's Pizzeria — Astoria",    addr: '28-12 Steinway St, Astoria, NY' },
+    ],
+  },
+  'owner-single': {
+    productName: 'Owner Ads',
+    accountOwnership: 'reach-owned',
+    billing: 'reach-pays',
+    billingPartnerName: 'Owner',
+    gtmRequired: false,
+    pixelRequired: false,
+    locations: [
+      { id: 'court', name: "Junior's Pizzeria", addr: '318 Court St, Brooklyn, NY', gbpDefault: 'court' },
+    ],
+    gbpLocations: [
+      { id: 'court', title: "Junior's Pizzeria", addr: '318 Court St, Brooklyn, NY' },
+    ],
+  },
+  'tableside': {
+    productName: 'Tableside Ads',
+    accountOwnership: 'operator-owned',
+    billing: 'operator-pays',
+    billingPartnerName: 'Tableside',
+    gtmRequired: true,
+    pixelRequired: true,
+    locations: [
+      { id: 'court', name: "Junior's Pizzeria", addr: '318 Court St, Brooklyn, NY', gbpDefault: 'court' },
+    ],
+    gbpLocations: [
+      { id: 'court', title: "Junior's Pizzeria", addr: '318 Court St, Brooklyn, NY' },
+    ],
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════════════ */
+let scenarioName = 'owner-multi';
+let scenario = SCENARIOS[scenarioName];
+
+const state = {
+  step: null,            // current step key
+  completed: new Set(),  // step keys already passed through
+  priorAds: null,        // 'never' | 'had' | 'running'
+  pauseConfirmed: false,
+  gadsConnected: false,
+  gbpConnected: false,
+  locmap: {},
+  gtmOption: 'oauth',
+  goal: 'online-orders',
+  radius: {},            // per-location radius value
+  expandedLocCard: null, // currently expanded location card
+  budget: 22,
+  vertical: 'pizzeria',
+  pixelStatus: null,     // 'confirmed-by-operator' | 'deferred-to-webmaster' | null
+  termsAccepted: false,
+  submitted: false,
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   STEP LIBRARY — keys + sidebar labels (noun, not verb)
+   ═══════════════════════════════════════════════════════════════════════ */
+const ALL_STEPS = [
+  { key: 'account-status', label: 'Account status' },
+  { key: 'connect-gads',   label: 'Google Ads',     showIf: (s) => s.accountOwnership === 'operator-owned' },
+  { key: 'connect-gbp',    label: 'Google Business' },
+  { key: 'locations',      label: 'Locations' },
+  { key: 'gtm',            label: 'Tag Manager',    showIf: (s) => s.gtmRequired },
+  { key: 'goal',           label: 'Goal' },
+  { key: 'service-area',   label: 'Service area' },
+  { key: 'about',          label: 'About your restaurant' },
+  { key: 'budget',         label: 'Budget' },
+  { key: 'ad-copy',        label: 'Ad copy' },
+  { key: 'pixel',          label: 'Tracking pixel', showIf: (s) => s.pixelRequired },
+  { key: 'review',         label: 'Review & submit' },
+];
+
+function visibleSteps() {
+  return ALL_STEPS.filter(s => !s.showIf || s.showIf(scenario));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════════════════════════════════ */
+function goToStep(key) {
+  state.step = key;
+  render();
+}
+
+function continueStep() {
+  state.completed.add(state.step);
+  const steps = visibleSteps();
+  const idx = steps.findIndex(s => s.key === state.step);
+  if (idx === steps.length - 1) return; // last step (review) submits, not continues
+  state.step = steps[idx + 1].key;
+  render();
+}
+
+function backStep() {
+  const steps = visibleSteps();
+  const idx = steps.findIndex(s => s.key === state.step);
+  if (idx > 0) {
+    state.step = steps[idx - 1].key;
+    render();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SHELL — topbar / sidebar / footer
+   ═══════════════════════════════════════════════════════════════════════ */
+function shellHeader() {
+  return `
+    <header class="shell-topbar">
+      <div class="shell-title">
+        <h1>${scenario.productName} Setup</h1>
+        <p>Set up Google ads for your restaurant. We'll handle the hard parts.</p>
+      </div>
+      <button class="close-btn" aria-label="Close" onclick="alert('Close behavior: confirmation dialog + save draft. Not implemented in prototype.')">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l10 10M14 4L4 14"/></svg>
+      </button>
+    </header>
+  `;
+}
+
+function sidebar() {
+  const steps = visibleSteps();
+  const eyebrow = (scenario.productName + ' SETUP').toUpperCase();
+  return `
+    <aside class="shell-sidebar">
+      <div class="sidebar-eyebrow">${eyebrow}</div>
+      ${steps.map(s => {
+        const isActive = state.step === s.key;
+        const isComplete = state.completed.has(s.key);
+        const stateAttr = isComplete ? 'complete' : (isActive ? 'active' : 'upcoming');
+        const clickable = isComplete || isActive;
+        const onclick = clickable && !isActive ? `onclick="goToStep('${s.key}')"` : '';
+        return `
+          <button class="step-item" data-state="${stateAttr}" data-clickable="${clickable}" ${onclick} ${clickable ? '' : 'disabled'}>
+            <span class="step-marker" aria-hidden="true"></span>
+            ${s.label}
+          </button>
+        `;
+      }).join('')}
+    </aside>
+  `;
+}
+
+function footer({ canContinue = true, continueLabel = 'Continue', onContinue = 'continueStep()', onBack = 'backStep()', showBack = true, hint = null } = {}) {
+  return `
+    <footer class="shell-footer">
+      ${showBack
+        ? `<button class="btn btn-ghost" onclick="${onBack}">← Previous</button>`
+        : `<span></span>`}
+      ${hint ? `<span class="hint">${hint}</span>` : ''}
+      <button class="btn btn-primary" ${canContinue ? '' : 'disabled'} onclick="${onContinue}">${continueLabel}</button>
+    </footer>
+  `;
+}
+
+function shellWrap({ content, footerOpts = {}, hideFooter = false }) {
+  return `
+    <div class="shell">
+      ${shellHeader()}
+      <div class="shell-body">
+        ${sidebar()}
+        <main class="shell-main">${content}</main>
+      </div>
+      ${hideFooter ? '' : footer(footerOpts)}
     </div>
-    <div class="shell-avatar">J</div>
-  </div>
-</header>
+  `;
+}
 
-<main class="flow">
+/* ═══════════════════════════════════════════════════════════════════════
+   STEP RENDERERS
+   ═══════════════════════════════════════════════════════════════════════ */
 
-  <div class="flow-head">
-    <div class="flow-eyebrow" id="flow-eyebrow">Owner Ads · New campaign</div>
-    <h1 class="flow-title" id="flow-title">Let's get your restaurants in front of more customers.</h1>
-    <p class="flow-subtitle" id="flow-subtitle">A few quick questions and your ad goes live on Google Search and Google Maps. We'll do the rest.</p>
-  </div>
+/* ─── 1. Account status / prior-ads check ─── */
+function stepAccountStatus() {
+  const isReachOwned = scenario.accountOwnership === 'reach-owned';
+  const showPause = state.priorAds === 'running' && isReachOwned;
+  const canContinue = !!state.priorAds && (state.priorAds !== 'running' || !isReachOwned || state.pauseConfirmed);
 
-  <!-- Stepper renders dynamically based on scenario -->
-  <nav class="stepper" id="stepper"></nav>
+  const runningSub = isReachOwned
+    ? "No problem — but you'll need to pause those campaigns before we launch yours."
+    : "No problem — we'll just connect to your existing account.";
 
-  <!-- ─────────────── STEP 1: Account status / prior-ads check ─────────────── -->
-  <section class="step" data-step="1">
-    <div class="step-card">
-      <h2>Have you ever run Google Ads for your restaurant?</h2>
-      <p class="lead">Either yourself, through an agency, or through any other service. We ask because it changes how we set things up.</p>
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Have you ever run Google Ads?</h1>
+        <p>Either yourself, through an agency, or through any other service. We ask because it changes how we set things up.</p>
+      </div>
 
       <div class="choice-stack">
-        <button class="choice-card" data-priorads="never" onclick="pickPriorAds(this, 'never')">
+        <button class="choice-card" data-selected="${state.priorAds === 'never'}" onclick="pickPriorAds('never')">
           <span class="choice-radio"></span>
           <div>
             <div class="label">No, I've never run Google Ads</div>
-            <div class="sub" id="never-sub">You're starting fresh. We'll handle everything from here.</div>
+            <div class="sub">You're starting fresh. We'll handle everything from here.</div>
           </div>
         </button>
-        <button class="choice-card" data-priorads="had" onclick="pickPriorAds(this, 'had')">
+        <button class="choice-card" data-selected="${state.priorAds === 'had'}" onclick="pickPriorAds('had')">
           <span class="choice-radio"></span>
           <div>
             <div class="label">I have in the past, but nothing is running now</div>
-            <div class="sub" id="had-sub">As long as nothing is currently active in your Google Ads account, we're good to go.</div>
+            <div class="sub">Great — as long as nothing is currently active, we're good to go.</div>
           </div>
         </button>
-        <button class="choice-card" data-priorads="running" onclick="pickPriorAds(this, 'running')">
+        <button class="choice-card" data-selected="${state.priorAds === 'running'}" onclick="pickPriorAds('running')">
           <span class="choice-radio"></span>
           <div>
             <div class="label">Yes, I have ads running right now</div>
-            <div class="sub" id="running-sub">No problem — but you'll need to pause those campaigns before we launch yours.</div>
+            <div class="sub">${runningSub}</div>
           </div>
         </button>
       </div>
 
-      <div class="warning-callout" id="priorads-warning" style="display:none">
-        <span class="icon">!</span>
-        <div class="body">
-          <strong>Why this matters:</strong> We'll be running ads from a separate Google Ads account in our system. Your old campaigns and our new ones would compete against each other in Google's auction, so we need you to pause yours first.
+      ${showPause ? `
+        <div class="warning-banner" style="margin-top: 16px;">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 14h.01"/></svg>
+          <div><strong>Why this matters:</strong> We'll run ads from a separate Google Ads account in our system. Your old campaigns and our new ones would compete against each other in Google's auction, so we need you to pause yours first.</div>
         </div>
-      </div>
 
-      <div class="pause-block" id="pause-block">
-        <h4>Here's what to do</h4>
-        <ol>
-          <li>Open <strong>Google Ads</strong> (ads.google.com) in a new tab and sign in.</li>
-          <li>Go to <strong>Campaigns</strong>. For each active campaign, click the status toggle to pause it.</li>
-          <li>Wait until every campaign shows status <strong>Paused</strong>.</li>
-          <li>Come back here and check the box below.</li>
-        </ol>
-        <label class="pause-confirm">
-          <input type="checkbox" id="pause-confirm-cb" onchange="updatePauseConfirm()">
-          <span><strong>I've paused all of my existing Google Ads campaigns.</strong></span>
-        </label>
-      </div>
+        <div class="pause-panel">
+          <h4>Here's what to do</h4>
+          <ol>
+            <li>Open Google Ads (ads.google.com) in a new tab and sign in.</li>
+            <li>Go to Campaigns. For each active campaign, click the status toggle to pause it.</li>
+            <li>Wait until every campaign shows status Paused.</li>
+            <li>Come back here and check the box below.</li>
+          </ol>
+          <label class="pause-confirm">
+            <input type="checkbox" ${state.pauseConfirmed ? 'checked' : ''} onchange="state.pauseConfirmed = this.checked; render();">
+            <span><strong>I've paused all of my existing Google Ads campaigns.</strong></span>
+          </label>
+        </div>
+      ` : ''}
     </div>
+  `;
+  return shellWrap({ content, footerOpts: { canContinue, showBack: false } });
+}
 
-    <div class="flow-footer">
-      <span></span>
-      <button class="btn primary" id="step1-next" onclick="goNext()" disabled>Continue →</button>
-    </div>
-  </section>
+function pickPriorAds(val) {
+  state.priorAds = val;
+  if (val !== 'running' || scenario.accountOwnership === 'operator-owned') {
+    state.pauseConfirmed = true;
+  } else {
+    state.pauseConfirmed = false;
+  }
+  render();
+}
 
-  <!-- ─────────────── STEP 2: Connect Google Ads (operator-owned only) ─────────────── -->
-  <section class="step" data-step="2">
-    <div class="step-card">
-      <h2>Connect your Google Ads account.</h2>
-      <p class="lead">We'll send you to Google to sign in. If you don't have an account, Google will walk you through creating one.</p>
-
-      <div class="oauth-card" id="gads-pre">
-        <div class="oauth-logo gads">G</div>
-        <div class="oauth-title">Sign in with Google Ads</div>
-        <div class="oauth-sub" id="gads-sub">You'll be redirected to Google. Once you're signed in we'll automatically link to our system to manage your campaigns.</div>
-        <button class="btn primary large" onclick="connectGAds()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="white" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Connect Google Ads
-        </button>
+/* ─── 2. Connect Google Ads ─── */
+function stepConnectGads() {
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Connect your Google Ads account</h1>
+        <p>Sign in to Google. If you don't have a Google Ads account yet, Google will walk you through creating one.</p>
       </div>
 
-      <div class="oauth-connected" id="gads-connected">
-        <div class="oauth-conn-head">
-          <div class="oauth-conn-icon">✓</div>
-          <div class="oauth-conn-text">
-            <div class="biz" id="gads-conn-name">Junior's Pizzeria — Google Ads</div>
-            <div class="addr">Customer ID 471-238-9925 · linked to Reach</div>
+      ${state.gadsConnected ? `
+        <div class="oauth-connected">
+          <div class="oauth-conn-head">
+            <div class="oauth-conn-icon">✓</div>
+            <div class="oauth-conn-text">
+              <div class="biz">Junior's Pizzeria — Google Ads</div>
+              <div class="meta">Customer ID 471-238-9925 · linked to Reach</div>
+            </div>
+            <button class="oauth-disconnect" onclick="state.gadsConnected = false; render();">Disconnect</button>
           </div>
         </div>
-      </div>
+      ` : `
+        <div class="oauth-card">
+          <div class="oauth-logo" data-provider="gads">G</div>
+          <div class="oauth-title">Sign in with Google Ads</div>
+          <div class="oauth-sub">You'll be redirected to Google. Once you're signed in we'll link to our system automatically.</div>
+          <button class="btn btn-primary btn-large" onclick="connectGads()">Connect Google Ads</button>
+        </div>
+      `}
     </div>
+  `;
+  return shellWrap({ content, footerOpts: { canContinue: state.gadsConnected } });
+}
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" id="step2-next" onclick="goNext()" disabled>Continue →</button>
-    </div>
-  </section>
+function connectGads() {
+  // Simulate OAuth round-trip
+  setTimeout(() => { state.gadsConnected = true; render(); }, 700);
+}
 
-  <!-- ─────────────── STEP 3: Connect Google Business Profile ─────────────── -->
-  <section class="step" data-step="3">
-    <div class="step-card">
-      <h2>Connect your Google Business listing.</h2>
-      <p class="lead">This is your restaurant's listing on Google Maps. We'll use your photos, hours, and reviews so your ad looks like you. We never edit your listing — only read it.</p>
+/* ─── 3. Connect Google Business Profile ─── */
+function stepConnectGbp() {
+  const locCount = scenario.locations.length;
+  const locText = locCount === 1
+    ? scenario.locations[0].addr + ' · ★ 4.7 (1,349 reviews)'
+    : `${locCount} locations · ★ 4.7 (1,349 reviews total)`;
 
-      <div class="oauth-card" id="gbp-pre">
-        <div class="oauth-logo google">G</div>
-        <div class="oauth-title">Connect Google Business</div>
-        <div class="oauth-sub">You'll be redirected to Google to confirm you want to share your Business Profile info. You can disconnect anytime.</div>
-        <button class="btn primary large" onclick="connectGBP()">
-          Connect Google Business
-        </button>
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Connect your Google Business listing</h1>
+        <p>We'll use your photos, hours, and reviews so your ad looks like you. We never edit your listing — only read it.</p>
       </div>
 
-      <div class="oauth-connected" id="gbp-connected">
-        <div class="oauth-conn-head">
-          <div class="oauth-conn-icon">✓</div>
-          <div class="oauth-conn-text">
-            <div class="biz" id="gbp-conn-name">Junior's Pizzeria</div>
-            <div class="addr" id="gbp-conn-addr">3 locations · ★ 4.7 (1,349 reviews total)</div>
+      ${state.gbpConnected ? `
+        <div class="oauth-connected">
+          <div class="oauth-conn-head">
+            <div class="oauth-conn-icon">✓</div>
+            <div class="oauth-conn-text">
+              <div class="biz">Junior's Pizzeria</div>
+              <div class="meta">${locText}</div>
+            </div>
+            <button class="oauth-disconnect" onclick="state.gbpConnected = false; render();">Disconnect</button>
+          </div>
+          <div class="oauth-conn-grid">
+            <div class="oauth-conn-stat"><strong>${locCount === 1 ? '12' : '36'}</strong>Photos pulled</div>
+            <div class="oauth-conn-stat"><strong>7</strong>Open days/week</div>
+            <div class="oauth-conn-stat"><strong>4.7</strong>Average rating</div>
           </div>
         </div>
-        <div class="oauth-conn-grid">
-          <div class="oauth-conn-stat"><strong id="gbp-photos">36</strong>Photos pulled</div>
-          <div class="oauth-conn-stat"><strong>7</strong>Open days/week</div>
-          <div class="oauth-conn-stat"><strong>4.7</strong>Average rating</div>
+      ` : `
+        <div class="oauth-card">
+          <div class="oauth-logo" data-provider="gbp">G</div>
+          <div class="oauth-title">Connect Google Business</div>
+          <div class="oauth-sub">You'll be redirected to Google to confirm you want to share your Business Profile info. You can disconnect anytime.</div>
+          <button class="btn btn-primary btn-large" onclick="connectGbp()">Connect Google Business</button>
         </div>
-      </div>
+      `}
     </div>
+  `;
+  return shellWrap({ content, footerOpts: { canContinue: state.gbpConnected } });
+}
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" id="step3-next" onclick="goNext()" disabled>Continue →</button>
-    </div>
-  </section>
+function connectGbp() {
+  setTimeout(() => { state.gbpConnected = true; render(); }, 700);
+}
 
-  <!-- ─────────────── STEP 4: Map locations ─────────────── -->
-  <section class="step" data-step="4">
-    <div class="step-card">
-      <h2 id="step4-title">Map your locations.</h2>
-      <p class="lead" id="step4-lead">Match each of your restaurant locations to its Google Business listing. Uncheck any location you don't want to run ads for.</p>
+/* ─── 4. Map locations ─── */
+function stepLocations() {
+  const locCount = scenario.locations.length;
+  const isSingle = locCount === 1;
 
-      <div class="locmap-grid" id="locmap-grid">
-        <!-- Rows render dynamically based on scenario -->
-      </div>
+  // Initialize locmap if needed
+  scenario.locations.forEach(loc => {
+    if (!state.locmap[loc.id]) {
+      state.locmap[loc.id] = { included: true, gbpLocationId: loc.gbpDefault };
+    }
+  });
 
-      <div class="locmap-summary" id="locmap-summary">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7l2.5 2.5L11 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        You're setting up <strong id="locmap-count">3</strong> campaigns.
-      </div>
-    </div>
+  const includedCount = Object.values(state.locmap).filter(m => m.included).length;
+  const validMap = includedCount > 0 && Object.values(state.locmap)
+    .every(m => !m.included || !!m.gbpLocationId);
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" id="step4-next" onclick="goNext()" disabled>Continue →</button>
-    </div>
-  </section>
+  const heading = isSingle ? 'Confirm your location' : 'Map your locations';
+  const lead = isSingle
+    ? "We'll match your restaurant to its Google Business listing."
+    : "Match each restaurant location to its Google Business listing. Uncheck any location you don't want to run ads for.";
 
-  <!-- ─────────────── STEP 5: GTM (full Acquire only) ─────────────── -->
-  <section class="step" data-step="5">
-    <div class="step-card">
-      <h2>Set up tracking with Google Tag Manager.</h2>
-      <p class="lead">We need to install a small tracking snippet on your website so we can measure your ad's results. Pick how you want to share access to your Google Tag Manager.</p>
-
-      <div class="gtm-card">
-        <div style="font-size:13px; color:var(--subtle-fg);">
-          Google Tag Manager (GTM) is the standard way Google customers install measurement tags on their websites. You probably already have one — if not, no problem.
+  const rows = scenario.locations.map(loc => {
+    const m = state.locmap[loc.id];
+    const gbpLoc = scenario.gbpLocations.find(g => g.id === m.gbpLocationId);
+    let mappedSlot;
+    if (!m.included) {
+      mappedSlot = `<span class="locmap-excluded-text">(excluded — no ad)</span>`;
+    } else if (gbpLoc) {
+      mappedSlot = `
+        <div class="locmap-gbp-mapped">
+          <span class="check">✓</span>
+          <div class="text">
+            <div class="name">${gbpLoc.title}</div>
+            <div class="addr">${gbpLoc.addr}</div>
+          </div>
+          <button class="clear" onclick="clearLocMapping('${loc.id}')" title="Clear mapping">×</button>
         </div>
-        <div class="options">
-          <button class="option selected" data-gtm-opt="oauth" onclick="pickGtm(this, 'oauth')">
-            <div class="name">Connect with one click (recommended)</div>
+      `;
+    } else {
+      const opts = scenario.gbpLocations.map(g =>
+        `<option value="${g.id}">${g.title} — ${g.addr}</option>`
+      ).join('');
+      mappedSlot = `
+        <div class="locmap-gbp-picker">
+          <select onchange="setLocMapping('${loc.id}', this.value)">
+            <option value="">Choose Google location…</option>
+            ${opts}
+          </select>
+        </div>
+      `;
+    }
+    return `
+      <div class="locmap-row" data-excluded="${!m.included}" data-unmapped="${m.included && !m.gbpLocationId}">
+        <input type="checkbox" class="locmap-include" ${m.included ? 'checked' : ''} onchange="toggleLocInclude('${loc.id}', this.checked)">
+        <div class="locmap-loc">
+          <div class="name">${loc.name}</div>
+          <div class="addr">${loc.addr}</div>
+        </div>
+        <div class="locmap-arrow">↔</div>
+        <div>${mappedSlot}</div>
+      </div>
+    `;
+  }).join('');
+
+  const content = `
+    <div class="shell-main-wide">
+      <div class="step-header">
+        <h1>${heading}</h1>
+        <p>${lead}</p>
+      </div>
+
+      <div class="locmap-grid">${rows}</div>
+
+      <div class="locmap-summary">
+        ${isSingle
+          ? `Your ad will run for <strong>1 location</strong>.`
+          : `You're setting up <strong>${includedCount} ${includedCount === 1 ? 'campaign' : 'campaigns'}</strong>.`}
+      </div>
+    </div>
+  `;
+  return shellWrap({ content, footerOpts: { canContinue: validMap } });
+}
+
+function toggleLocInclude(locId, checked) {
+  state.locmap[locId].included = checked;
+  if (!checked) {
+    state.locmap[locId].gbpLocationId = null;
+  } else {
+    const loc = scenario.locations.find(l => l.id === locId);
+    if (loc) state.locmap[locId].gbpLocationId = loc.gbpDefault;
+  }
+  render();
+}
+function setLocMapping(locId, gbpId) {
+  state.locmap[locId].gbpLocationId = gbpId || null;
+  render();
+}
+function clearLocMapping(locId) {
+  state.locmap[locId].gbpLocationId = null;
+  render();
+}
+
+/* ─── 5. GTM installation ─── */
+function stepGtm() {
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Set up Google Tag Manager</h1>
+        <p>We need to install a small tracking snippet on your website so we can measure your ad's results. Pick how you'd like to share access.</p>
+      </div>
+
+      <div class="info-banner">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6.5v4M10 13.5h.01"/></svg>
+        <div>Google Tag Manager (GTM) is how most Google customers install measurement tags on their websites. You probably already have one — if not, no problem.</div>
+      </div>
+
+      <div class="gtm-options">
+        <button class="choice-card" data-selected="${state.gtmOption === 'oauth'}" onclick="state.gtmOption = 'oauth'; render();">
+          <span class="choice-radio"></span>
+          <div>
+            <div class="label">Connect with one click (recommended)</div>
             <div class="sub">Sign in to Google Tag Manager and authorize Reach. We'll handle the rest.</div>
-          </button>
-          <button class="option" data-gtm-opt="invite" onclick="pickGtm(this, 'invite')">
-            <div class="name">Add us as a user</div>
+          </div>
+        </button>
+        <button class="choice-card" data-selected="${state.gtmOption === 'invite'}" onclick="state.gtmOption = 'invite'; render();">
+          <span class="choice-radio"></span>
+          <div>
+            <div class="label">Add us as a user</div>
             <div class="sub">Invite reach-tag@reachapp.com as an admin on your container. Useful if you want manual review.</div>
-          </button>
-          <button class="option" data-gtm-opt="help" onclick="pickGtm(this, 'help')">
-            <div class="name">I don't have GTM yet</div>
+          </div>
+        </button>
+        <button class="choice-card" data-selected="${state.gtmOption === 'help'}" onclick="state.gtmOption = 'help'; render();">
+          <span class="choice-radio"></span>
+          <div>
+            <div class="label">I don't have GTM yet</div>
             <div class="sub">We'll walk you through creating one. Takes about 5 minutes.</div>
-          </button>
-        </div>
+          </div>
+        </button>
       </div>
     </div>
+  `;
+  return shellWrap({ content, footerOpts: { canContinue: !!state.gtmOption } });
+}
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" onclick="goNext()">Continue →</button>
-    </div>
-  </section>
+/* ─── 6. Goal ─── */
+function stepGoal() {
+  const goals = [
+    { key: 'online-orders', icon: '🛵', name: 'More online orders', desc: 'Show up when people search for delivery and pickup near you.' },
+    { key: 'dine-in',       icon: '🪑', name: 'More dine-in',       desc: 'Drive walk-in customers and reservations from people nearby.' },
+    { key: 'both',          icon: '🍽️', name: 'Both',                desc: 'Promote both online orders and dine-in with a balanced campaign.' },
+  ];
 
-  <!-- ─────────────── STEP 6: Goal selection ─────────────── -->
-  <section class="step" data-step="6">
-    <div class="step-card">
-      <h2>What do you want more of?</h2>
-      <p class="lead">Pick one. We'll tune your ad to bring you more of what you choose. You can change this anytime.</p>
+  const content = `
+    <div class="shell-main-wide">
+      <div class="step-header">
+        <h1>What do you want more of?</h1>
+        <p>Pick one. We'll tune your ad to bring you more of what you choose. You can change this anytime.</p>
+      </div>
 
       <div class="goal-grid">
-        <button class="goal-card selected" data-goal="online-orders" onclick="pickGoal(this)">
-          <div class="goal-icon">🛵</div>
-          <div class="goal-name">More online orders</div>
-          <div class="goal-desc">Show up when people search for delivery and pickup near you.</div>
-        </button>
-        <button class="goal-card" data-goal="dine-in" onclick="pickGoal(this)">
-          <div class="goal-icon">🪑</div>
-          <div class="goal-name">More dine-in</div>
-          <div class="goal-desc">Drive walk-in customers and reservations from people nearby.</div>
-        </button>
-        <button class="goal-card" data-goal="both" onclick="pickGoal(this)">
-          <div class="goal-icon">🍽️</div>
-          <div class="goal-name">Both</div>
-          <div class="goal-desc">Promote both online orders and dine-in with a balanced campaign.</div>
-        </button>
+        ${goals.map(g => `
+          <button class="goal-card" data-selected="${state.goal === g.key}" onclick="state.goal = '${g.key}'; render();">
+            <div class="goal-icon">${g.icon}</div>
+            <div class="goal-name">${g.name}</div>
+            <div class="goal-desc">${g.desc}</div>
+          </button>
+        `).join('')}
       </div>
     </div>
+  `;
+  return shellWrap({ content, footerOpts: { canContinue: !!state.goal } });
+}
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" onclick="goNext()">Continue →</button>
-    </div>
-  </section>
+/* ─── 7. Service area + landing URL ─── */
+function stepServiceArea() {
+  const includedLocs = scenario.locations.filter(l => state.locmap[l.id]?.included);
+  const isMulti = includedLocs.length > 1;
 
-  <!-- ─────────────── STEP 7: Website + service area ─────────────── -->
-  <section class="step" data-step="7">
-    <div class="step-card">
-      <h2 id="step7-title">Where do you serve customers?</h2>
-      <p class="lead" id="step7-lead">For each location, set the area where you want your ad to show, and where customers will land when they tap it.</p>
+  // Default expanded state
+  if (state.expandedLocCard === null && includedLocs[0]) {
+    state.expandedLocCard = includedLocs[0].id;
+  }
 
-      <div id="location-cards-container">
-        <!-- Renders dynamically based on scenario locations -->
+  // Default radius
+  includedLocs.forEach(l => {
+    if (state.radius[l.id] === undefined) state.radius[l.id] = 4;
+  });
+
+  const cards = includedLocs.map((loc, idx) => {
+    const isExpanded = state.expandedLocCard === loc.id;
+    const showApplyAll = idx === 0 && includedLocs.length > 1;
+    const r = state.radius[loc.id];
+    return `
+      <div class="location-card" data-expanded="${isExpanded}">
+        <div class="location-card-head" onclick="toggleLocCard('${loc.id}')">
+          <div>
+            <div class="name">${loc.name}</div>
+            <div class="summary">juniorspizzeria.com/order · ${r} miles around ${loc.addr.split(',')[0]}</div>
+          </div>
+          <div class="chev">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 5l4 4 4-4"/></svg>
+          </div>
+        </div>
+        <div class="location-card-body">
+          <div class="form-group">
+            <label>Your website</label>
+            <div class="input-with-prefix">
+              <span class="prefix">https://</span>
+              <input type="text" value="juniorspizzeria.com/order">
+            </div>
+            <span class="helper">Where customers will land when they tap your ad.</span>
+          </div>
+
+          <div class="form-group">
+            <label>Service area</label>
+            <div class="targeting-tabs">
+              <button class="targeting-tab" data-active="true">Radius</button>
+              <button class="targeting-tab" data-active="false">Zip code or region</button>
+            </div>
+            <div class="area-card">
+              <div class="area-map"></div>
+              <div class="area-info">
+                <div class="where">Within ${r} miles of your restaurant</div>
+                <div class="addr">${loc.addr}</div>
+                <div class="radius-row">
+                  <input type="range" min="1" max="15" value="${r}" oninput="setRadius('${loc.id}', this.value)">
+                  <span class="radius-value">${r} mi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          ${showApplyAll ? `<button class="apply-all-link" onclick="alert('Settings applied to all locations. (Would propagate in production.)')">Apply this to all locations</button>` : ''}
+        </div>
       </div>
+    `;
+  }).join('');
+
+  const lead = isMulti
+    ? "For each location, set the area where you want your ad to show and where customers will land when they tap it."
+    : "Set the area where you want your ad to show and where customers will land when they tap it.";
+
+  const content = `
+    <div class="shell-main-wide">
+      <div class="step-header">
+        <h1>Where you serve customers</h1>
+        <p>${lead}</p>
+      </div>
+      ${cards}
     </div>
+  `;
+  return shellWrap({ content });
+}
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" onclick="goNext()">Continue →</button>
-    </div>
-  </section>
+function toggleLocCard(locId) {
+  state.expandedLocCard = state.expandedLocCard === locId ? null : locId;
+  render();
+}
+function setRadius(locId, val) {
+  state.radius[locId] = Number(val);
+  render();
+}
 
-  <!-- ─────────────── STEP 8: About your business ─────────────── -->
-  <section class="step" data-step="8">
-    <div class="step-card">
-      <h2>Tell us about your restaurant.</h2>
-      <p class="lead">We've drafted this from your website and Google Business listing. Edit anything that doesn't sound like you.</p>
-
-      <div class="detected-vertical">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 6.5l2.5 2.5L10 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        We detected this is a <strong>&nbsp;pizzeria</strong>. <span class="change-link" onclick="alert('Vertical dropdown would open here in production.')">Change</span>
+/* ─── 8. About your restaurant ─── */
+function stepAbout() {
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>About your restaurant</h1>
+        <p>We've drafted this from your website and Google Business listing. Edit anything that doesn't sound like you.</p>
       </div>
 
-      <div class="field">
-        <label class="field-label">What you offer</label>
-        <textarea class="input" rows="3" id="about-offer">Hand-tossed New York pizza, Sicilian slices, classic pastas, and family-style entrées. We've been on Court Street since 1991.</textarea>
+      <div class="vertical-chip">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5l2.5 2.5L10 4"/></svg>
+        We detected this is a <strong>pizzeria</strong>.
+        <button class="change-link" onclick="alert('Vertical dropdown would open here in production.')">Change</button>
       </div>
 
-      <div class="field">
-        <label class="field-label">What makes you stand out <span class="sub">(optional but helps)</span></label>
-        <textarea class="input" rows="2" id="about-standout">Brick oven baked daily. Gluten-free crust available. Open late on Fridays and Saturdays.</textarea>
+      <div class="form-group">
+        <label>What you offer</label>
+        <textarea class="form-input" rows="3">Hand-tossed New York pizza, Sicilian slices, classic pastas, and family-style entrées. We've been on Court Street since 1991.</textarea>
       </div>
 
-      <span class="regen-link" onclick="alert('Regenerating from your website... (would re-scrape and refresh drafts in production)')">↻ Regenerate from my website</span>
-    </div>
+      <div class="form-group">
+        <label>What makes you stand out</label>
+        <span class="helper">Optional but helps — what's special about you?</span>
+        <textarea class="form-input" rows="2">Brick oven baked daily. Gluten-free crust available. Open late on Fridays and Saturdays.</textarea>
+      </div>
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" onclick="goNext()">Continue →</button>
+      <button class="regen-link" onclick="alert('Re-scraping your website... (would refresh drafts in production)')">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6a4 4 0 0 1 7-2.6M10 6a4 4 0 0 1-7 2.6M9 1v3h-3M3 11V8h3"/></svg>
+        Regenerate from my website
+      </button>
     </div>
-  </section>
+  `;
+  return shellWrap({ content });
+}
 
-  <!-- ─────────────── STEP 9: Daily budget ─────────────── -->
-  <section class="step" data-step="9">
-    <div class="step-card">
-      <h2>Choose your daily spend.</h2>
-      <p class="lead" id="step9-lead">This is how much we'll spend on Google each day to bring you customers.</p>
+/* ─── 9. Budget ─── */
+function stepBudget() {
+  const n = state.budget;
+  const ordersLow = Math.round(n * 0.7);
+  const ordersHi = Math.round(n * 1.2);
+  let blurb;
+  if (n < 12) {
+    blurb = `<strong>At $${n}/day,</strong> you'll show up in search results during some windows of the day but you'll miss out on demand at peak hours. Expect roughly ${ordersLow}–${ordersHi} new online orders per week once your ad is fully ramped up.`;
+  } else if (n < 35) {
+    blurb = `<strong>At $${n}/day,</strong> based on what other pizzerias in Brooklyn see, we'd expect roughly ${ordersLow}–${ordersHi} new online orders per week once your ad is fully ramped up. Most of your spend will go toward people actively searching for pizza in your service area.`;
+  } else {
+    blurb = `<strong>At $${n}/day,</strong> you'll have one of the more aggressive ad budgets in your area — expect roughly ${ordersLow}–${ordersHi} new online orders per week and stronger coverage at every meal time.`;
+  }
+
+  const isOperatorPays = scenario.billing === 'operator-pays';
+  const isMulti = scenario.locations.length > 1;
+  const multiNote = isMulti ? ` <em>This applies across all ${scenario.locations.length} of your locations.</em>` : '';
+
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Your daily spend</h1>
+        <p>This is how much we'll spend on Google each day to bring you customers.${multiNote}</p>
+      </div>
 
       <div class="budget-display">
-        <div class="amt">$<span id="budget-amt">22</span><small>/day</small></div>
-        <div class="rec">Recommended for your area</div>
+        <div class="amt">$${n}<small>/day</small></div>
+        <div class="budget-rec-pill">Recommended for your area</div>
       </div>
 
-      <input type="range" min="5" max="100" value="22" step="1" class="budget-slider" id="budget-slider" oninput="updateBudget(this.value)">
+      <input type="range" min="5" max="100" value="${n}" step="1" class="budget-slider" oninput="state.budget = Number(this.value); render();">
       <div class="budget-scale">
         <span>$5</span><span>$25</span><span>$50</span><span>$100+</span>
       </div>
 
-      <div class="budget-projection" id="budget-proj">
-        <strong>At $22/day,</strong> based on what other pizzerias in Brooklyn see, we'd expect roughly 18–28 new online orders per week once your ad is fully ramped up. Most of your spend will go toward people actively searching for pizza in your service area.
-      </div>
+      <div class="budget-projection">${blurb}</div>
 
-      <div class="budget-billing covered" id="budget-billing-covered">
-        Your ad spend is covered by <strong id="billing-partner-name">Owner</strong>. You won't be charged.
-      </div>
-      <div class="field" id="budget-billing-operator-pays" style="display:none; margin-top:14px;">
-        <label class="field-label">Billing email</label>
-        <input class="input" type="email" placeholder="receipts@your-restaurant.com" value="">
-        <div class="field-help">Google sends ad spend receipts to this email.</div>
-      </div>
+      ${isOperatorPays ? `
+        <div class="form-group" style="margin-top: 20px;">
+          <label>Billing email</label>
+          <input class="form-input" type="email" placeholder="receipts@your-restaurant.com">
+          <span class="helper">Google sends ad spend receipts to this email.</span>
+        </div>
+      ` : `
+        <div class="budget-coverage">
+          Your ad spend is covered by <strong>${scenario.billingPartnerName}</strong>. You won't be charged.
+        </div>
+      `}
     </div>
+  `;
+  return shellWrap({ content });
+}
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" onclick="goNext()">Continue →</button>
-    </div>
-  </section>
-
-  <!-- ─────────────── STEP 10: Review your ad ─────────────── -->
-  <section class="step" data-step="10">
-    <div class="step-card">
-      <h2>Here's the ad we wrote for you.</h2>
-      <p class="lead">Edit any headline or search term. The preview on the right shows what people will actually see on Google.</p>
+/* ─── 10. Ad copy review ─── */
+function stepAdCopy() {
+  const content = `
+    <div class="shell-main-wide">
+      <div class="step-header">
+        <h1>Your ad</h1>
+        <p>Edit any headline or search term. The preview shows what people will actually see on Google.</p>
+      </div>
 
       <div class="ai-banner">
         <div class="ai-icon">✦</div>
@@ -1550,40 +2360,41 @@ body[data-scenario="tableside"] .ai-banner {
           <div class="ai-banner-title">Want a different take?</div>
           <div class="ai-banner-sub">We'll rewrite everything in a different style. You can also edit each line individually.</div>
         </div>
-        <button class="ai-banner-btn" onclick="alert('AI would regenerate all fields in production.')">Rewrite with AI</button>
+        <button class="btn btn-secondary" onclick="alert('AI would regenerate all fields in production.')">Rewrite</button>
       </div>
 
       <div class="review-grid">
         <div>
-          <div class="field">
-            <label class="field-label">Headlines</label>
+          <div class="form-group">
+            <label>Headlines</label>
             <div class="headlines-stack">
               <div class="headline-line">
-                <input class="input" type="text" value="Brick-Oven Pizza, Delivered Hot">
+                <input class="form-input" type="text" value="Brick-Oven Pizza, Delivered Hot">
                 <button class="regen-btn" title="Rewrite this line">↻</button>
               </div>
               <div class="headline-line">
-                <input class="input" type="text" value="Junior's Pizzeria — Brooklyn">
+                <input class="form-input" type="text" value="Junior's Pizzeria — Brooklyn">
                 <button class="regen-btn" title="Rewrite this line">↻</button>
               </div>
               <div class="headline-line">
-                <input class="input" type="text" value="Order Online for Pickup or Delivery">
+                <input class="form-input" type="text" value="Order Online for Pickup or Delivery">
                 <button class="regen-btn" title="Rewrite this line">↻</button>
               </div>
               <div class="headline-line">
-                <input class="input" type="text" value="Family-owned since 1991">
+                <input class="form-input" type="text" value="Family-owned since 1991">
                 <button class="regen-btn" title="Rewrite this line">↻</button>
               </div>
             </div>
           </div>
 
-          <div class="field">
-            <label class="field-label">Description</label>
-            <textarea class="input" rows="3">Family-owned New York pizzeria since 1991. Order online for fast pickup or local delivery — gluten-free crust available. Open late Friday and Saturday.</textarea>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea class="form-input" rows="3">Family-owned New York pizzeria since 1991. Order online for fast pickup or local delivery — gluten-free crust available. Open late Friday and Saturday.</textarea>
           </div>
 
-          <div class="field">
-            <label class="field-label">Search terms <span class="sub">(what people might type)</span></label>
+          <div class="form-group">
+            <label>Search terms</label>
+            <span class="helper">What people might type into Google.</span>
             <div class="chips">
               <span class="chip">pizza near me <span class="x">×</span></span>
               <span class="chip">brick oven pizza <span class="x">×</span></span>
@@ -1592,13 +2403,13 @@ body[data-scenario="tableside"] .ai-banner {
               <span class="chip">pizza by the slice <span class="x">×</span></span>
               <span class="chip">late night pizza <span class="x">×</span></span>
               <span class="chip">gluten free pizza <span class="x">×</span></span>
-              <span class="add-chip">+ Add</span>
+              <button class="add-chip">+ Add</button>
             </div>
           </div>
         </div>
 
         <div class="preview-pane">
-          <div class="preview-eyebrow">Preview · how your ad will look</div>
+          <div class="preview-eyebrow">Preview — how your ad will look</div>
 
           <div class="search-ad">
             <div class="search-ad-head">
@@ -1634,18 +2445,19 @@ body[data-scenario="tableside"] .ai-banner {
         </div>
       </div>
     </div>
+  `;
+  return shellWrap({ content, footerOpts: { continueLabel: 'Continue' } });
+}
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" onclick="goNext()">Looks good — continue →</button>
-    </div>
-  </section>
-
-  <!-- ─────────────── STEP 11: Tracking pixel installation (full Acquire only) ─────────────── -->
-  <section class="step" data-step="11">
-    <div class="step-card">
-      <h2>Last thing — install our tracking snippet.</h2>
-      <p class="lead">We need a small bit of code on your website so we can measure your ad's results. This usually takes about 2 minutes if you have access to your site, or a few minutes from your webmaster if you don't.</p>
+/* ─── 11. Tracking pixel ─── */
+function stepPixel() {
+  const snippet = `<script async src="https://cdn.reachapp.com/pixel.js" data-id="junior-pizzeria-4719"><\/script>`;
+  const content = `
+    <div class="shell-main-wide">
+      <div class="step-header">
+        <h1>Install the tracking snippet</h1>
+        <p>We need a small bit of code on your website so we can measure your ad's results. About 2 minutes if you have site access, or hand it off to your webmaster.</p>
+      </div>
 
       <div class="pixel-card">
         <div class="pixel-snippet-head">
@@ -1653,91 +2465,105 @@ body[data-scenario="tableside"] .ai-banner {
             <div class="pixel-snippet-title">Your tracking snippet</div>
             <div class="pixel-snippet-sub">Paste this just before the <code>&lt;/head&gt;</code> tag on every page of your site.</div>
           </div>
-          <button class="btn" onclick="copyPixelSnippet(this)" id="pixel-copy-btn">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="3" y="3" width="7" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M5 1h6v8" stroke="currentColor" stroke-width="1.5"/></svg>
+          <button class="copy-btn" onclick="copyPixelSnippet(this)">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="8" rx="1"/><path d="M5 1h6v8"/></svg>
             Copy
           </button>
         </div>
-        <pre class="pixel-snippet">&lt;script async src="https://cdn.reachapp.com/pixel.js" data-id="junior-pizzeria-4719"&gt;&lt;/script&gt;</pre>
+        <pre class="pixel-snippet">${snippet.replace(/</g, '&lt;')}</pre>
       </div>
 
-      <div class="pixel-platform-help">
-        <div class="pixel-platform-title">Need help installing it?</div>
-        <div class="pixel-platforms">
-          <button class="pixel-platform" onclick="togglePlatform(this)">
-            <span class="name">WordPress</span><span class="chev">▾</span>
-          </button>
-          <button class="pixel-platform" onclick="togglePlatform(this)">
-            <span class="name">Shopify</span><span class="chev">▾</span>
-          </button>
-          <button class="pixel-platform" onclick="togglePlatform(this)">
-            <span class="name">Squarespace</span><span class="chev">▾</span>
-          </button>
-          <button class="pixel-platform" onclick="togglePlatform(this)">
-            <span class="name">Other / custom site</span><span class="chev">▾</span>
-          </button>
-        </div>
+      <div class="section-label">Need help installing it?</div>
+      <div class="pixel-platforms">
+        <button class="pixel-platform" onclick="alert('WordPress install instructions would expand here.')">
+          <span class="name">WordPress</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5l3 3 3-3"/></svg>
+        </button>
+        <button class="pixel-platform" onclick="alert('Shopify install instructions would expand here.')">
+          <span class="name">Shopify</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5l3 3 3-3"/></svg>
+        </button>
+        <button class="pixel-platform" onclick="alert('Squarespace install instructions would expand here.')">
+          <span class="name">Squarespace</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5l3 3 3-3"/></svg>
+        </button>
+        <button class="pixel-platform" onclick="alert('Custom site install instructions would expand here.')">
+          <span class="name">Other / custom site</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5l3 3 3-3"/></svg>
+        </button>
       </div>
 
       <div class="pixel-confirm-options">
-        <label class="pixel-confirm-card" id="pixel-confirm-label">
-          <input type="checkbox" id="pixel-installed-cb" onchange="updatePixelInstalled()">
+        <label class="pixel-confirm-card" data-selected="${state.pixelStatus === 'confirmed-by-operator'}">
+          <input type="checkbox" ${state.pixelStatus === 'confirmed-by-operator' ? 'checked' : ''} onchange="confirmPixelInstall(this.checked)">
           <div>
             <div class="label">I've installed the tracking snippet on my website</div>
             <div class="sub">Pick this if you (or someone helping you) have already added the code above to your site.</div>
           </div>
         </label>
-
         <button class="pixel-defer-card" onclick="deferPixel()">
           <div>
             <div class="label">I'll do this later — hand it off to my webmaster</div>
-            <div class="sub">No problem. We'll generate a one-click handoff link you can email. Your ad will go live as soon as the snippet is installed.</div>
+            <div class="sub">We'll generate a one-click handoff link you can email. Your ad will go live as soon as the snippet is installed.</div>
           </div>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7 3l4 4-4 4"/></svg>
         </button>
       </div>
     </div>
+  `;
+  return shellWrap({ content, footerOpts: { canContinue: !!state.pixelStatus } });
+}
 
-    <div class="flow-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <button class="btn primary" id="step11-next" onclick="goNext()" disabled>Continue →</button>
-    </div>
-  </section>
+function copyPixelSnippet(btn) {
+  const snippet = `<script async src="https://cdn.reachapp.com/pixel.js" data-id="junior-pizzeria-4719"></script>`;
+  navigator.clipboard?.writeText(snippet);
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l2.5 2.5L11 3.5"/></svg>Copied';
+  setTimeout(() => { btn.innerHTML = orig; }, 1500);
+}
+function confirmPixelInstall(checked) {
+  state.pixelStatus = checked ? 'confirmed-by-operator' : null;
+  render();
+}
+function deferPixel() {
+  state.pixelStatus = 'deferred-to-webmaster';
+  state.completed.add('pixel');
+  continueStep();
+}
 
-  <!-- ─────────────── STEP 12: All set ─────────────── -->
-  <section class="step" data-step="12">
-    <div class="step-card" id="step12-pre">
-      <h2>You're ready to go.</h2>
-      <p class="lead">A quick look at what you've set up. Once you submit, our team takes it from here.</p>
+/* ─── 12. Review & submit ─── */
+function stepReview() {
+  if (state.submitted) {
+    return shellSuccessState();
+  }
+
+  const includedLocs = scenario.locations.filter(l => state.locmap[l.id]?.included);
+  const locCount = includedLocs.length;
+  const goalLabel = { 'online-orders': 'More online orders', 'dine-in': 'More dine-in', 'both': 'Both' }[state.goal];
+  const billingLine = scenario.billing === 'operator-pays'
+    ? `$${state.budget}/day charged to your Google Ads account`
+    : `Covered by ${scenario.billingPartnerName}`;
+
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Review and submit</h1>
+        <p>A quick look at what you've set up. Once you submit, our team takes it from here.</p>
+      </div>
 
       <div class="summary-card">
         <h3>Your campaign</h3>
-        <div class="summary-row">
-          <span class="key">Goal</span>
-          <span class="val">More online orders</span>
-        </div>
-        <div class="summary-row">
-          <span class="key">Locations</span>
-          <span class="val" id="summary-locations">3 — Court St, 5th Ave, Astoria</span>
-        </div>
-        <div class="summary-row">
-          <span class="key">Service area</span>
-          <span class="val">4 miles around each location</span>
-        </div>
-        <div class="summary-row">
-          <span class="key">Daily budget</span>
-          <span class="val">$22/day (across all locations)</span>
-        </div>
-        <div class="summary-row">
-          <span class="key">Billing</span>
-          <span class="val" id="summary-billing">Covered by Owner</span>
-        </div>
+        <div class="summary-row"><span class="key">Goal</span><span class="val">${goalLabel}</span></div>
+        <div class="summary-row"><span class="key">Locations</span><span class="val">${locCount === 1 ? '1 — ' + includedLocs[0].addr : locCount + ' restaurants'}</span></div>
+        <div class="summary-row"><span class="key">Service area</span><span class="val">Within ${state.radius[includedLocs[0]?.id] || 4} miles of each location</span></div>
+        <div class="summary-row"><span class="key">Daily budget</span><span class="val">$${state.budget}/day${locCount > 1 ? ' (across all locations)' : ''}</span></div>
+        <div class="summary-row"><span class="key">Billing</span><span class="val">${billingLine}</span></div>
       </div>
 
       <div class="timeline">
         <div class="timeline-head">What to expect over the next few weeks</div>
         <div class="timeline-track">
-          <div class="timeline-step now">
+          <div class="timeline-step" data-state="now">
             <div class="dot"></div>
             <div class="week">Week 1</div>
             <div class="what">Ad goes live. Google starts learning.</div>
@@ -1759,645 +2585,34 @@ body[data-scenario="tableside"] .ai-banner {
           </div>
         </div>
         <div class="timeline-expectations">
-          <strong>One thing to know:</strong> Google needs about three to four weeks of learning time before your ad finds the right audience. Early numbers will look uneven — some days great, some days quiet. That's how it's supposed to work. Don't worry about week-one numbers. We'll walk you through what's happening on your dashboard every step of the way.
+          <strong>One thing to know:</strong> Google needs about three to four weeks of learning time before your ad finds the right audience. Early numbers will look uneven — some days great, some days quiet. That's normal. Don't worry about week-one numbers. We'll walk you through what's happening on your dashboard every step of the way.
         </div>
       </div>
 
       <label class="terms-confirm">
-        <input type="checkbox" id="terms-cb" onchange="updateTerms()">
+        <input type="checkbox" ${state.termsAccepted ? 'checked' : ''} onchange="state.termsAccepted = this.checked; render();">
         <span class="text">I agree to the <a href="#">terms and conditions</a> and authorize Reach to set up and manage this ad campaign on my behalf.</span>
       </label>
-
-      <button class="btn primary large" id="submit-btn" onclick="submitCampaign()" disabled style="width: 100%; justify-content: center; font-size: 15px; padding: 14px 32px;">
-        We're ready — let's go
-      </button>
     </div>
-
-    <div class="step-card launch-success" id="step12-post" style="display:none;">
-      <div class="launch-emoji">🎉</div>
-      <h2 class="launch-title">We've got what we need.</h2>
-      <p class="launch-sub" id="launch-sub">Our team is setting up your ads. You'll be live on Google within a few days, and we'll send you a heads-up when your first customer activity comes in.</p>
-
-      <div class="launch-next">
-        <div class="head">What happens now</div>
-        <ol>
-          <li>Our team reviews your setup over the next day or two.</li>
-          <li>We finalize your tracking and launch your ad on Google.</li>
-          <li>You'll get an email when your ad goes live.</li>
-        </ol>
-      </div>
-
-      <a href="dashboard-prototype.html" class="btn primary large" style="font-size:15px; padding:14px 32px;">
-        Go to my dashboard →
-      </a>
-    </div>
-
-    <div class="flow-footer" id="step12-footer">
-      <button class="btn ghost" onclick="goPrev()">← Back</button>
-      <span></span>
-    </div>
-  </section>
-
-</main>
-
-<div class="confetti-layer" id="confetti"></div>
-
-<script>
-/* ═══════════════════════════════════════════════════════════════════════
-   SCENARIO DEFINITIONS — each scenario is a complete partner+tenant config
-   ═══════════════════════════════════════════════════════════════════════ */
-const SCENARIOS = {
-  'owner-multi': {
-    brandName: 'Owner',
-    brandMark: 'O',
-    productName: 'Owner Ads',
-    flowSubtitle: "A few quick questions and your ad goes live on Google Search and Google Maps. We'll do the rest.",
-    accountOwnership: 'reach-owned',
-    billing: 'reach-pays',
-    billingPartnerName: 'Owner',
-    gtmRequired: false,
-    pixelRequired: false,
-    locations: [
-      { id: 'court', name: "Junior's Pizzeria — Court St", addr: '318 Court St, Brooklyn, NY', gbpDefault: 'court' },
-      { id: '5th',   name: "Junior's Pizzeria — 5th Ave",  addr: '425 5th Ave, Brooklyn, NY',  gbpDefault: '5th' },
-      { id: 'astor', name: "Junior's Pizzeria — Astoria",  addr: '28-12 Steinway St, Astoria, NY', gbpDefault: 'astor' },
-    ],
-    gbpLocations: [
-      { id: 'court', title: "Junior's Pizzeria",          addr: '318 Court St, Brooklyn, NY' },
-      { id: '5th',   title: "Junior's Pizzeria — Park Slope", addr: '425 5th Ave, Brooklyn, NY' },
-      { id: 'astor', title: "Junior's Pizzeria — Astoria",    addr: '28-12 Steinway St, Astoria, NY' },
-    ],
-    shellLocText: '3 locations',
-    gbpPhotos: 36,
-  },
-  'owner-single': {
-    brandName: 'Owner',
-    brandMark: 'O',
-    productName: 'Owner Ads',
-    flowSubtitle: "A few quick questions and your ad goes live on Google Search and Google Maps. We'll do the rest.",
-    accountOwnership: 'reach-owned',
-    billing: 'reach-pays',
-    billingPartnerName: 'Owner',
-    gtmRequired: false,
-    pixelRequired: false,
-    locations: [
-      { id: 'court', name: "Junior's Pizzeria", addr: '318 Court St, Brooklyn, NY', gbpDefault: 'court' },
-    ],
-    gbpLocations: [
-      { id: 'court', title: "Junior's Pizzeria", addr: '318 Court St, Brooklyn, NY' },
-    ],
-    shellLocText: '318 Court St',
-    gbpPhotos: 12,
-  },
-  'tableside': {
-    brandName: 'Tableside',
-    brandMark: 'T',
-    productName: 'Tableside Ads',
-    flowSubtitle: "A few quick questions and your ad goes live on Google Search and Google Maps. Our team manages the campaign for you.",
-    accountOwnership: 'operator-owned',
-    billing: 'operator-pays',
-    billingPartnerName: 'Tableside',
-    gtmRequired: true,
-    pixelRequired: true,
-    locations: [
-      { id: 'court', name: "Junior's Pizzeria", addr: '318 Court St, Brooklyn, NY', gbpDefault: 'court' },
-    ],
-    gbpLocations: [
-      { id: 'court', title: "Junior's Pizzeria", addr: '318 Court St, Brooklyn, NY' },
-    ],
-    shellLocText: '318 Court St',
-    gbpPhotos: 12,
-  },
-};
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STATE
-   ═══════════════════════════════════════════════════════════════════════ */
-let scenarioName = 'owner-multi';
-let scenario = SCENARIOS[scenarioName];
-let visibleSteps = [];
-let currentStepIdx = 0;
-
-const state = {
-  priorAds: null,
-  pauseConfirmed: false,
-  gadsConnected: false,
-  gbpConnected: false,
-  locmap: {}, // reachBusinessId -> { included: bool, gbpLocationId: string|null }
-  pixelStatus: null, // 'confirmed-by-operator' | 'deferred-to-webmaster' | null
-  termsAccepted: false,
-};
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEPPER & STEP VISIBILITY
-   ═══════════════════════════════════════════════════════════════════════ */
-function computeVisibleSteps() {
-  const steps = [
-    { num: 1,  short: 'Account check' },
-    { num: 2,  short: 'Connect Ads', show: scenario.accountOwnership === 'operator-owned' },
-    { num: 3,  short: 'Google Business' },
-    { num: 4,  short: 'Map locations' },
-    { num: 5,  short: 'Tracking',   show: scenario.gtmRequired },
-    { num: 6,  short: 'Goal' },
-    { num: 7,  short: 'Service area' },
-    { num: 8,  short: 'About you' },
-    { num: 9,  short: 'Budget' },
-    { num: 10, short: 'Review ad' },
-    { num: 11, short: 'Tracking pixel', show: scenario.pixelRequired },
-    { num: 12, short: 'Launch' },
-  ];
-  return steps.filter(s => s.show !== false);
-}
-
-function renderStepper() {
-  const stepper = document.getElementById('stepper');
-  stepper.innerHTML = '';
-  visibleSteps.forEach((s, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'stepper-item' + (idx === currentStepIdx ? ' active' : idx < currentStepIdx ? ' done' : '');
-    btn.innerHTML = `<span class="stepper-dot">${idx + 1}</span>${s.short}`;
-    btn.onclick = () => jumpToVisibleIdx(idx);
-    stepper.appendChild(btn);
+  `;
+  return shellWrap({
+    content,
+    footerOpts: {
+      canContinue: state.termsAccepted,
+      continueLabel: "We're ready — let's go",
+      onContinue: 'submitCampaign()',
+    },
   });
-}
-
-function showCurrentStep() {
-  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-  const stepNum = visibleSteps[currentStepIdx].num;
-  document.querySelector(`.step[data-step="${stepNum}"]`).classList.add('active');
-  renderStepper();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function goNext() {
-  // Gate checks before advancing
-  const stepNum = visibleSteps[currentStepIdx].num;
-  if (stepNum === 1) {
-    if (!state.priorAds) return;
-    if (scenario.accountOwnership === 'reach-owned' && state.priorAds === 'running' && !state.pauseConfirmed) return;
-  }
-  if (stepNum === 2 && !state.gadsConnected) return;
-  if (stepNum === 3 && !state.gbpConnected) return;
-  if (stepNum === 4 && !locmapIsValid()) return;
-  if (stepNum === 11 && !state.pixelStatus) return;
-
-  if (currentStepIdx < visibleSteps.length - 1) {
-    currentStepIdx++;
-    showCurrentStep();
-  }
-}
-
-function goPrev() {
-  if (currentStepIdx > 0) {
-    currentStepIdx--;
-    showCurrentStep();
-  }
-}
-
-function jumpToVisibleIdx(idx) {
-  // Allow free navigation in prototype — production would gate forward jumps
-  currentStepIdx = idx;
-  showCurrentStep();
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   SCENARIO SWITCHING
-   ═══════════════════════════════════════════════════════════════════════ */
-function setScenario(name) {
-  scenarioName = name;
-  scenario = SCENARIOS[name];
-  document.body.dataset.scenario = name;
-
-  // Update scenario tabs
-  document.querySelectorAll('.scenario-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.sc === name);
-  });
-
-  // Update shell chrome
-  document.getElementById('brand-mark').textContent = scenario.brandMark;
-  document.getElementById('brand-name').textContent = scenario.brandName;
-  document.getElementById('shell-loc-text').textContent = scenario.shellLocText;
-  document.getElementById('flow-eyebrow').textContent = scenario.productName + ' · New campaign';
-  document.getElementById('flow-subtitle').textContent = scenario.flowSubtitle;
-  document.getElementById('flow-title').textContent =
-    scenario.locations.length > 1
-      ? "Let's get your restaurants in front of more customers."
-      : "Let's get your restaurant in front of more customers.";
-
-  // Update Step 4 lead copy for single-location case
-  if (scenario.locations.length === 1) {
-    document.getElementById('step4-title').textContent = 'Confirm your location.';
-    document.getElementById('step4-lead').textContent = "We'll match your restaurant to its Google Business listing.";
-  } else {
-    document.getElementById('step4-title').textContent = 'Map your locations.';
-    document.getElementById('step4-lead').textContent = "Match each of your restaurant locations to its Google Business listing. Uncheck any location you don't want to run ads for.";
-  }
-
-  // Update Step 7 lead
-  if (scenario.locations.length === 1) {
-    document.getElementById('step7-title').textContent = 'Where do you serve customers?';
-    document.getElementById('step7-lead').textContent = "Set the area where you want your ad to show, and where customers will land when they tap it.";
-  } else {
-    document.getElementById('step7-title').textContent = 'Where do you serve customers?';
-    document.getElementById('step7-lead').textContent = "For each location, set the area where you want your ad to show, and where customers will land when they tap it.";
-  }
-
-  // Update Step 1 copy for the "running" answer based on ownership
-  const runningSub = document.getElementById('running-sub');
-  if (scenario.accountOwnership === 'reach-owned') {
-    runningSub.textContent = "No problem — but you'll need to pause those campaigns before we launch yours.";
-  } else {
-    runningSub.textContent = "No problem — we'll just connect to your existing account.";
-  }
-
-  // Update Step 9 billing display
-  if (scenario.billing === 'operator-pays') {
-    document.getElementById('budget-billing-covered').style.display = 'none';
-    document.getElementById('budget-billing-operator-pays').style.display = 'block';
-  } else {
-    document.getElementById('budget-billing-covered').style.display = 'block';
-    document.getElementById('budget-billing-operator-pays').style.display = 'none';
-    document.getElementById('billing-partner-name').textContent = scenario.billingPartnerName;
-  }
-
-  // Update Step 12 summary
-  if (scenario.locations.length === 1) {
-    document.getElementById('summary-locations').textContent = '1 — ' + scenario.locations[0].addr;
-  } else {
-    const names = scenario.locations.map(l => l.name.split('—')[1]?.trim() || l.name).join(', ');
-    document.getElementById('summary-locations').textContent = scenario.locations.length + ' — ' + names;
-  }
-  if (scenario.billing === 'operator-pays') {
-    document.getElementById('summary-billing').textContent = '$22/day charged to your Google Ads account';
-  } else {
-    document.getElementById('summary-billing').textContent = 'Covered by ' + scenario.billingPartnerName;
-  }
-
-  // Update Step 12 launch-sub copy
-  if (scenario.billing === 'operator-pays') {
-    document.getElementById('launch-sub').textContent = "Our team is finalizing your setup. You'll be live on Google within a few days, and we'll send you a heads-up when your first customer activity comes in.";
-  } else {
-    document.getElementById('launch-sub').textContent = "Our team is setting up your ads. You'll be live on Google within a few days, and we'll send you a heads-up when your first customer activity comes in.";
-  }
-
-  // Update Step 3 GBP confirmation copy
-  if (scenario.locations.length === 1) {
-    document.getElementById('gbp-conn-addr').textContent = scenario.locations[0].addr + ' · ★ 4.7 (1,349 reviews)';
-  } else {
-    document.getElementById('gbp-conn-addr').textContent = scenario.locations.length + ' locations · ★ 4.7 (1,349 reviews total)';
-  }
-  document.getElementById('gbp-photos').textContent = scenario.gbpPhotos;
-
-  // Reset wizard state
-  state.priorAds = null;
-  state.pauseConfirmed = false;
-  state.gadsConnected = false;
-  state.gbpConnected = false;
-  state.locmap = {};
-  state.pixelStatus = null;
-  state.termsAccepted = false;
-  scenario.locations.forEach(l => {
-    state.locmap[l.id] = { included: true, gbpLocationId: l.gbpDefault };
-  });
-
-  // Reset all UI elements
-  document.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('priorads-warning').style.display = 'none';
-  document.getElementById('pause-block').classList.remove('visible');
-  document.getElementById('pause-confirm-cb').checked = false;
-  document.getElementById('gads-pre').style.display = 'block';
-  document.getElementById('gads-connected').classList.remove('visible');
-  document.getElementById('gbp-pre').style.display = 'block';
-  document.getElementById('gbp-connected').classList.remove('visible');
-  document.getElementById('terms-cb').checked = false;
-  document.getElementById('submit-btn').disabled = true;
-  const pixelCb = document.getElementById('pixel-installed-cb');
-  if (pixelCb) pixelCb.checked = false;
-  const pixelLabel = document.getElementById('pixel-confirm-label');
-  if (pixelLabel) pixelLabel.classList.remove('selected');
-  document.getElementById('step12-pre').style.display = 'block';
-  document.getElementById('step12-post').style.display = 'none';
-  document.getElementById('step12-footer').style.display = 'flex';
-
-  renderLocationMapping();
-  renderLocationCards();
-  recomputeNextButtons();
-
-  // Recompute visible steps and reset to step 1
-  visibleSteps = computeVisibleSteps();
-  currentStepIdx = 0;
-  showCurrentStep();
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 1: PRIOR-ADS GATE
-   ═══════════════════════════════════════════════════════════════════════ */
-function pickPriorAds(btn, val) {
-  document.querySelectorAll('[data-priorads]').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  state.priorAds = val;
-
-  const isReachOwned = scenario.accountOwnership === 'reach-owned';
-  const showPauseGate = (val === 'running' && isReachOwned);
-  document.getElementById('priorads-warning').style.display = showPauseGate ? 'grid' : 'none';
-  document.getElementById('pause-block').classList.toggle('visible', showPauseGate);
-  document.getElementById('pause-confirm-cb').checked = false;
-  state.pauseConfirmed = !showPauseGate;
-  recomputeNextButtons();
-}
-
-function updatePauseConfirm() {
-  state.pauseConfirmed = document.getElementById('pause-confirm-cb').checked;
-  recomputeNextButtons();
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 2: GOOGLE ADS OAUTH
-   ═══════════════════════════════════════════════════════════════════════ */
-function connectGAds() {
-  const btn = event.target.closest('button');
-  btn.disabled = true;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="white" stroke-width="1.7" stroke-dasharray="20 8" /></svg>Connecting to Google…';
-  setTimeout(() => {
-    document.getElementById('gads-pre').style.display = 'none';
-    document.getElementById('gads-connected').classList.add('visible');
-    state.gadsConnected = true;
-    recomputeNextButtons();
-  }, 900);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 3: GOOGLE BUSINESS PROFILE OAUTH
-   ═══════════════════════════════════════════════════════════════════════ */
-function connectGBP() {
-  const btn = event.target.closest('button');
-  btn.disabled = true;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="white" stroke-width="1.7" stroke-dasharray="20 8" /></svg>Connecting to Google…';
-  setTimeout(() => {
-    document.getElementById('gbp-pre').style.display = 'none';
-    document.getElementById('gbp-connected').classList.add('visible');
-    state.gbpConnected = true;
-    recomputeNextButtons();
-  }, 900);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 4: LOCATION MAPPING
-   ═══════════════════════════════════════════════════════════════════════ */
-function renderLocationMapping() {
-  const grid = document.getElementById('locmap-grid');
-  grid.innerHTML = '';
-
-  scenario.locations.forEach(loc => {
-    const mapState = state.locmap[loc.id];
-    const gbpLoc = scenario.gbpLocations.find(g => g.id === mapState.gbpLocationId);
-    const row = document.createElement('div');
-    row.className = 'locmap-row';
-    if (!mapState.included) row.classList.add('excluded');
-    else if (!mapState.gbpLocationId) row.classList.add('unmapped');
-
-    row.innerHTML = `
-      <input type="checkbox" class="locmap-include" ${mapState.included ? 'checked' : ''} data-locid="${loc.id}">
-      <div class="locmap-loc">
-        <div class="name">${loc.name}</div>
-        <div class="addr">${loc.addr}</div>
-      </div>
-      <div class="locmap-arrow">↔</div>
-      <div class="locmap-gbp-target" data-locid="${loc.id}"></div>
-    `;
-    grid.appendChild(row);
-
-    const target = row.querySelector('.locmap-gbp-target');
-    if (!mapState.included) {
-      target.innerHTML = '<span style="font-size:12.5px; color: var(--muted-fg);">(excluded — no ad)</span>';
-    } else if (gbpLoc) {
-      target.innerHTML = `
-        <div class="locmap-gbp-mapped">
-          <span class="check">✓</span>
-          <div class="text">
-            <div class="name">${gbpLoc.title}</div>
-            <div class="addr">${gbpLoc.addr}</div>
-          </div>
-          <span class="clear" data-locid="${loc.id}" title="Clear mapping">×</span>
-        </div>
-      `;
-    } else {
-      const opts = scenario.gbpLocations.map(g => `<option value="${g.id}">${g.title} — ${g.addr}</option>`).join('');
-      target.innerHTML = `
-        <div class="locmap-gbp-picker">
-          <select data-locid="${loc.id}">
-            <option value="">Choose Google location…</option>
-            ${opts}
-          </select>
-        </div>
-      `;
-    }
-  });
-
-  // Wire up handlers
-  grid.querySelectorAll('.locmap-include').forEach(cb => {
-    cb.onchange = () => {
-      const id = cb.dataset.locid;
-      state.locmap[id].included = cb.checked;
-      if (!cb.checked) state.locmap[id].gbpLocationId = null;
-      else if (!state.locmap[id].gbpLocationId) {
-        const def = scenario.locations.find(l => l.id === id).gbpDefault;
-        state.locmap[id].gbpLocationId = def;
-      }
-      renderLocationMapping();
-      updateLocmapSummary();
-      recomputeNextButtons();
-    };
-  });
-  grid.querySelectorAll('.locmap-gbp-mapped .clear').forEach(x => {
-    x.onclick = () => {
-      const id = x.dataset.locid;
-      state.locmap[id].gbpLocationId = null;
-      renderLocationMapping();
-      recomputeNextButtons();
-    };
-  });
-  grid.querySelectorAll('.locmap-gbp-picker select').forEach(sel => {
-    sel.onchange = () => {
-      const id = sel.dataset.locid;
-      state.locmap[id].gbpLocationId = sel.value || null;
-      renderLocationMapping();
-      recomputeNextButtons();
-    };
-  });
-
-  updateLocmapSummary();
-}
-
-function updateLocmapSummary() {
-  const count = Object.values(state.locmap).filter(s => s.included).length;
-  document.getElementById('locmap-count').textContent = count;
-}
-
-function locmapIsValid() {
-  const included = Object.values(state.locmap).filter(s => s.included);
-  if (included.length === 0) return false;
-  return included.every(s => !!s.gbpLocationId);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 5: GTM
-   ═══════════════════════════════════════════════════════════════════════ */
-function pickGtm(btn, opt) {
-  document.querySelectorAll('[data-gtm-opt]').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 6: GOAL
-   ═══════════════════════════════════════════════════════════════════════ */
-function pickGoal(btn) {
-  document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
-  btn.classList.add('selected');
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 7: WEBSITE + SERVICE AREA (per-location cards)
-   ═══════════════════════════════════════════════════════════════════════ */
-function renderLocationCards() {
-  const container = document.getElementById('location-cards-container');
-  container.innerHTML = '';
-  const includedLocs = scenario.locations.filter(l => state.locmap[l.id]?.included);
-
-  includedLocs.forEach((loc, idx) => {
-    const card = document.createElement('div');
-    card.className = 'location-card' + (idx === 0 ? ' expanded' : '');
-    const showApplyAll = idx === 0 && includedLocs.length > 1;
-    card.innerHTML = `
-      <div class="location-card-head" onclick="toggleLocCard(this)">
-        <div>
-          <div class="name">${loc.name}</div>
-          <div class="summary">juniorspizzeria.com/order · 4 miles around ${loc.addr}</div>
-        </div>
-        <div class="chev">▼</div>
-      </div>
-      <div class="location-card-body">
-        <div class="field">
-          <label class="field-label">Your website <span class="sub">(where ad clicks go)</span></label>
-          <div class="input-wrap">
-            <span class="input-prefix">🌐</span>
-            <input class="input with-prefix" type="text" value="juniorspizzeria.com/order" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="field-label">Service area</label>
-          <div class="targeting-tabs">
-            <button class="targeting-tab active" onclick="switchTargeting(this, 'radius')">Radius</button>
-            <button class="targeting-tab" onclick="switchTargeting(this, 'region')">Zip code or region</button>
-          </div>
-          <div class="area-card">
-            <div class="area-map"></div>
-            <div class="area-info">
-              <div class="where">Within <span class="radius-text">4</span> miles of your restaurant</div>
-              <div class="addr">${loc.addr}</div>
-              <div class="radius-row">
-                <input type="range" min="1" max="15" value="4" oninput="this.closest('.area-card').querySelector('.radius-text').textContent=this.value; this.closest('.area-card').querySelector('.radius-num').textContent=this.value;">
-                <span class="radius-value"><span class="radius-num">4</span> miles</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        ${showApplyAll ? '<span class="apply-all-link visible" onclick="alert(\'Settings applied to all locations. (Would propagate in production.)\')">Apply this to all locations</span>' : ''}
-      </div>
-    `;
-    container.appendChild(card);
-  });
-}
-
-function toggleLocCard(head) {
-  head.closest('.location-card').classList.toggle('expanded');
-}
-
-function switchTargeting(btn, mode) {
-  const wrap = btn.closest('.targeting-tabs');
-  wrap.querySelectorAll('.targeting-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 9: BUDGET SLIDER
-   ═══════════════════════════════════════════════════════════════════════ */
-function updateBudget(v) {
-  const n = Number(v);
-  document.getElementById('budget-amt').textContent = n;
-  const ordersLow = Math.round(n * 0.7);
-  const ordersHi = Math.round(n * 1.2);
-  let blurb;
-  if (n < 12) {
-    blurb = `<strong>At $${n}/day,</strong> you'll show up in search results during some windows of the day but you'll miss out on demand at peak hours. Expect roughly ${ordersLow}–${ordersHi} new online orders per week once your ad is fully ramped up.`;
-  } else if (n < 35) {
-    blurb = `<strong>At $${n}/day,</strong> based on what other pizzerias in Brooklyn see, we'd expect roughly ${ordersLow}–${ordersHi} new online orders per week once your ad is fully ramped up. Most of your spend will go toward people actively searching for pizza in your service area.`;
-  } else {
-    blurb = `<strong>At $${n}/day,</strong> you'll have one of the more aggressive ad budgets in your area — expect roughly ${ordersLow}–${ordersHi} new online orders per week and stronger coverage at every meal time.`;
-  }
-  document.getElementById('budget-proj').innerHTML = blurb;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 11: TRACKING PIXEL INSTALLATION
-   ═══════════════════════════════════════════════════════════════════════ */
-function copyPixelSnippet(btn) {
-  const snippet = document.querySelector('.pixel-snippet').textContent;
-  navigator.clipboard?.writeText(snippet);
-  const original = btn.innerHTML;
-  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 7l2 2 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Copied';
-  setTimeout(() => { btn.innerHTML = original; }, 1600);
-}
-
-function togglePlatform(btn) {
-  // Visual toggle only in prototype — production would expand with install instructions
-  btn.classList.toggle('expanded');
-  const chev = btn.querySelector('.chev');
-  if (chev) chev.style.transform = btn.classList.contains('expanded') ? 'rotate(180deg)' : '';
-}
-
-function updatePixelInstalled() {
-  const cb = document.getElementById('pixel-installed-cb');
-  const label = document.getElementById('pixel-confirm-label');
-  if (cb.checked) {
-    state.pixelStatus = 'confirmed-by-operator';
-    label.classList.add('selected');
-  } else {
-    state.pixelStatus = null;
-    label.classList.remove('selected');
-  }
-  recomputeNextButtons();
-}
-
-function deferPixel() {
-  state.pixelStatus = 'deferred-to-webmaster';
-  document.getElementById('pixel-installed-cb').checked = false;
-  document.getElementById('pixel-confirm-label').classList.remove('selected');
-  recomputeNextButtons();
-  // Auto-advance — deferral is a complete action
-  goNext();
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   STEP 12: SUBMIT
-   ═══════════════════════════════════════════════════════════════════════ */
-function updateTerms() {
-  state.termsAccepted = document.getElementById('terms-cb').checked;
-  document.getElementById('submit-btn').disabled = !state.termsAccepted;
 }
 
 function submitCampaign() {
-  document.getElementById('step12-pre').style.display = 'none';
-  document.getElementById('step12-footer').style.display = 'none';
-  document.getElementById('step12-post').style.display = 'block';
-
+  state.submitted = true;
+  render();
   // Confetti
   const layer = document.getElementById('confetti');
   layer.classList.add('on');
-  const colors = ['#0a8a3c', '#34c759', '#f5a623', '#e63946', '#1a73e8', '#9b51e0'];
-  for (let i = 0; i < 80; i++) {
+  const colors = ['#111827', '#16a34a', '#f5a623', '#e63946', '#2563eb', '#9b51e0'];
+  for (let i = 0; i < 60; i++) {
     const piece = document.createElement('div');
     piece.className = 'confetti-piece';
     piece.style.left = (Math.random() * 100) + 'vw';
@@ -2412,38 +2627,93 @@ function submitCampaign() {
   }, 4000);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   GLOBAL: recompute next-button state
-   ═══════════════════════════════════════════════════════════════════════ */
-function recomputeNextButtons() {
-  // Step 1
-  const step1Btn = document.getElementById('step1-next');
-  if (step1Btn) {
-    const ok = !!state.priorAds && (state.priorAds !== 'running' || scenario.accountOwnership === 'operator-owned' || state.pauseConfirmed);
-    step1Btn.disabled = !ok;
-  }
-  // Step 2
-  const step2Btn = document.getElementById('step2-next');
-  if (step2Btn) step2Btn.disabled = !state.gadsConnected;
-  // Step 3
-  const step3Btn = document.getElementById('step3-next');
-  if (step3Btn) step3Btn.disabled = !state.gbpConnected;
-  // Step 4
-  const step4Btn = document.getElementById('step4-next');
-  if (step4Btn) step4Btn.disabled = !locmapIsValid();
-  // Step 11 (pixel)
-  const step11Btn = document.getElementById('step11-next');
-  if (step11Btn) step11Btn.disabled = !state.pixelStatus;
+function shellSuccessState() {
+  const operatorPaysCopy = scenario.billing === 'operator-pays'
+    ? "Our team is finalizing your setup. You'll be live on Google within a few days, and we'll send you a heads-up when your first customer activity comes in."
+    : "Our team is setting up your ads. You'll be live on Google within a few days, and we'll send you a heads-up when your first customer activity comes in.";
+
+  const content = `
+    <div class="success-pane">
+      <div class="success-emoji">🎉</div>
+      <h1>We've got what we need.</h1>
+      <p>${operatorPaysCopy}</p>
+      <div class="success-next">
+        <h3>What happens now</h3>
+        <ol>
+          <li>Our team reviews your setup over the next day or two.</li>
+          <li>We finalize your tracking and launch your ad on Google.</li>
+          <li>You'll get an email when your ad goes live.</li>
+        </ol>
+      </div>
+      <a class="btn btn-primary btn-large" href="dashboard-prototype.html">Go to my dashboard →</a>
+    </div>
+  `;
+  return shellWrap({ content, hideFooter: true });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   INIT
+   STEP DISPATCH
    ═══════════════════════════════════════════════════════════════════════ */
+const STEP_RENDERERS = {
+  'account-status': stepAccountStatus,
+  'connect-gads':   stepConnectGads,
+  'connect-gbp':    stepConnectGbp,
+  'locations':      stepLocations,
+  'gtm':            stepGtm,
+  'goal':           stepGoal,
+  'service-area':   stepServiceArea,
+  'about':          stepAbout,
+  'budget':         stepBudget,
+  'ad-copy':        stepAdCopy,
+  'pixel':          stepPixel,
+  'review':         stepReview,
+};
+
+function render() {
+  const renderer = STEP_RENDERERS[state.step] || stepAccountStatus;
+  document.getElementById('app').innerHTML = renderer();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SCENARIO SWITCHING
+   ═══════════════════════════════════════════════════════════════════════ */
+function setScenario(name) {
+  scenarioName = name;
+  scenario = SCENARIOS[name];
+
+  // Update scenario tab UI
+  document.querySelectorAll('.scenario-tab').forEach(t => {
+    t.dataset.active = (t.dataset.sc === name) ? 'true' : 'false';
+  });
+
+  // Reset wizard state
+  state.step = visibleSteps()[0].key;
+  state.completed = new Set();
+  state.priorAds = null;
+  state.pauseConfirmed = false;
+  state.gadsConnected = false;
+  state.gbpConnected = false;
+  state.locmap = {};
+  state.gtmOption = 'oauth';
+  state.goal = 'online-orders';
+  state.radius = {};
+  state.expandedLocCard = null;
+  state.budget = 22;
+  state.vertical = 'pizzeria';
+  state.pixelStatus = null;
+  state.termsAccepted = false;
+  state.submitted = false;
+
+  render();
+}
+
 document.querySelectorAll('.scenario-tab').forEach(t => {
   t.addEventListener('click', () => setScenario(t.dataset.sc));
 });
 
-// Initial scenario from URL or default
+/* ═══════════════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════════════ */
 const urlParam = new URLSearchParams(window.location.search).get('scenario');
 const initial = ['owner-multi', 'owner-single', 'tableside'].includes(urlParam) ? urlParam : 'owner-multi';
 setScenario(initial);
