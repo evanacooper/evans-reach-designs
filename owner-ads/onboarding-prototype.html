@@ -1714,6 +1714,29 @@ const state = {
   pixelStatus: null,     // 'confirmed-by-operator' | 'deferred-to-webmaster' | null
   termsAccepted: false,
   submitted: false,
+
+  // ── Sub-journey: create Google Ads account on operator's behalf ──
+  gadsCreate: {
+    active: false,                 // true while inside the sub-journey
+    subStep: 'business-info',      // current sub-step key
+    completedSubs: new Set(),      // sub-step keys already passed through
+    provisioning: false,           // true during the simulated "creating account" spinner
+    complete: false,               // true once the account is created (shows success state)
+    legalName: "Junior's Pizzeria LLC",
+    addressLine1: '318 Court St',
+    addressLine2: '',
+    city: 'Brooklyn',
+    region: 'NY',
+    postalCode: '11231',
+    country: 'United States',
+    website: 'juniorspizzeria.com',
+    operatorName: 'Maria Junior',
+    operatorEmail: 'maria@juniorspizzeria.com',
+    billingCountry: 'United States',
+    timeZone: '(GMT-04:00) New York Time',
+    currency: 'US Dollar (USD $)',
+    paymentMethodAdded: false,
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1721,7 +1744,7 @@ const state = {
    ═══════════════════════════════════════════════════════════════════════ */
 const ALL_STEPS = [
   { key: 'account-status', label: 'Account status' },
-  { key: 'connect-gads',   label: 'Google Ads',     showIf: (s) => s.accountOwnership === 'operator-owned' },
+  { key: 'connect-gads',   label: 'Google Ads' },
   { key: 'connect-gbp',    label: 'Google Business' },
   { key: 'locations',      label: 'Locations' },
   { key: 'gtm',            label: 'Tag Manager',    showIf: (s) => s.gtmRequired },
@@ -1910,12 +1933,29 @@ function pickPriorAds(val) {
 }
 
 /* ─── 2. Connect Google Ads ─── */
+
+// Decide which path the operator gets at Step 2:
+//  - 'connect': OAuth to an existing account (operator-owned + has/had ads)
+//  - 'create' : sub-journey to create an account on operator's behalf
+//               (everyone on reach-owned; operator-owned + 'never had ads')
+function gadsStepMode() {
+  if (scenario.accountOwnership === 'reach-owned') return 'create';
+  if (state.priorAds === 'never') return 'create';
+  return 'connect';
+}
+
 function stepConnectGads() {
+  const mode = gadsStepMode();
+  if (mode === 'create') {
+    return stepGadsCreate();
+  }
+
+  // Mode 'connect' — existing OAuth flow
   const content = `
     <div class="shell-main-narrow">
       <div class="step-header">
         <h1>Connect your Google Ads account</h1>
-        <p>Sign in to Google. If you don't have a Google Ads account yet, Google will walk you through creating one.</p>
+        <p>Sign in to Google. We'll link your existing account to our system so we can manage your campaign for you.</p>
       </div>
 
       ${state.gadsConnected ? `
@@ -1945,6 +1985,497 @@ function stepConnectGads() {
 function connectGads() {
   // Simulate OAuth round-trip
   setTimeout(() => { state.gadsConnected = true; render(); }, 700);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SUB-JOURNEY: Create a Google Ads account on the operator's behalf
+   ════════════════════════════════════════════════════════════════════════
+   Triggered at Step 2 when gadsStepMode() === 'create'.
+   Replaces the outer sidebar with a sub-journey sidebar (eyebrow + back to
+   parent step + indented sub-step list with dashed left border).
+   Five sub-steps; billing is conditionally included for operator-pays scenarios.
+   On the final sub-step, the primary button reads "Create my account" and
+   triggers a simulated provisioning state, then a scenario-appropriate success.
+   ════════════════════════════════════════════════════════════════════════ */
+
+function gadsCreateSubSteps() {
+  const showBilling = scenario.billing === 'operator-pays';
+  const all = [
+    { key: 'business-info',    label: 'Business info' },
+    { key: 'your-info',        label: 'Your info' },
+    { key: 'account-settings', label: 'Account settings' },
+    { key: 'billing',          label: 'Billing',           show: showBilling },
+    { key: 'create',           label: 'Create' },
+  ];
+  return all.filter(s => s.show !== false);
+}
+
+function stepGadsCreate() {
+  const gc = state.gadsCreate;
+  if (gc.complete) return shellGadsCreateSuccess();
+  if (gc.provisioning) return shellGadsCreateProvisioning();
+
+  // Initialize sub-step if entering for first time
+  if (!gc.active) {
+    gc.active = true;
+    gc.subStep = 'business-info';
+  }
+
+  switch (gc.subStep) {
+    case 'business-info':    return subStepBusinessInfo();
+    case 'your-info':        return subStepYourInfo();
+    case 'account-settings': return subStepAccountSettings();
+    case 'billing':          return subStepBilling();
+    case 'create':           return subStepCreate();
+    default:                 return subStepBusinessInfo();
+  }
+}
+
+/* ──────── Sub-journey navigation ──────── */
+function gadsSubGoTo(key) {
+  state.gadsCreate.subStep = key;
+  render();
+}
+
+function gadsSubNext() {
+  const subs = gadsCreateSubSteps();
+  const idx = subs.findIndex(s => s.key === state.gadsCreate.subStep);
+  state.gadsCreate.completedSubs.add(state.gadsCreate.subStep);
+  if (idx < subs.length - 1) {
+    state.gadsCreate.subStep = subs[idx + 1].key;
+  }
+  render();
+}
+
+function gadsSubBack() {
+  const subs = gadsCreateSubSteps();
+  const idx = subs.findIndex(s => s.key === state.gadsCreate.subStep);
+  if (idx > 0) {
+    state.gadsCreate.subStep = subs[idx - 1].key;
+    render();
+  } else {
+    // First sub-step — exit the sub-journey back to the outer step
+    // (which renders Step 1 since they came forward from there)
+    state.gadsCreate.active = false;
+    backStep();
+  }
+}
+
+function gadsExitToParent() {
+  // Ghost back-button at the top of the sub-journey sidebar
+  state.gadsCreate.active = false;
+  // Stay on Step 2 — they exited the sub-journey but might want to re-enter
+  // For prototype simplicity, kick them back to Step 1
+  backStep();
+}
+
+function gadsCreateAccount() {
+  state.gadsCreate.provisioning = true;
+  render();
+  setTimeout(() => {
+    state.gadsCreate.provisioning = false;
+    state.gadsCreate.complete = true;
+    state.gadsConnected = true;  // mark Step 2 satisfied for continue gating
+    render();
+  }, 1800);
+}
+
+function gadsContinueToNextStep() {
+  // From the success state — advance the outer wizard
+  state.completed.add('connect-gads');
+  continueStep();
+}
+
+/* ──────── Sub-journey sidebar ──────── */
+function gadsSubJourneySidebar() {
+  const subs = gadsCreateSubSteps();
+  const active = state.gadsCreate.subStep;
+  const completed = state.gadsCreate.completedSubs;
+  const eyebrow = (scenario.productName + ' SETUP').toUpperCase();
+
+  const subItems = subs.map(s => {
+    const isActive = active === s.key;
+    const isComplete = completed.has(s.key);
+    let markerStyle = 'width: 16px; height: 16px; border-radius: 999px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; position: relative; background: var(--bg-surface); border: 1.5px solid var(--border-strong);';
+    let markerInner = '';
+    if (isActive) {
+      markerStyle = 'width: 16px; height: 16px; border-radius: 999px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; position: relative; background: var(--bg-surface); border: 1.5px solid var(--text-primary);';
+      markerInner = '<span style="width: 7px; height: 7px; border-radius: 999px; background: var(--text-primary);"></span>';
+    } else if (isComplete) {
+      markerStyle = 'width: 16px; height: 16px; border-radius: 999px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; position: relative; background: var(--success); border: 1.5px solid var(--success); color: white; font-size: 10px; font-weight: 700;';
+      markerInner = '✓';
+    }
+    const itemStyle = isActive
+      ? 'display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 13px; background: var(--bg-surface); color: var(--text-primary); font-weight: 500; box-shadow: var(--shadow-card);'
+      : isComplete
+        ? 'display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text-primary);'
+        : 'display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary);';
+    return `<li style="${itemStyle}">
+      <span style="${markerStyle}">${markerInner}</span>
+      ${s.label}
+    </li>`;
+  }).join('');
+
+  return `
+    <aside class="shell-sidebar">
+      <div class="sidebar-eyebrow">${eyebrow}</div>
+      <button class="step-item" data-state="parent" onclick="gadsExitToParent()" style="font-weight: 600; color: var(--text-primary);">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: var(--text-secondary);">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
+        </span>
+        Google Ads account
+      </button>
+      <ul style="list-style: none; margin: 4px 0 0; padding: 0 0 0 11px; border-left: 1px dashed var(--border-strong); margin-left: 22px; display: flex; flex-direction: column; gap: 2px;">
+        ${subItems}
+      </ul>
+    </aside>
+  `;
+}
+
+/* ──────── Sub-journey shell wrapper ──────── */
+function shellWrapSubJourney({ content, footerOpts = {}, hideFooter = false }) {
+  return `
+    <div class="shell">
+      ${shellHeader()}
+      <div class="shell-body">
+        ${gadsSubJourneySidebar()}
+        <main class="shell-main">${content}</main>
+      </div>
+      ${hideFooter ? '' : footer({ ...footerOpts, onContinue: footerOpts.onContinue || 'gadsSubNext()', onBack: footerOpts.onBack || 'gadsSubBack()' })}
+    </div>
+  `;
+}
+
+/* ──────── Sub-step 1: Business info ──────── */
+function subStepBusinessInfo() {
+  const gc = state.gadsCreate;
+  const canContinue = !!gc.legalName.trim() && !!gc.addressLine1.trim()
+    && !!gc.city.trim() && !!gc.region.trim() && !!gc.postalCode.trim()
+    && !!gc.website.trim();
+
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Tell us about your business</h1>
+        <p>We'll use this to create your Google Ads account. The information here needs to match your legal records — Google may use it later to verify your business.</p>
+      </div>
+
+      <div class="form-group">
+        <label>Legal business name</label>
+        <span class="helper">If your storefront name is different from your legal entity name, use the legal name here (e.g., "Junior's Pizzeria LLC" rather than "Junior's").</span>
+        <input class="form-input" type="text" value="${gc.legalName}"
+          oninput="state.gadsCreate.legalName = this.value; recomputeSubStepNext();">
+      </div>
+
+      <div class="form-group">
+        <label>Street address</label>
+        <input class="form-input" type="text" value="${gc.addressLine1}"
+          oninput="state.gadsCreate.addressLine1 = this.value; recomputeSubStepNext();">
+      </div>
+
+      <div class="form-group">
+        <label>Address line 2</label>
+        <input class="form-input" type="text" placeholder="Apartment, suite, unit (optional)" value="${gc.addressLine2}"
+          oninput="state.gadsCreate.addressLine2 = this.value;">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input class="form-input" type="text" value="${gc.city}"
+            oninput="state.gadsCreate.city = this.value; recomputeSubStepNext();">
+        </div>
+        <div class="form-group">
+          <label>State / region</label>
+          <input class="form-input" type="text" value="${gc.region}"
+            oninput="state.gadsCreate.region = this.value; recomputeSubStepNext();">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>ZIP / postal code</label>
+          <input class="form-input" type="text" value="${gc.postalCode}"
+            oninput="state.gadsCreate.postalCode = this.value; recomputeSubStepNext();">
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <select class="form-input" onchange="state.gadsCreate.country = this.value;">
+            <option ${gc.country === 'United States' ? 'selected' : ''}>United States</option>
+            <option ${gc.country === 'Canada' ? 'selected' : ''}>Canada</option>
+            <option ${gc.country === 'United Kingdom' ? 'selected' : ''}>United Kingdom</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Website</label>
+        <span class="helper">We have this from your account already. Update it here if it's wrong — this is the website tied to your Google Ads account.</span>
+        <div class="input-with-prefix">
+          <span class="prefix">https://</span>
+          <input type="text" value="${gc.website}"
+            oninput="state.gadsCreate.website = this.value; recomputeSubStepNext();">
+        </div>
+      </div>
+    </div>
+  `;
+  return shellWrapSubJourney({ content, footerOpts: { canContinue } });
+}
+
+function recomputeSubStepNext() {
+  // Re-render to update the disabled state of the continue button without losing focus
+  // (because the input has focus, the re-render would steal it — defer using requestAnimationFrame
+  // for the next paint to avoid a janky cursor jump).
+  // Simpler approach: just toggle the button's disabled attribute directly.
+  const gc = state.gadsCreate;
+  const sub = gc.subStep;
+  let canContinue = true;
+  if (sub === 'business-info') {
+    canContinue = !!gc.legalName.trim() && !!gc.addressLine1.trim()
+      && !!gc.city.trim() && !!gc.region.trim() && !!gc.postalCode.trim()
+      && !!gc.website.trim();
+  } else if (sub === 'your-info') {
+    canContinue = !!gc.operatorName.trim() && /\S+@\S+\.\S+/.test(gc.operatorEmail);
+  }
+  const btn = document.querySelector('.shell-footer .btn-primary');
+  if (btn) {
+    if (canContinue) btn.removeAttribute('disabled');
+    else btn.setAttribute('disabled', '');
+  }
+}
+
+/* ──────── Sub-step 2: Your info ──────── */
+function subStepYourInfo() {
+  const gc = state.gadsCreate;
+  const isReachOwned = scenario.accountOwnership === 'reach-owned';
+  const emailHelp = isReachOwned
+    ? "We'll send you a confirmation when your account is set up."
+    : "We'll send your account invite here — you'll use this email to sign in to Google Ads directly.";
+  const canContinue = !!gc.operatorName.trim() && /\S+@\S+\.\S+/.test(gc.operatorEmail);
+
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Who's setting this up?</h1>
+        <p>${isReachOwned
+          ? "We'll use your contact info to keep you in the loop. You won't need to sign in to Google Ads directly — we manage it for you."
+          : "We'll create your Google Ads account in your name, and send the invite to the email below so you can sign in directly anytime."}</p>
+      </div>
+
+      <div class="form-group">
+        <label>Your name</label>
+        <input class="form-input" type="text" value="${gc.operatorName}"
+          oninput="state.gadsCreate.operatorName = this.value; recomputeSubStepNext();">
+      </div>
+
+      <div class="form-group">
+        <label>Your email</label>
+        <span class="helper">${emailHelp}</span>
+        <input class="form-input" type="email" value="${gc.operatorEmail}"
+          oninput="state.gadsCreate.operatorEmail = this.value; recomputeSubStepNext();">
+      </div>
+    </div>
+  `;
+  return shellWrapSubJourney({ content, footerOpts: { canContinue } });
+}
+
+/* ──────── Sub-step 3: Account settings ──────── */
+function subStepAccountSettings() {
+  const gc = state.gadsCreate;
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Confirm your account settings</h1>
+        <p>These settings can't be changed after your account is created, so make sure they're right.</p>
+      </div>
+
+      <div class="form-group">
+        <label>Billing country</label>
+        <select class="form-input" onchange="state.gadsCreate.billingCountry = this.value;">
+          <option ${gc.billingCountry === 'United States' ? 'selected' : ''}>United States</option>
+          <option ${gc.billingCountry === 'Canada' ? 'selected' : ''}>Canada</option>
+          <option ${gc.billingCountry === 'United Kingdom' ? 'selected' : ''}>United Kingdom</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Time zone</label>
+        <select class="form-input" onchange="state.gadsCreate.timeZone = this.value;">
+          <option ${gc.timeZone === '(GMT-04:00) New York Time' ? 'selected' : ''}>(GMT-04:00) New York Time</option>
+          <option ${gc.timeZone === '(GMT-05:00) Central Time' ? 'selected' : ''}>(GMT-05:00) Central Time</option>
+          <option ${gc.timeZone === '(GMT-06:00) Mountain Time' ? 'selected' : ''}>(GMT-06:00) Mountain Time</option>
+          <option ${gc.timeZone === '(GMT-07:00) Pacific Time' ? 'selected' : ''}>(GMT-07:00) Pacific Time</option>
+        </select>
+        <span class="helper">All ad reporting and billing periods use this time zone.</span>
+      </div>
+
+      <div class="form-group">
+        <label>Currency</label>
+        <select class="form-input" onchange="state.gadsCreate.currency = this.value;">
+          <option ${gc.currency === 'US Dollar (USD $)' ? 'selected' : ''}>US Dollar (USD $)</option>
+          <option ${gc.currency === 'Canadian Dollar (CAD $)' ? 'selected' : ''}>Canadian Dollar (CAD $)</option>
+          <option ${gc.currency === 'British Pound (GBP £)' ? 'selected' : ''}>British Pound (GBP £)</option>
+        </select>
+      </div>
+    </div>
+  `;
+  return shellWrapSubJourney({ content, footerOpts: { canContinue: true } });
+}
+
+/* ──────── Sub-step 4: Billing (operator-pays only) ──────── */
+function subStepBilling() {
+  const gc = state.gadsCreate;
+  const canContinue = gc.paymentMethodAdded;
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Add a payment method</h1>
+        <p>Google will charge this card directly when your ad runs. You can update or replace this anytime later.</p>
+      </div>
+
+      ${gc.paymentMethodAdded ? `
+        <div class="success-banner">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6 10l3 3 5-6"/></svg>
+          <div><strong>Card added.</strong> Visa ending in 4242 — billed automatically by Google when your campaign runs.</div>
+        </div>
+      ` : `
+        <div class="oauth-card">
+          <div class="oauth-logo" style="background: #1f2937;">💳</div>
+          <div class="oauth-title">Add your card</div>
+          <div class="oauth-sub">Google handles the payment securely. We never see or store your card details — only Google does.</div>
+          <button class="btn btn-primary btn-large" onclick="addPaymentMethod()">Add payment method</button>
+        </div>
+      `}
+
+      <div class="info-banner" style="margin-top: 16px;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6.5v4M10 13.5h.01"/></svg>
+        <div><strong>How billing works:</strong> Google will charge you on the 1st of each month, or whenever your unbilled balance crosses a threshold. You'll see a temporary $50 authorization on your card after setup, which is typically removed within a week.</div>
+      </div>
+    </div>
+  `;
+  return shellWrapSubJourney({ content, footerOpts: { canContinue } });
+}
+
+function addPaymentMethod() {
+  setTimeout(() => {
+    state.gadsCreate.paymentMethodAdded = true;
+    render();
+  }, 700);
+}
+
+/* ──────── Sub-step 5: Create ──────── */
+function subStepCreate() {
+  const gc = state.gadsCreate;
+  const isReachOwned = scenario.accountOwnership === 'reach-owned';
+  const fullAddr = `${gc.addressLine1}${gc.addressLine2 ? ', ' + gc.addressLine2 : ''}, ${gc.city}, ${gc.region} ${gc.postalCode}, ${gc.country}`;
+
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Ready to create your account</h1>
+        <p>Quick look at what you've shared. We'll use this to create your Google Ads account ${isReachOwned ? 'on your behalf' : 'in your name'} when you click below.</p>
+      </div>
+
+      <div class="summary-card">
+        <h3>Account info</h3>
+        <div class="summary-row"><span class="key">Business name</span><span class="val">${gc.legalName}</span></div>
+        <div class="summary-row"><span class="key">Address</span><span class="val">${fullAddr}</span></div>
+        <div class="summary-row"><span class="key">Website</span><span class="val">${gc.website}</span></div>
+        <div class="summary-row"><span class="key">Contact</span><span class="val">${gc.operatorName} · ${gc.operatorEmail}</span></div>
+        <div class="summary-row"><span class="key">Billing country</span><span class="val">${gc.billingCountry}</span></div>
+        <div class="summary-row"><span class="key">Time zone</span><span class="val">${gc.timeZone}</span></div>
+        <div class="summary-row"><span class="key">Currency</span><span class="val">${gc.currency}</span></div>
+        ${scenario.billing === 'operator-pays' ? `<div class="summary-row"><span class="key">Payment method</span><span class="val">${gc.paymentMethodAdded ? 'Visa ending in 4242' : 'Not yet added'}</span></div>` : ''}
+      </div>
+
+      <div class="info-banner">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6.5v4M10 13.5h.01"/></svg>
+        <div>By clicking Create my account, you agree to the <a href="#" style="color: var(--text-primary); text-decoration: underline;">Google Ads Terms of Service</a>. ${isReachOwned ? "We're creating this account for you and will manage it on your behalf." : "Your account will be created in your name and you'll be the account owner."}</div>
+      </div>
+    </div>
+  `;
+  return shellWrapSubJourney({
+    content,
+    footerOpts: {
+      canContinue: true,
+      continueLabel: 'Create my account',
+      onContinue: 'gadsCreateAccount()',
+    },
+  });
+}
+
+/* ──────── Provisioning (after Create clicked) ──────── */
+function shellGadsCreateProvisioning() {
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Creating your Google Ads account…</h1>
+        <p>This usually takes about 10–15 seconds. Hang tight.</p>
+      </div>
+      <div class="oauth-card">
+        <div style="display: flex; align-items: center; justify-content: center; height: 48px; margin-bottom: 14px;">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <circle cx="18" cy="18" r="14" stroke="var(--border-strong)" stroke-width="3"/>
+            <circle cx="18" cy="18" r="14" stroke="var(--text-primary)" stroke-width="3" stroke-dasharray="20 80" stroke-linecap="round" transform="rotate(-90 18 18)">
+              <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1.2s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+        </div>
+        <div class="oauth-title">Working on it</div>
+        <div class="oauth-sub">We're sending your info to Google and setting up your account. Don't close this window.</div>
+      </div>
+    </div>
+  `;
+  return shellWrapSubJourney({ content, hideFooter: true });
+}
+
+/* ──────── Success state (after provisioning completes) ──────── */
+function shellGadsCreateSuccess() {
+  const gc = state.gadsCreate;
+  const isReachOwned = scenario.accountOwnership === 'reach-owned';
+
+  const liteCopy = `
+    <p>We've set everything up for you. There's nothing else you need to do here — we'll handle the account from now on. You can keep going with the rest of your setup.</p>
+    <div class="success-next">
+      <h3>What we did</h3>
+      <ol>
+        <li>Created your Google Ads account using the info you shared</li>
+        <li>Linked it to our system so we can manage your campaign</li>
+        <li>Set your billing country, time zone, and currency</li>
+      </ol>
+    </div>
+  `;
+
+  const fullCopy = `
+    <p>Your account is ready. Check your inbox at <strong>${gc.operatorEmail}</strong> for the invite from Google — you'll use that to sign in to your account at <a href="https://ads.google.com" style="color: var(--text-primary); text-decoration: underline;">ads.google.com</a>.</p>
+    <div class="success-next">
+      <h3>What happens next</h3>
+      <ol>
+        <li>Google will email you an invite in the next few minutes — accept it to claim your account</li>
+        <li>You can sign in to Google Ads anytime to see your campaign live and watch performance</li>
+        <li>We've linked the account to our system so we can manage your campaign for you in the meantime</li>
+      </ol>
+    </div>
+  `;
+
+  const content = `
+    <div class="success-pane" style="padding: 40px 24px;">
+      <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 999px; background: var(--success-bg); border: 2px solid var(--success); margin-bottom: 16px;">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="var(--success)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l5 5 11-12"/></svg>
+      </div>
+      <h1>${isReachOwned ? 'Your Google Ads account is ready' : 'Your Google Ads account is created'}</h1>
+      ${isReachOwned ? liteCopy : fullCopy}
+    </div>
+  `;
+  return shellWrapSubJourney({
+    content,
+    footerOpts: {
+      canContinue: true,
+      continueLabel: 'Continue',
+      onContinue: 'gadsContinueToNextStep()',
+      showBack: false,
+    },
+  });
 }
 
 /* ─── 3. Connect Google Business Profile ─── */
@@ -2703,6 +3234,14 @@ function setScenario(name) {
   state.pixelStatus = null;
   state.termsAccepted = false;
   state.submitted = false;
+
+  // Reset sub-journey state
+  state.gadsCreate.active = false;
+  state.gadsCreate.subStep = 'business-info';
+  state.gadsCreate.completedSubs = new Set();
+  state.gadsCreate.provisioning = false;
+  state.gadsCreate.complete = false;
+  state.gadsCreate.paymentMethodAdded = false;
 
   render();
 }
