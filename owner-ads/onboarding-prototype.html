@@ -2515,7 +2515,7 @@ function stepPixel() {
 }
 
 function copyPixelSnippet(btn) {
-  const snippet = `<script async src="https://cdn.reachapp.com/pixel.js" data-id="junior-pizzeria-4719"></script>`;
+  const snippet = `<script async src="https://cdn.reachapp.com/pixel.js" data-id="junior-pizzeria-4719"><\/script>`;
   navigator.clipboard?.writeText(snippet);
   const orig = btn.innerHTML;
   btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l2.5 2.5L11 3.5"/></svg>Copied';
