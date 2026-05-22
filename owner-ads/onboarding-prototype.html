@@ -1744,7 +1744,7 @@ const state = {
    ═══════════════════════════════════════════════════════════════════════ */
 const ALL_STEPS = [
   { key: 'account-status', label: 'Account status' },
-  { key: 'connect-gads',   label: 'Google Ads' },
+  { key: 'connect-gads',   label: 'Ads account' },
   { key: 'connect-gbp',    label: 'Google Business' },
   { key: 'locations',      label: 'Locations' },
   { key: 'gtm',            label: 'Tag Manager',    showIf: (s) => s.gtmRequired },
@@ -2123,7 +2123,7 @@ function gadsSubJourneySidebar() {
         <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: var(--text-secondary);">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
         </span>
-        Google Ads account
+        Ads account
       </button>
       <ul style="list-style: none; margin: 4px 0 0; padding: 0 0 0 11px; border-left: 1px dashed var(--border-strong); margin-left: 22px; display: flex; flex-direction: column; gap: 2px;">
         ${subItems}
