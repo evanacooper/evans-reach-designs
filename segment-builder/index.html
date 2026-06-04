@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Segment Builder v2 — Partner Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&family=JetBrains+Mono:wght@400&display=swap" />
+<link rel="stylesheet" href="css/styles.css" />
+<style>
+  /* ===========================================================================
+     PARTNER DASHBOARD CHROME
+     Mirrors apps/web/partner-dashboard Sidebar.tsx — dark slate-800 sidebar,
+     Data / Features / Developers / Settings sections, Engage active.
+     The segment-builder design ships its own `body` + `.shell` styles that
+     center a floating card; we neutralize those here so the builder nests
+     inside the partner main pane instead.
+     ======================================================================== */
+  :root {
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-400: #94a3b8;
+    --slate-300: #cbd5e1;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50:  #f8fafc;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--slate-100);
+    display: block;          /* override design's centered flex */
+    min-height: 100vh;
+    font-family: "Inter", system-ui, sans-serif;
+    color: #0f172a;
+  }
+
+  .pd {
+    display: grid;
+    grid-template-columns: 224px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ---- Sidebar ---- */
+  .pd-sidebar {
+    background: var(--slate-800);
+    border-right: 1px solid var(--slate-700);
+    display: flex;
+    flex-direction: column;
+    padding: 14px 12px;
+    gap: 2px;
+  }
+  .pd-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 8px 14px;
+  }
+  .pd-brand-mark {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, #6366f1, #4338ca);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 13px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+  .pd-brand-name {
+    color: white; font-weight: 700; font-size: 15px;
+    letter-spacing: -0.01em;
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+
+  .pd-org {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; margin: 0 0 10px;
+    background: var(--slate-700);
+    border: 1px solid var(--slate-600);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .pd-org-logo {
+    width: 22px; height: 22px; border-radius: 5px;
+    background: #f59e0b; color: #111827;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 11px; flex-shrink: 0;
+  }
+  .pd-org-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+  .pd-org-text strong { color: white; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pd-org-text span { color: var(--slate-400); font-size: 11px; }
+  .pd-org-caret { margin-left: auto; color: var(--slate-400); flex-shrink: 0; }
+
+  .pd-section {
+    padding: 14px 10px 5px;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--slate-400);
+  }
+  .pd-nav {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    font-size: 13.5px; font-weight: 500;
+    color: var(--slate-300);
+    cursor: pointer; border: 0; background: transparent;
+    width: 100%; text-align: left; font-family: inherit;
+  }
+  .pd-nav:hover { background: var(--slate-700); color: white; }
+  .pd-nav.active { background: var(--slate-700); color: white; font-weight: 600; }
+  .pd-nav svg { width: 16px; height: 16px; flex-shrink: 0; stroke-width: 1.6; }
+
+  .pd-spacer { flex: 1; }
+
+  .pd-user {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; margin-top: 6px;
+    border-top: 1px solid var(--slate-700);
+    cursor: pointer;
+  }
+  .pd-user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #4338ca; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .pd-user-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+  .pd-user-text strong { color: white; font-size: 13px; font-weight: 600; }
+  .pd-user-text span { color: var(--slate-400); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ---- Main pane ---- */
+  .pd-main { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+  .pd-breadcrumb {
+    height: 48px; flex-shrink: 0;
+    background: white;
+    border-bottom: 1px solid var(--slate-200);
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 7px;
+    font-size: 13px; color: var(--slate-600);
+  }
+  .pd-breadcrumb .sep { color: var(--slate-300); }
+  .pd-breadcrumb .crumb-active { color: #0f172a; font-weight: 600; }
+
+  .pd-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 28px 48px;
+    background: var(--slate-100);
+  }
+
+  /* ---- Neutralize the design's floating-card body/shell so it nests ---- */
+  .pd-content .shell {
+    max-width: 100%;
+    min-height: 0;
+    margin: 0 auto;
+    width: 100%;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  }
+
+  @media (max-width: 900px) {
+    .pd { grid-template-columns: 1fr; }
+    .pd-sidebar { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="pd">
+    <!-- ===== Sidebar (matches Sidebar.tsx) ===== -->
+    <aside class="pd-sidebar">
+      <div class="pd-brand">
+        <span class="pd-brand-mark">R</span>
+        <span class="pd-brand-name">Reach</span>
+      </div>
+
+      <button type="button" class="pd-org">
+        <span class="pd-org-logo">FH</span>
+        <span class="pd-org-text">
+          <strong>Fieldstone HVAC</strong>
+          <span>Partner workspace</span>
+        </span>
+        <svg class="pd-org-caret" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M5 6l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <div class="pd-section">Data</div>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        Overview
+      </button>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+        Tenants
+      </button>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.1a4 4 0 0 1 0 7.8M21 21v-2a4 4 0 0 0-3-3.9"/></svg>
+        Users
+      </button>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Communications
+      </button>
+
+      <div class="pd-section">Features</div>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>
+        Acquire
+      </button>
+      <button type="button" class="pd-nav active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        Engage
+      </button>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+        Measure
+      </button>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l2.9 6.3 6.6.6-5 4.4 1.5 6.5L12 16.8 5.9 19.8 7.5 13.3l-5-4.4 6.6-.6z"/></svg>
+        Reputation
+      </button>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 0 1 18 0v6a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3M3 12v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3"/></svg>
+        Assist
+      </button>
+
+      <div class="pd-section">Developers</div>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
+        API Keys
+      </button>
+
+      <div class="pd-spacer"></div>
+
+      <div class="pd-section">Settings</div>
+      <button type="button" class="pd-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </button>
+
+      <div class="pd-user">
+        <span class="pd-user-avatar">EC</span>
+        <span class="pd-user-text">
+          <strong>Evan Cooper</strong>
+          <span>evan@embedreach.com</span>
+        </span>
+      </div>
+    </aside>
+
+    <!-- ===== Main pane ===== -->
+    <div class="pd-main">
+      <nav class="pd-breadcrumb">
+        <span>Engage</span>
+        <span class="sep">/</span>
+        <span>Segments</span>
+        <span class="sep">/</span>
+        <span class="crumb-active">New segment</span>
+      </nav>
+
+      <div class="pd-content">
+        <!-- ===== Segment Builder (Sentence mode) ===== -->
+        <main class="shell" id="shell" data-rep="sentence" data-density="default">
+          <header class="shell-topbar">
+            <div>
+              <h1 id="topbar-title">New audience segment</h1>
+              <p id="topbar-sub">Define which contacts belong to "Lapsed Fairs.com attendees".</p>
+            </div>
+            <div class="topbar-actions">
+              <button type="button" class="topbar-close" aria-label="Close">×</button>
+            </div>
+          </header>
+
+          <section class="shell-body">
+            <aside class="shell-sidebar">
+              <div class="sidebar-eyebrow">Segment</div>
+              <button type="button" class="step-item" data-state="complete"><span class="step-marker"></span> Details</button>
+              <button type="button" class="step-item" data-state="active"><span class="step-marker"></span> Conditions</button>
+              <button type="button" class="step-item"><span class="step-marker"></span> Preview &amp; save</button>
+
+              <div class="sidebar-divider"></div>
+
+              <div class="sidebar-eyebrow">Examples</div>
+              <button type="button" class="example-link" data-example="fairs"><span class="ex-dot"></span> Lapsed Fairs.com attendees</button>
+              <button type="button" class="example-link" data-example="location"><span class="ex-dot"></span> Brooklyn flagship regulars</button>
+              <button type="button" class="example-link" data-example="hipaa"><span class="ex-dot"></span> HIPAA-consented, active</button>
+              <button type="button" class="example-link" data-example="anycreek"><span class="ex-dot"></span> Fruita trail riders</button>
+              <button type="button" class="example-link" data-example="empty"><span class="ex-dot"></span> Start blank</button>
+            </aside>
+
+            <section class="shell-main" id="shell-main">
+              <header class="step-header">
+                <div>
+                  <h1>Who's in this segment?</h1>
+                  <p>Build conditions to match the right contacts. Every group must match, and you can read the whole thing back in plain English below.</p>
+                </div>
+              </header>
+
+              <div class="builder-region">
+                <section class="subject-banner" aria-label="Segment subject">
+                  <span class="subject-banner-icon" aria-hidden="true">
+                    <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="2.6" stroke="currentColor" stroke-width="1.5"/><path d="M3 13c0-2.2 2.2-3.6 5-3.6s5 1.4 5 3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </span>
+                  <span class="subject-banner-text">
+                    <strong>This segment is a list of contacts.</strong>
+                    <span>Every condition below is a fact that must be true about the contact.</span>
+                  </span>
+                </section>
+
+                <div id="groups-root"></div>
+
+                <div class="root-actions">
+                  <button type="button" class="btn btn-secondary" id="add-group">+ Add another group (must also match)</button>
+                </div>
+
+                <section class="summary-card" aria-label="Plain-English summary">
+                  <div class="summary-eyebrow">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h10M3 12h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    In plain English
+                  </div>
+                  <p id="summary-text">No conditions yet.</p>
+                </section>
+              </div>
+            </section>
+          </section>
+
+          <footer class="shell-footer">
+            <button type="button" class="btn btn-ghost">← Back</button>
+            <div class="footer-spacer">
+              <span class="footer-hint" id="footer-hint">3 conditions defined</span>
+              <button type="button" class="btn btn-primary">Continue →</button>
+            </div>
+          </footer>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="popover" id="field-picker" hidden role="dialog" aria-label="Add condition">
+    <div class="popover-search">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <input type="text" placeholder="Search the contact's details, linked records…" id="field-picker-search" autocomplete="off" />
+    </div>
+    <div class="popover-body" id="field-picker-body"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/copy.js"></script>
+  <script src="js/builder.js"></script>
+</body>
+</html>
