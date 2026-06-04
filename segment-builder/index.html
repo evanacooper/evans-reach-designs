@@ -160,6 +160,106 @@
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.04);
   }
 
+  /* ---- Single-column body: Details on top, conditions below (no sidebar) ---- */
+  .pd-content .shell-body { display: block; }
+  .pd-content .shell-main { max-width: 880px; margin: 0 auto; min-height: 0; }
+
+  /* ---- Details section (matches current segment builder's top block) ---- */
+  .details-section {
+    padding-bottom: 26px;
+    margin-bottom: 26px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .section-heading {
+    font: 700 18px/1.2 "Plus Jakarta Sans", "Inter", sans-serif;
+    letter-spacing: -0.01em;
+    color: #111827;
+    margin: 0 0 16px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+  }
+  .form-input {
+    padding: 9px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #111827;
+    background: #ffffff;
+    width: 100%;
+    resize: vertical;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: #d1d5db;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.06);
+  }
+
+  /* ---- Demo example switcher — deliberately NOT product chrome ---- */
+  .demo-dock {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    width: 230px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
+    overflow: hidden;
+    z-index: 50;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .demo-dock-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #cbd5e1;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  }
+  .demo-dock-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #c7d2fe;
+    background: rgba(99, 102, 241, 0.25);
+    border: 1px solid rgba(129, 140, 248, 0.4);
+    padding: 2px 7px;
+    border-radius: 999px;
+  }
+  .demo-dock-body { display: flex; flex-direction: column; padding: 6px; }
+  .demo-dock .example-link {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    color: #cbd5e1;
+    font: 500 13px/1.3 "Inter", sans-serif;
+    padding: 8px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .demo-dock .example-link:hover { background: rgba(148, 163, 184, 0.15); color: white; }
+  .demo-dock .example-link[data-active="true"] {
+    background: rgba(99, 102, 241, 0.28);
+    color: white;
+    font-weight: 600;
+  }
+
   @media (max-width: 900px) {
     .pd { grid-template-columns: 1fr; }
     .pd-sidebar { display: none; }
@@ -271,23 +371,20 @@
           </header>
 
           <section class="shell-body">
-            <aside class="shell-sidebar">
-              <div class="sidebar-eyebrow">Segment</div>
-              <button type="button" class="step-item" data-state="complete"><span class="step-marker"></span> Details</button>
-              <button type="button" class="step-item" data-state="active"><span class="step-marker"></span> Conditions</button>
-              <button type="button" class="step-item"><span class="step-marker"></span> Preview &amp; save</button>
-
-              <div class="sidebar-divider"></div>
-
-              <div class="sidebar-eyebrow">Examples</div>
-              <button type="button" class="example-link" data-example="fairs"><span class="ex-dot"></span> Lapsed Fairs.com attendees</button>
-              <button type="button" class="example-link" data-example="location"><span class="ex-dot"></span> Brooklyn flagship regulars</button>
-              <button type="button" class="example-link" data-example="hipaa"><span class="ex-dot"></span> HIPAA-consented, active</button>
-              <button type="button" class="example-link" data-example="anycreek"><span class="ex-dot"></span> Fruita trail riders</button>
-              <button type="button" class="example-link" data-example="empty"><span class="ex-dot"></span> Start blank</button>
-            </aside>
-
             <section class="shell-main" id="shell-main">
+              <!-- Details section — top of page, matches current segment builder -->
+              <section class="details-section" aria-label="Segment details">
+                <h2 class="section-heading">Segment details</h2>
+                <div class="form-group">
+                  <label for="segment-name">Name</label>
+                  <input type="text" id="segment-name" class="form-input" placeholder="e.g. Lapsed Fairs.com attendees" />
+                </div>
+                <div class="form-group">
+                  <label for="segment-description">Description</label>
+                  <textarea id="segment-description" class="form-input" rows="2" placeholder="What is this segment for? (optional)"></textarea>
+                </div>
+              </section>
+
               <header class="step-header">
                 <div>
                   <h1>Who's in this segment?</h1>
@@ -341,6 +438,21 @@
       <input type="text" placeholder="Search the contact's details, linked records…" id="field-picker-search" autocomplete="off" />
     </div>
     <div class="popover-body" id="field-picker-body"></div>
+  </div>
+
+  <!-- ===== Demo control (NOT part of the product UI) ===== -->
+  <div class="demo-dock" aria-label="Prototype example switcher">
+    <div class="demo-dock-head">
+      <span class="demo-dock-badge">Prototype</span>
+      Load an example
+    </div>
+    <div class="demo-dock-body">
+      <button type="button" class="example-link" data-example="fairs">Lapsed Fairs.com attendees</button>
+      <button type="button" class="example-link" data-example="location">Brooklyn flagship regulars</button>
+      <button type="button" class="example-link" data-example="hipaa">HIPAA-consented, active</button>
+      <button type="button" class="example-link" data-example="anycreek">Fruita trail riders</button>
+      <button type="button" class="example-link" data-example="empty">Start blank</button>
+    </div>
   </div>
 
   <script src="js/data.js"></script>
