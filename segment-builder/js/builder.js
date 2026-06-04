@@ -266,15 +266,6 @@ function renderRelatedSentence(c, list, index, ctx) {
   const noun = relNoun(c);
   const subj = subjectFor(ctx);
 
-  /* breadcrumb path row — Contact › Transaction › Event */
-  const path = el('div', 'rel-path');
-  childCtx.path.forEach((ch, i) => {
-    if (i > 0) path.appendChild(el('span', 'rel-path-sep', '›'));
-    const cls = 'rel-path-chip' + (ch.kind === 'subject' ? ' is-subject' : '') + (i === childCtx.path.length - 1 ? ' is-current' : '');
-    path.appendChild(el('span', cls, `${ch.icon}<span>${ch.label}</span>`));
-  });
-  block.appendChild(path);
-
   /* sentence header with inline quantifier */
   const header = el('div', 'rel-header');
   const icon = el('span', 'rel-icon', iconForSchema(c.targetSchemaId, c.targetSchemaName));
@@ -312,7 +303,7 @@ function renderRelatedSentence(c, list, index, ctx) {
   block.appendChild(header);
 
   /* body — where rows */
-  const body = el('div', 'rel-body with-path');
+  const body = el('div', 'rel-body');
   const rows = el('div', 'where-rows');
   c.conditions.forEach((nc, ni) => {
     if (ni > 0) rows.appendChild(connectorEl('AND'));
