@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Leads in Engage — Wireframes (decision-driving core)</title>
+<style>
+/* ============================================================
+   Design-system tokens — from .claude/rules/onboarding-shell-design-system.md
+   These are wireframes, not production code. App-shell layout
+   (not the onboarding modal), framed as the embedded Engage experience.
+   ============================================================ */
+:root {
+  --bg-page: #ececec;
+  --bg-subtle: #f9fafb;
+  --bg-surface: #ffffff;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+  --destructive: #dc2626;
+  --destructive-bg: #fef2f2;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04);
+  /* Partner-app accent (stands in for --reach-primary). Engage tab bar uses this at /10 */
+  --reach-primary: #4f46e5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif; }
+
+/* ---------- Wireframe chrome: screen switcher ---------- */
+.wf-switcher {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #111827;
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.wf-switcher strong { font-size: 13px; letter-spacing: -0.01em; }
+.wf-switcher .wf-tag {
+  font-size: 11px;
+  color: #9ca3af;
+  border: 1px solid #374151;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.wf-switcher nav { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
+.wf-switcher button {
+  appearance: none;
+  background: transparent;
+  border: 1px solid #374151;
+  color: #d1d5db;
+  font: inherit;
+  font-size: 12.5px;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.wf-switcher button:hover { background: #1f2937; color: #fff; }
+.wf-switcher button[aria-current="true"] { background: #fff; color: #111827; border-color: #fff; font-weight: 600; }
+
+.wf-stage {
+  padding: 32px 24px 64px;
+  display: flex;
+  justify-content: center;
+}
+
+.screen { display: none; width: 100%; max-width: 1180px; }
+.screen[data-active="true"] { display: block; }
+
+.screen-note {
+  background: #fffbeb;
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 12.5px;
+  color: #92400e;
+  line-height: 1.55;
+}
+.screen-note strong { color: var(--warning); }
+.screen-note .area { display: inline-block; background: var(--warning); color: #fff; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; margin-right: 6px; }
+
+/* ============================================================
+   Embedded partner-app frame
+   ============================================================ */
+.app-frame {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 720px;
+}
+
+/* Partner sidebar (host app chrome) */
+.partner-rail {
+  background: #fbfbfc;
+  border-right: 1px solid var(--border);
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.partner-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 10px 16px;
+}
+.partner-brand .logo {
+  width: 26px; height: 26px; border-radius: 7px;
+  background: var(--reach-primary);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 13px;
+}
+.partner-brand .name { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
+.rail-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  color: var(--text-secondary); font-size: 13.5px; font-weight: 500;
+  cursor: default;
+}
+.rail-item .ico { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+.rail-item[data-active="true"] { background: var(--reach-primary); color: #fff; font-weight: 600; }
+.rail-item[data-active="true"] .ico { opacity: 1; }
+.rail-spacer { flex: 1; }
+.rail-foot { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-top: 1px solid var(--border); margin-top: 8px; }
+.rail-foot .avatar { width: 24px; height: 24px; border-radius: 999px; background: #d1d5db; }
+.rail-foot .who { font-size: 12px; color: var(--text-secondary); }
+
+/* Engage content region */
+.engage { display: flex; flex-direction: column; min-width: 0; }
+
+.engage-head {
+  padding: 18px 24px 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.engage-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.engage-title small { display: block; font-family: "Inter"; font-size: 12.5px; font-weight: 400; color: var(--text-secondary); margin-top: 2px; }
+
+/* Engage tab bar — primary/10 pill bar, matches EngageMain */
+.engage-tabs {
+  margin: 16px 24px 0;
+  background: color-mix(in srgb, var(--reach-primary) 10%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  display: inline-flex;
+  gap: 4px;
+  width: fit-content;
+}
+.engage-tab {
+  appearance: none; border: 0; background: transparent; font: inherit;
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer;
+}
+.engage-tab .ico { width: 15px; height: 15px; }
+.engage-tab[data-active="true"] { background: var(--bg-surface); color: var(--text-primary); font-weight: 600; box-shadow: var(--shadow-card); }
+.engage-tab .new-pill { font-size: 9.5px; font-weight: 700; background: var(--reach-primary); color:#fff; padding: 1px 6px; border-radius: 999px; letter-spacing: 0.03em; }
+
+.engage-body { padding: 16px 24px 24px; flex: 1; min-height: 0; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  appearance: none; border: 0; cursor: pointer; font: inherit;
+  font-weight: 500; font-size: 13.5px; padding: 8px 15px; border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+}
+.btn-primary { background: var(--text-primary); color: #fff; }
+.btn-primary:hover { background: #1f2937; }
+.btn-secondary { background: #fff; color: var(--text-primary); border: 1px solid var(--border-strong); }
+.btn-secondary:hover { border-color: var(--text-primary); }
+.btn-ghost { background: transparent; color: var(--text-secondary); padding: 7px 10px; }
+.btn-ghost:hover { color: var(--text-primary); }
+.btn-accent { background: var(--reach-primary); color: #fff; }
+
+/* ---------- Toolbar ---------- */
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.search {
+  flex: 1; min-width: 180px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 12px; font-size: 13.5px; color: var(--text-secondary); background: #fff;
+}
+.filter-chip {
+  border: 1px solid var(--border-strong); background: #fff; border-radius: var(--radius-sm);
+  padding: 7px 12px; font-size: 13px; color: var(--text-primary); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.filter-chip .v { color: var(--text-secondary); }
+.filter-chip[data-on="true"] { border-color: var(--text-primary); }
+.filter-chip .caret { color: var(--text-muted); font-size: 10px; }
+
+/* ---------- Table ---------- */
+.table-wrap { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th {
+  text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-muted); padding: 11px 16px;
+  background: var(--bg-subtle); border-bottom: 1px solid var(--border);
+}
+tbody td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr.clickable { cursor: pointer; }
+tbody tr.clickable:hover { background: var(--bg-subtle); }
+.cell-name { font-weight: 600; }
+.cell-sub { color: var(--text-secondary); font-size: 12.5px; }
+.muted { color: var(--text-muted); }
+
+/* Stage badge */
+.stage {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+}
+.stage::before { content: ""; width: 7px; height: 7px; border-radius: 999px; }
+.stage.lead { background: #eff6ff; color: #1d4ed8; }
+.stage.lead::before { background: #1d4ed8; }
+.stage.qualified { background: #f5f3ff; color: #6d28d9; }
+.stage.qualified::before { background: #6d28d9; }
+.stage.conversion { background: var(--success-bg); color: var(--success); }
+.stage.conversion::before { background: var(--success); }
+.stage.disqualified { background: #f3f4f6; color: #6b7280; }
+.stage.disqualified::before { background: #9ca3af; }
+.stage.lost { background: var(--destructive-bg); color: var(--destructive); }
+.stage.lost::before { background: var(--destructive); }
+
+/* Source label */
+.source { display: inline-flex; align-items: center; gap: 7px; }
+.source .dot { width: 8px; height: 8px; border-radius: 2px; }
+.source.google .dot { background: #ea4335; }
+.source.voice .dot { background: #0ea5e9; border-radius: 999px; }
+.source.import .dot { background: #6b7280; }
+.source.form .dot { background: #16a34a; }
+.source.pixel .dot { background: #f59e0b; }
+
+/* Consent dots */
+.consent { display: inline-flex; gap: 10px; align-items: center; }
+.consent .ch { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; }
+.consent .pip { width: 9px; height: 9px; border-radius: 999px; }
+.consent .ok { color: var(--success); }
+.consent .ok .pip { background: var(--success); }
+.consent .off { color: var(--text-muted); }
+.consent .off .pip { background: #d1d5db; }
+.consent .none { color: var(--text-muted); }
+.consent .none .pip { background: #fff; border: 1px solid var(--border-strong); }
+
+.pager { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px 0; color: var(--text-secondary); font-size: 12.5px; }
+
+/* ---------- Detail drawer (screen 2) ---------- */
+.drawer-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.drawer {
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: #fff; overflow: hidden; box-shadow: var(--shadow-card);
+}
+.drawer-head { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.drawer-head .who { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.drawer-head .meta { color: var(--text-secondary); font-size: 12.5px; margin-top: 2px; }
+.drawer-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.drawer-tag.sparse { background: #fff7ed; color: #c2410c; }
+.drawer-tag.rich { background: var(--success-bg); color: var(--success); }
+.drawer-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.drawer-section:last-child { border-bottom: 0; }
+.drawer-section h4 { margin: 0 0 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-family: "Inter"; }
+.kv { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 13px; }
+.kv .k { color: var(--text-secondary); }
+.kv .v { font-weight: 500; text-align: right; }
+.kv .v.empty { color: var(--text-muted); font-style: italic; font-weight: 400; }
+
+/* per-channel consent block */
+.consent-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; }
+.consent-row:last-child { margin-bottom: 0; }
+.consent-row .lbl { font-weight: 600; font-size: 13px; }
+.consent-row .prov { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+.consent-state { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.consent-state.ok { background: var(--success-bg); color: var(--success); }
+.consent-state.off { background: #f3f4f6; color: var(--text-secondary); }
+
+.banner {
+  display: flex; gap: 10px; padding: 11px 13px; border-radius: var(--radius-sm);
+  font-size: 12.5px; line-height: 1.5; margin-top: 12px;
+}
+.banner.warn { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning); }
+.banner.info { background: var(--bg-subtle); border: 1px solid var(--border); color: var(--text-secondary); }
+.banner.ok { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success); }
+.banner .b-ico { flex-shrink: 0; font-weight: 700; }
+
+/* ---------- Segment builder (screen 3) ---------- */
+.builder { border: 1px solid var(--border); border-radius: var(--radius-md); background: #fff; overflow: hidden; }
+.builder-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.builder-head input.seg-name { border: 0; font-size: 16px; font-weight: 700; font-family: "Plus Jakarta Sans"; letter-spacing: -0.01em; outline: none; width: 60%; }
+.builder-body { padding: 20px; }
+.toplevel {
+  background: #eef2ff; border: 1px solid #c7d2fe; border-radius: var(--radius-sm);
+  padding: 14px 16px; margin-bottom: 18px;
+}
+.toplevel .tl-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #4338ca; margin-bottom: 9px; }
+.stage-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.stage-pill {
+  appearance: none; font: inherit; cursor: pointer;
+  border: 1px solid var(--border-strong); background: #fff; color: var(--text-secondary);
+  font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.stage-pill[aria-pressed="true"] { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+.stage-pill .ct { opacity: 0.65; font-weight: 500; }
+
+.cond-group { border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 14px; }
+.cond-group .ctxt { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 10px; }
+.cond-row { display: flex; gap: 8px; align-items: center; margin-bottom: 9px; flex-wrap: wrap; }
+.cond-row:last-of-type { margin-bottom: 0; }
+.field-sel {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 7px 11px; font-size: 13px; background: #fff; color: var(--text-primary);
+}
+.field-sel.op { color: var(--text-secondary); }
+.field-sel.val { flex: 1; min-width: 120px; }
+.and { font-size: 11px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 7px 0; }
+.add-cond { margin-top: 12px; }
+
+.audience-readout { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }
+.audience-readout .count { font-size: 22px; font-weight: 700; font-family: "Plus Jakarta Sans"; letter-spacing: -0.02em; }
+.audience-readout .count small { font-family: "Inter"; font-size: 13px; font-weight: 400; color: var(--text-secondary); margin-left: 6px; }
+
+/* ---------- Interstitial (screen 4) ---------- */
+.modal-stage { display: flex; justify-content: center; padding: 8px 0; }
+.modal {
+  width: 520px; max-width: 100%; background: #fff;
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(15,23,42,0.16); overflow: hidden;
+}
+.modal-head { padding: 22px 24px 16px; display: flex; gap: 14px; }
+.modal-head .warn-ico {
+  width: 38px; height: 38px; border-radius: 999px; flex-shrink: 0;
+  background: var(--warning-bg); border: 1px solid var(--warning-border);
+  display: flex; align-items: center; justify-content: center; color: var(--warning); font-size: 20px; font-weight: 700;
+}
+.modal-head h3 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.01em; }
+.modal-head p { margin: 0; color: var(--text-secondary); font-size: 13.5px; line-height: 1.55; }
+.modal-body { padding: 0 24px 8px; }
+.recipient-breakdown { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 4px; }
+.rb-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 15px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.rb-row:last-child { border-bottom: 0; }
+.rb-row .n { font-weight: 700; }
+.rb-row.excluded { background: var(--bg-subtle); color: var(--text-secondary); }
+.rb-row.excluded .n { color: var(--text-muted); text-decoration: line-through; }
+.modal-foot { padding: 16px 24px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.modal-foot label.confirm { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); }
+
+/* ---------- Automation trigger picker (screen 5) ---------- */
+.trigger-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 22px; }
+.trigger-card {
+  border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 18px;
+  cursor: pointer; background: #fff; position: relative;
+}
+.trigger-card:hover { border-color: var(--border-strong); }
+.trigger-card[data-selected="true"] { border-color: var(--text-primary); box-shadow: 0 0 0 3px rgba(17,24,39,0.06); }
+.trigger-card .tc-ico { width: 34px; height: 34px; border-radius: 9px; background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; margin-bottom: 11px; font-size: 17px; }
+.trigger-card[data-selected="true"] .tc-ico { background: #eef2ff; }
+.trigger-card h4 { margin: 0 0 4px; font-size: 14.5px; font-family: "Inter"; }
+.trigger-card p { margin: 0; color: var(--text-secondary); font-size: 12.5px; line-height: 1.5; }
+.trigger-card .new-pill { position: absolute; top: 14px; right: 14px; font-size: 9.5px; font-weight: 700; background: var(--reach-primary); color:#fff; padding: 2px 7px; border-radius: 999px; letter-spacing: 0.03em; }
+.trigger-card.soon { opacity: 0.55; cursor: default; }
+.trigger-card.soon .new-pill { background: var(--text-muted); }
+
+.config-panel { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px 20px; background: var(--bg-subtle); }
+.config-panel h4 { margin: 0 0 4px; font-size: 14px; font-family: "Inter"; }
+.config-panel .sub { color: var(--text-secondary); font-size: 12.5px; margin: 0 0 16px; }
+.form-group { margin-bottom: 16px; }
+.form-group > label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.checks { display: flex; flex-direction: column; gap: 8px; }
+.checks label { display: flex; align-items: center; gap: 9px; font-size: 13px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; }
+.checks label .src-tag { margin-left: auto; font-size: 11px; }
+
+.legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 11.5px; color: var(--text-secondary); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .pip { width: 9px; height: 9px; border-radius: 999px; }
+
+@media (max-width: 920px) {
+  .app-frame { grid-template-columns: 1fr; }
+  .partner-rail { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+  .rail-spacer, .rail-foot { display: none; }
+  .drawer-demo, .trigger-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="wf-switcher">
+  <strong>Leads in Engage</strong>
+  <span class="wf-tag">Wireframes · decision-driving core</span>
+  <span class="wf-tag">Source-keyed consent</span>
+  <nav>
+    <button data-go="s1" aria-current="true">1 · People list</button>
+    <button data-go="s2">2 · Lead detail</button>
+    <button data-go="s3">3 · Segment builder</button>
+    <button data-go="s4">4 · Send confirm</button>
+    <button data-go="s5">5 · Drip trigger</button>
+  </nav>
+</div>
+
+<div class="wf-stage">
+
+  <!-- ============================================================
+       SCREEN 1 — People list
+       ============================================================ -->
+  <section class="screen" id="s1" data-active="true">
+    <p class="screen-note">
+      <span class="area">Area 3·7·1</span>
+      <strong>People list (new Engage tab).</strong> The surface that doesn't exist today — one row per person (a <code>partner_user</code>), not per identification. Columns make the <strong>canonical stage</strong>, <strong>source</strong>, and <strong>per-channel consent</strong> legible at a glance. Under the source-keyed model, a <em>passive pixel</em> lead lands opted-out of both channels by default; an <em>SDK form w/ opt-in</em> lead is messageable.
+    </p>
+
+    <div class="app-frame">
+      <aside class="partner-rail">
+        <div class="partner-brand"><div class="logo">A</div><div class="name">AnyCreek</div></div>
+        <div class="rail-item"><span class="ico">◧</span> Dashboard</div>
+        <div class="rail-item"><span class="ico">◫</span> Measure</div>
+        <div class="rail-item" data-active="true"><span class="ico">✉</span> Engage</div>
+        <div class="rail-item"><span class="ico">★</span> Reputation</div>
+        <div class="rail-item"><span class="ico">☏</span> Voice</div>
+        <div class="rail-spacer"></div>
+        <div class="rail-foot"><div class="avatar"></div><div class="who">Backcountry Co.</div></div>
+      </aside>
+
+      <div class="engage">
+        <div class="engage-head">
+          <div class="engage-title">Engage<small>Message and nurture the people Reach already captured.</small></div>
+          <button class="btn btn-secondary">⚙</button>
+        </div>
+
+        <div class="engage-tabs">
+          <button class="engage-tab"><span class="ico">📣</span> Broadcasts</button>
+          <button class="engage-tab"><span class="ico">🔁</span> Automations</button>
+          <button class="engage-tab"><span class="ico">◍</span> Segments</button>
+          <button class="engage-tab" data-active="true"><span class="ico">👥</span> People <span class="new-pill">NEW</span></button>
+          <button class="engage-tab"><span class="ico">📊</span> Insights</button>
+        </div>
+
+        <div class="engage-body">
+          <div class="toolbar">
+            <input class="search" placeholder="Search name, email, phone…" />
+            <button class="filter-chip" data-on="true">Stage <span class="v">All</span> <span class="caret">▾</span></button>
+            <button class="filter-chip">Source <span class="v">All</span> <span class="caret">▾</span></button>
+            <button class="filter-chip">Consent <span class="v">Any</span> <span class="caret">▾</span></button>
+            <button class="btn btn-secondary" style="margin-left:auto">⤓ Import CSV</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Person</th>
+                  <th>Stage</th>
+                  <th>Source</th>
+                  <th>Consent</th>
+                  <th>Value</th>
+                  <th>Last activity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="clickable" data-go="s2">
+                  <td><div class="cell-name">Dana Whitfield</div><div class="cell-sub">dana.w@gmail.com · (303) 555‑0142</div></td>
+                  <td><span class="stage qualified">Qualified lead</span></td>
+                  <td><span class="source form"><span class="dot"></span>Form (SDK)</span></td>
+                  <td><div class="consent"><span class="ch ok"><span class="pip"></span>Email</span><span class="ch ok"><span class="pip"></span>SMS</span></div></td>
+                  <td>$2,400</td>
+                  <td class="cell-sub">2h ago</td>
+                </tr>
+                <tr class="clickable" data-go="s2">
+                  <td><div class="cell-name muted">— no name —</div><div class="cell-sub">kayak.fan88@outlook.com</div></td>
+                  <td><span class="stage lead">Lead</span></td>
+                  <td><span class="source pixel"><span class="dot"></span>Pixel (passive)</span></td>
+                  <td><div class="consent"><span class="ch off"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
+                  <td class="muted">$0</td>
+                  <td class="cell-sub">5h ago</td>
+                </tr>
+                <tr class="clickable" data-go="s2">
+                  <td><div class="cell-name">Marcus Lee</div><div class="cell-sub">(720) 555‑0199</div></td>
+                  <td><span class="stage lead">Lead</span></td>
+                  <td><span class="source voice"><span class="dot"></span>AI Voice call</span></td>
+                  <td><div class="consent"><span class="ch none"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
+                  <td class="muted">$0</td>
+                  <td class="cell-sub">Yesterday</td>
+                </tr>
+                <tr class="clickable" data-go="s2">
+                  <td><div class="cell-name">Priya Anand</div><div class="cell-sub">priya@anand.co · (415) 555‑0177</div></td>
+                  <td><span class="stage conversion">Customer</span></td>
+                  <td><span class="source google"><span class="dot"></span>Google Ads → form</span></td>
+                  <td><div class="consent"><span class="ch ok"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
+                  <td>$5,800</td>
+                  <td class="cell-sub">3d ago</td>
+                </tr>
+                <tr class="clickable" data-go="s2">
+                  <td><div class="cell-name">Sam Ortega</div><div class="cell-sub">sortega@workmail.com</div></td>
+                  <td><span class="stage lead">Lead</span></td>
+                  <td><span class="source import"><span class="dot"></span>CSV import</span></td>
+                  <td><div class="consent"><span class="ch ok"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
+                  <td class="muted">$0</td>
+                  <td class="cell-sub">1w ago</td>
+                </tr>
+                <tr class="clickable" data-go="s2">
+                  <td><div class="cell-name">Jordan Pratt</div><div class="cell-sub">jpratt@gmail.com · (206) 555‑0123</div></td>
+                  <td><span class="stage disqualified">Disqualified</span></td>
+                  <td><span class="source form"><span class="dot"></span>Form (SDK)</span></td>
+                  <td><div class="consent"><span class="ch off"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
+                  <td class="muted">$0</td>
+                  <td class="cell-sub">2w ago</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="legend">
+            <span><span class="pip" style="background:var(--success)"></span> Opted in (provenance recorded)</span>
+            <span><span class="pip" style="background:#d1d5db"></span> Opted out / default-out</span>
+            <span><span class="pip" style="background:#fff;border:1px solid var(--border-strong)"></span> No channel identifier</span>
+          </div>
+
+          <div class="pager">
+            <span>1–6 of 1,284 people</span>
+            <span><button class="btn btn-ghost">‹ Prev</button> <button class="btn btn-secondary">Next ›</button></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 2 — Lead detail drawer (sparse vs rich)
+       ============================================================ -->
+  <section class="screen" id="s2">
+    <p class="screen-note">
+      <span class="area">Area 3·8·1</span>
+      <strong>Lead detail.</strong> Two records side by side make the <strong>sparse-record reality</strong> visible: an email‑only passive‑pixel lead (left) vs. a rich SDK‑form lead (right). Each shows <strong>per‑channel consent with provenance</strong> (status · source · timestamp) — the TCPA‑proof hook the data model stores from day one. Note how consent default differs <em>by ingestion source</em>.
+    </p>
+
+    <div class="drawer-demo">
+
+      <!-- Sparse, passive-pixel -->
+      <div class="drawer">
+        <div class="drawer-head">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:10px">
+            <div>
+              <div class="who muted">— no name on record —</div>
+              <div class="meta">kayak.fan88@outlook.com</div>
+            </div>
+            <span class="drawer-tag sparse">Sparse · email‑only</span>
+          </div>
+        </div>
+
+        <div class="drawer-section">
+          <h4>Stage</h4>
+          <div class="kv"><span class="k">Canonical stage</span><span class="v"><span class="stage lead">Lead</span></span></div>
+          <div class="kv"><span class="k">Entered stage</span><span class="v">5h ago · auto‑fire on identification</span></div>
+        </div>
+
+        <div class="drawer-section">
+          <h4>Messaging consent</h4>
+          <div class="consent-row">
+            <div><div class="lbl">Email</div><div class="prov">Default‑out · passive pixel, partner doesn't own the form</div></div>
+            <span class="consent-state off">Opted out</span>
+          </div>
+          <div class="consent-row">
+            <div><div class="lbl">SMS</div><div class="prov">No explicit opt‑in captured</div></div>
+            <span class="consent-state off">Opted out</span>
+          </div>
+          <div class="banner warn"><span class="b-ico">!</span><span>Captured via passive pixel interception. Not messageable until an explicit opt‑in upgrades it. Usable for analytics & segmentation.</span></div>
+        </div>
+
+        <div class="drawer-section">
+          <h4>Identity & attributes</h4>
+          <div class="kv"><span class="k">First name</span><span class="v empty">— (merge falls back to “there”)</span></div>
+          <div class="kv"><span class="k">Phone</span><span class="v empty">none</span></div>
+          <div class="kv"><span class="k">Interest tags</span><span class="v empty">none</span></div>
+        </div>
+
+        <div class="drawer-section">
+          <h4>Capture context</h4>
+          <div class="kv"><span class="k">Source</span><span class="v">Pixel (passive)</span></div>
+          <div class="kv"><span class="k">Landing page</span><span class="v">/kayak‑tours</span></div>
+          <div class="kv"><span class="k">UTM</span><span class="v empty">none</span></div>
+        </div>
+      </div>
+
+      <!-- Rich, SDK form -->
+      <div class="drawer">
+        <div class="drawer-head">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:10px">
+            <div>
+              <div class="who">Dana Whitfield</div>
+              <div class="meta">dana.w@gmail.com · (303) 555‑0142</div>
+            </div>
+            <span class="drawer-tag rich">Rich · SDK form</span>
+          </div>
+        </div>
+
+        <div class="drawer-section">
+          <h4>Stage</h4>
+          <div class="kv"><span class="k">Canonical stage</span><span class="v"><span class="stage qualified">Qualified lead</span></span></div>
+          <div class="kv"><span class="k">Sub‑stage</span><span class="v">Estimate requested</span></div>
+          <div class="kv"><span class="k">Entered stage</span><span class="v">2h ago · segment‑derived</span></div>
+        </div>
+
+        <div class="drawer-section">
+          <h4>Messaging consent</h4>
+          <div class="consent-row">
+            <div><div class="lbl">Email</div><div class="prov">Opt‑in form · optInToEmail=true · Jun 4, 2026 10:14</div></div>
+            <span class="consent-state ok">Opted in</span>
+          </div>
+          <div class="consent-row">
+            <div><div class="lbl">SMS</div><div class="prov">Opt‑in form · optInToSms=true · Jun 4, 2026 10:14</div></div>
+            <span class="consent-state ok">Opted in</span>
+          </div>
+          <div class="banner ok"><span class="b-ico">✓</span><span>Captured via partner‑owned SDK form with explicit opt‑in. Messageable on both channels; provenance stored for TCPA.</span></div>
+        </div>
+
+        <div class="drawer-section">
+          <h4>Identity & attributes</h4>
+          <div class="kv"><span class="k">First name</span><span class="v">Dana</span></div>
+          <div class="kv"><span class="k">Interest tags</span><span class="v">backcountry · avalanche‑course</span></div>
+          <div class="kv"><span class="k">Lead value</span><span class="v">$2,400</span></div>
+        </div>
+
+        <div class="drawer-section">
+          <h4>Capture context</h4>
+          <div class="kv"><span class="k">Source</span><span class="v">Form (SDK) · “Request a quote”</span></div>
+          <div class="kv"><span class="k">UTM campaign</span><span class="v">spring‑backcountry</span></div>
+          <div class="kv"><span class="k">Click → form</span><span class="v">Google Ads · 4 min</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 3 — Blended segment builder
+       ============================================================ -->
+  <section class="screen" id="s3">
+    <p class="screen-note">
+      <span class="area">Area 5</span>
+      <strong>Blended segment builder.</strong> Leads and customers are built in one place (the meeting's resolved position). <strong>Funnel stage is a top‑level filter</strong> above the existing condition‑group UI. The <strong>sparse‑field guard</strong> warns when a chosen field excludes people who lack it. Consent filtering is always applied automatically on send (shown on screen 4).
+    </p>
+
+    <div class="app-frame">
+      <aside class="partner-rail">
+        <div class="partner-brand"><div class="logo">A</div><div class="name">AnyCreek</div></div>
+        <div class="rail-item"><span class="ico">◧</span> Dashboard</div>
+        <div class="rail-item"><span class="ico">◫</span> Measure</div>
+        <div class="rail-item" data-active="true"><span class="ico">✉</span> Engage</div>
+        <div class="rail-item"><span class="ico">★</span> Reputation</div>
+        <div class="rail-spacer"></div>
+        <div class="rail-foot"><div class="avatar"></div><div class="who">Backcountry Co.</div></div>
+      </aside>
+
+      <div class="engage">
+        <div class="engage-head"><div class="engage-title">New segment</div><button class="btn btn-ghost">✕</button></div>
+        <div class="engage-body">
+          <div class="builder">
+            <div class="builder-head">
+              <input class="seg-name" value="Avalanche‑course prospects" />
+              <span class="muted" style="font-size:12.5px">Auto‑updating</span>
+            </div>
+            <div class="builder-body">
+
+              <div class="toplevel">
+                <div class="tl-label">Funnel stage <span style="font-weight:500;text-transform:none;letter-spacing:0;color:#6366f1">— top‑level filter</span></div>
+                <div class="stage-pills">
+                  <button class="stage-pill" aria-pressed="true">Lead <span class="ct">412</span></button>
+                  <button class="stage-pill" aria-pressed="true">Qualified lead <span class="ct">96</span></button>
+                  <button class="stage-pill">Customer <span class="ct">203</span></button>
+                  <button class="stage-pill">Disqualified <span class="ct">31</span></button>
+                  <button class="stage-pill">Lost <span class="ct">12</span></button>
+                </div>
+              </div>
+
+              <div class="cond-group">
+                <div class="ctxt">Match all of the following</div>
+                <div class="cond-row">
+                  <select class="field-sel"><option>Interest tag</option></select>
+                  <select class="field-sel op"><option>is one of</option></select>
+                  <input class="field-sel val" value="avalanche‑course, backcountry" />
+                </div>
+                <div class="and">AND</div>
+                <div class="cond-row">
+                  <select class="field-sel"><option>Page visited</option></select>
+                  <select class="field-sel op"><option>contains</option></select>
+                  <input class="field-sel val" value="/courses/avalanche" />
+                </div>
+                <div class="add-cond"><button class="btn btn-ghost">+ Add condition</button></div>
+              </div>
+
+              <div class="banner warn" style="margin-top:14px"><span class="b-ico">!</span><span><strong>Sparse‑field guard:</strong> <strong>~318 people</strong> in this stage have no <em>Interest tag</em> and will be silently excluded. 190 match the full segment.</span></div>
+
+              <div class="audience-readout">
+                <div class="count">190 <small>people match · 508 in selected stages</small></div>
+                <div style="display:flex;gap:10px">
+                  <button class="btn btn-secondary">✦ Describe with AI</button>
+                  <button class="btn btn-primary">Save segment</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 4 — Non-customer confirmation interstitial
+       ============================================================ -->
+  <section class="screen" id="s4">
+    <p class="screen-note">
+      <span class="area">Area 5·1</span>
+      <strong>Send confirmation.</strong> When a broadcast audience contains non‑customers (leads), this interstitial appears before send. It surfaces the breakdown and shows that <strong>opted‑out / no‑consent contacts are removed automatically</strong> — the deliverability safeguard that protects the &lt;0.1% complaint ceiling.
+    </p>
+
+    <div class="modal-stage">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="warn-ico">!</div>
+          <div>
+            <h3>You're about to message non‑customers</h3>
+            <p>This audience includes <strong>leads</strong>, not just existing customers. Confirm you have a basis to message them.</p>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="recipient-breakdown">
+            <div class="rb-row"><span>Customers</span><span class="n">203</span></div>
+            <div class="rb-row"><span>Qualified leads</span><span class="n">96</span></div>
+            <div class="rb-row"><span>Leads</span><span class="n">412</span></div>
+            <div class="rb-row excluded"><span>Excluded — opted out / no email consent</span><span class="n">228</span></div>
+            <div class="rb-row excluded"><span>Excluded — no email on record</span><span class="n">41</span></div>
+          </div>
+          <div class="banner info" style="margin-top:12px"><span class="b-ico">ℹ</span><span>Opted‑out and no‑consent contacts are <strong>always removed automatically</strong>, regardless of segment. <strong>442</strong> people will receive this broadcast.</span></div>
+        </div>
+        <div class="modal-foot">
+          <label class="confirm"><input type="checkbox" checked /> I have a basis to message these leads</label>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost">Cancel</button>
+            <button class="btn btn-primary">Send to 442 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 5 — Drip-on-capture automation trigger
+       ============================================================ -->
+  <section class="screen" id="s5">
+    <p class="screen-note">
+      <span class="area">Area 7·1</span>
+      <strong>Drip‑on‑capture trigger.</strong> The headline use case — a new <strong>“When a lead is captured”</strong> trigger in the automation‑type picker. The source filter ties consent to automation: passive‑pixel leads (default opted‑out) can be enrolled in email only after upgrade, and never auto‑enrolled into SMS without explicit opt‑in.
+    </p>
+
+    <div class="app-frame">
+      <aside class="partner-rail">
+        <div class="partner-brand"><div class="logo">A</div><div class="name">AnyCreek</div></div>
+        <div class="rail-item"><span class="ico">◧</span> Dashboard</div>
+        <div class="rail-item"><span class="ico">◫</span> Measure</div>
+        <div class="rail-item" data-active="true"><span class="ico">✉</span> Engage</div>
+        <div class="rail-item"><span class="ico">★</span> Reputation</div>
+        <div class="rail-spacer"></div>
+        <div class="rail-foot"><div class="avatar"></div><div class="who">Backcountry Co.</div></div>
+      </aside>
+
+      <div class="engage">
+        <div class="engage-head"><div class="engage-title">New automation<small>Choose what starts this automation.</small></div><button class="btn btn-ghost">✕</button></div>
+        <div class="engage-body">
+
+          <div class="trigger-grid">
+            <div class="trigger-card" data-selected="true">
+              <span class="new-pill">NEW</span>
+              <div class="tc-ico">⚡</div>
+              <h4>When a lead is captured</h4>
+              <p>Fires the instant a new lead is created — form fill, tracked call, import, or voice. AnyCreek's #1 ask.</p>
+            </div>
+            <div class="trigger-card">
+              <div class="tc-ico">◍</div>
+              <h4>Enters a segment</h4>
+              <p>Fires when a person starts matching a segment's conditions.</p>
+            </div>
+            <div class="trigger-card soon">
+              <span class="new-pill">SOON</span>
+              <div class="tc-ico">🎂</div>
+              <h4>Date milestone</h4>
+              <p>Birthday, renewal, or anniversary dates.</p>
+            </div>
+            <div class="trigger-card soon">
+              <span class="new-pill">SOON</span>
+              <div class="tc-ico">🛒</div>
+              <h4>Real‑time activity</h4>
+              <p>Cart abandonment, appointment booked.</p>
+            </div>
+          </div>
+
+          <div class="config-panel">
+            <h4>Trigger: When a lead is captured</h4>
+            <p class="sub">Only leads matching these sources will be enrolled.</p>
+
+            <div class="form-group">
+              <label>Capture sources</label>
+              <div class="checks">
+                <label><input type="checkbox" checked /> Form (SDK, with opt‑in) <span class="src-tag"><span class="consent"><span class="ch ok"><span class="pip"></span>messageable</span></span></span></label>
+                <label><input type="checkbox" checked /> AI Voice call <span class="src-tag"><span class="consent"><span class="ch off"><span class="pip"></span>email only after opt‑in</span></span></span></label>
+                <label><input type="checkbox" /> Pixel (passive) <span class="src-tag"><span class="consent"><span class="ch off"><span class="pip"></span>default opted‑out</span></span></span></label>
+                <label><input type="checkbox" /> CSV import <span class="src-tag"><span class="consent"><span class="ch off"><span class="pip"></span>per‑row consent</span></span></span></label>
+              </div>
+            </div>
+
+            <div class="banner warn"><span class="b-ico">!</span><span>Passive‑pixel leads are opted‑out by default and can't be auto‑enrolled into an SMS sequence. They become eligible for email only once an explicit opt‑in upgrades them.</span></div>
+
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+              <button class="btn btn-ghost">Back</button>
+              <button class="btn btn-primary">Continue → build sequence</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const navBtns = document.querySelectorAll('.wf-switcher button[data-go]');
+  function show(id) {
+    screens.forEach(s => s.setAttribute('data-active', s.id === id ? 'true' : 'false'));
+    navBtns.forEach(b => b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.addEventListener('click', e => {
+    const go = e.target.closest('[data-go]');
+    if (go) { show(go.dataset.go); }
+  });
+</script>
+
+</body>
+</html>
