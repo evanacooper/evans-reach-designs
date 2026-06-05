@@ -2145,9 +2145,12 @@ function bringYourDomainStep() {
   // back lands here too, so they can still connect.)
   const content = `
     <div class="shell-main-narrow">
-      <div class="step-header">
-        <h1>Send from your own domain</h1>
-        <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes.</p>
+      <div class="step-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:24px;">
+        <div>
+          <h1>Send from your own domain</h1>
+          <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes.</p>
+        </div>
+        <button class="btn btn-secondary" style="flex-shrink:0; white-space:nowrap;" onclick="skipByo()">Skip for now</button>
       </div>
 
       <!-- What Entri is + how DNS setup works -->
