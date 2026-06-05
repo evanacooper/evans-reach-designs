@@ -1975,15 +1975,21 @@ function stepSidebar() {
   `;
 }
 
-function shellFooter({ canContinue = true, continueLabel = 'Continue', onContinue = 'continueStep()', onBack = 'backStep()', showBack = true, showContinue = true, continueHint = null } = {}) {
+function shellFooter({ canContinue = true, continueLabel = 'Continue', onContinue = 'continueStep()', onBack = 'backStep()', showBack = true, showContinue = true, continueHint = null, secondaryLabel = null, onSecondary = null } = {}) {
+  // Optional secondary (white) action sits just left of the primary button.
+  const secondary = secondaryLabel
+    ? `<button class="btn btn-secondary" onclick="${onSecondary}">${secondaryLabel}</button>`
+    : '';
   return `
     <footer class="shell-footer">
       ${showBack
         ? `<button class="btn btn-ghost" onclick="${onBack}">← Previous</button>`
         : `<span></span>`}
-      ${showContinue
-        ? `<button class="btn btn-primary" ${canContinue ? '' : 'disabled'} onclick="${onContinue}">${continueLabel}</button>`
-        : (continueHint ? `<span style="font-size: 12px; color: var(--text-muted);">${continueHint}</span>` : '<span></span>')}
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${showContinue
+          ? `${secondary}<button class="btn btn-primary" ${canContinue ? '' : 'disabled'} onclick="${onContinue}">${continueLabel}</button>`
+          : (continueHint ? `<span style="font-size: 12px; color: var(--text-muted);">${continueHint}</span>` : '')}
+      </div>
     </footer>
   `;
 }
@@ -2139,12 +2145,9 @@ function bringYourDomainStep() {
   // back lands here too, so they can still connect.)
   const content = `
     <div class="shell-main-narrow">
-      <div class="step-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:24px;">
-        <div>
-          <h1>Send from your own domain</h1>
-          <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes.</p>
-        </div>
-        <button class="btn btn-primary" style="flex-shrink:0; white-space:nowrap;" onclick="skipByo()">Skip for now</button>
+      <div class="step-header">
+        <h1>Send from your own domain</h1>
+        <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes.</p>
       </div>
 
       <!-- What Entri is + how DNS setup works -->
@@ -2238,13 +2241,15 @@ function bringYourDomainStep() {
     </div>
   `;
 
-  // Single footer action: Connect with Entri (opens the modal). Skip lives in
-  // the header. Two buttons total on the page, both move the user forward.
+  // Footer carries both actions: white "Skip for now" + black "Connect with
+  // Entri". Both move the user forward.
   return shellWrap({
     content,
     footerOpts: {
       continueLabel: 'Connect with Entri',
       onContinue: 'state.showEntriModal=true; render();',
+      secondaryLabel: 'Skip for now',
+      onSecondary: 'skipByo()',
     },
   });
 }
