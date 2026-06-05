@@ -711,6 +711,89 @@
   }
   .inline-upgrade-hint button:hover { text-decoration: underline; }
 
+  /* "How DNS setup works" / Entri context card */
+  .entri-context {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elevated);
+    padding: 16px 18px;
+    margin-top: 16px;
+  }
+  .entri-context-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .entri-context-header h4 {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .entri-context-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .entri-context-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .entri-context-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .entri-context-list li svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--text-faint);
+  }
+  .entri-context-list li strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* Two-CTA row on the Sending Domain decision screen */
+  .domain-choice-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .domain-choice-actions .btn-primary {
+    flex: 1;
+    justify-content: center;
+    min-width: 180px;
+    padding: 11px 18px;
+  }
+  .domain-choice-actions .btn-secondary {
+    flex: 1;
+    justify-content: center;
+    min-width: 180px;
+    padding: 11px 18px;
+  }
+  .domain-choice-reassurance {
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
   /* Soft warning chip used for deliverability nudges */
   .deliverability-chip {
     margin-top: 8px;
@@ -1689,7 +1772,7 @@ const STEPS = [
   { key: 'brand', label: 'Brand' },
   { key: 'business', label: 'Business Info' },
   { key: 'senderDetails', label: 'Sender Details' },
-  { key: 'byo', label: 'Bring Your Domain' },
+  { key: 'byo', label: 'Sending Domain' },
   { key: 'sms', label: 'SMS' },
   { key: 'automations', label: 'Automations' },
 ];
@@ -1766,7 +1849,7 @@ function exitBYOPaused() {
   }
   state.byo.status = state.byo.paused ? 'in-progress' : 'none';
   state.byo.subStep = null;
-  // Stay on the Bring Your Domain step
+  // Stay on the Sending Domain step
   state.step = 'byo';
   render();
 }
@@ -1956,7 +2039,7 @@ function subJourneySidebar({ activeKey, completedKeys = [], showVerifying = fals
         <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: var(--text-muted);">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
         </span>
-        Bring Your Domain
+        Sending Domain
       </button>
       <ul style="list-style: none; margin: 4px 0 0; padding: 0 0 0 22px; border-left: 1px dashed var(--border-strong); margin-left: 22px; display: flex; flex-direction: column; gap: 2px;">
         ${items.map((s) => {
@@ -2126,7 +2209,7 @@ function senderDetailsStep() {
     <div class="shell-main-narrow">
       <div class="step-header">
         <h1>Set up your sender details</h1>
-        <p>This is who your customers see in their inbox. We've already set up a sending domain for you — you can configure the rest below.</p>
+        <p>These are who your customers see in their inbox by default. We've already set up a sending domain for you — you can also send from your own domain in the next step.</p>
       </div>
 
       <div class="form-group">
@@ -2182,7 +2265,7 @@ function senderDetailsStep() {
 }
 
 /* =========================================================
-   STEP: Bring Your Domain
+   STEP: Sending Domain
    ---------------------------------------------------------
    The page is the decision. Slim comparison panel + single
    primary CTA + explicit "do later in settings" reassurance.
@@ -2201,8 +2284,8 @@ function bringYourDomainStep() {
   const content = `
     <div class="shell-main-narrow">
       <div class="step-header">
-        <h1>Bring your own domain</h1>
-        <p>Optional. Connecting your own sending domain improves deliverability and removes the "via" tag from your customers' inboxes. You can do this now or anytime later from <strong>Settings → Email Channel</strong>.</p>
+        <h1>Choose your sending domain</h1>
+        <p>You're already set up to send from a managed domain. For better deliverability and brand trust, you can also send from your own — we'll walk you through it. Either way, your sender details from the previous step carry over.</p>
       </div>
 
       ${showSplash ? `
@@ -2238,11 +2321,36 @@ function bringYourDomainStep() {
           </div>
         </section>
 
-        <!-- Primary CTA + skip reassurance -->
-        <div style="margin-top: 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-          <button class="btn btn-primary" onclick="enterBYO()">Connect your domain</button>
-          <span style="font-size: 13px; color: var(--text-muted);">or click <strong style="color:var(--text);">Continue</strong> below to skip — you can do this anytime in settings.</span>
+        <!-- How DNS setup works: trust signals for Entri before the user hits Connect -->
+        <section class="entri-context" aria-labelledby="entri-context-title">
+          <div class="entri-context-header">
+            <span class="entri-context-icon">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>
+            </span>
+            <h4 id="entri-context-title">How DNS setup works if you bring your own domain</h4>
+          </div>
+          <ul class="entri-context-list">
+            <li>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+              <span><strong>We use Entri</strong> — a DNS automation partner trusted by Klaviyo, SMTP2GO, Customer.io, and others — to publish the records on your behalf. You sign in to your DNS provider through Entri and they add the right records automatically. No copy-paste, no manual errors.</span>
+            </li>
+            <li>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+              <span><strong>DNS access only.</strong> Entri only touches the DNS records we need to publish (DKIM, Return-Path, DMARC). They never see anything else in your provider account.</span>
+            </li>
+            <li>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+              <span><strong>Don't have DNS access?</strong> No problem — you can forward the setup to your IT contact directly from Entri's interface, or copy the records and add them manually.</span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Two clear CTAs -->
+        <div class="domain-choice-actions">
+          <button class="btn btn-primary" onclick="enterBYO()">Use my own domain →</button>
+          <button class="btn btn-secondary" onclick="continueStep()">Continue with managed domain</button>
         </div>
+        <p class="domain-choice-reassurance">You can change this anytime later from <strong style="color:var(--text);">Settings → Email Channel</strong>.</p>
       ` : renderOnboardingDnsSection()}
     </div>
   `;
@@ -2251,7 +2359,7 @@ function bringYourDomainStep() {
 }
 
 /* =========================================================
-   DNS CONNECTION SECTION on the Bring Your Domain step
+   DNS CONNECTION SECTION on the Sending Domain step
    ---------------------------------------------------------
    Returns the paused or configured variant. The splash (offer)
    state lives inline in bringYourDomainStep() so it doesn't go
@@ -2508,21 +2616,33 @@ function renderSubJourneySubdomain() {
 }
 
 function renderSubJourneyConnect() {
+  const fullDomain = `${state.byo.subdomain}.${state.byo.rootDomain}`;
   return `
     <div class="connect-screen">
       <div>
         <h1 style="font-size:26px; font-weight:600; margin:0 0 8px; letter-spacing:-0.02em;">Connect with Entri</h1>
-        <p style="margin:0; color:var(--text-secondary); font-size:15px;">Entri logs into your DNS provider for you and adds the right records — no copy-paste, no mistakes.</p>
+        <p style="margin:0 0 16px; color:var(--text-secondary); font-size:15px;">When you click below, Entri opens and signs into your DNS provider on your behalf. They publish three records that authorize us to send mail as <code style="font-family: var(--font-mono); font-size: 13px; background: var(--bg-subtle); padding: 1px 6px; border-radius: 4px;">${fullDomain}</code> — then we take over to verify everything.</p>
+
+        <!-- What's about to happen -->
+        <div style="border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-subtle); padding: 12px 14px; margin-bottom: 16px;">
+          <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px;">Records Entri will publish</div>
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text); font-family: var(--font-mono);">
+            <li>DKIM key — proves mail is from you</li>
+            <li>Return-Path — handles bounces</li>
+            <li>DMARC policy — protects your reputation</li>
+          </ul>
+        </div>
+
         <ul>
-          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Fast, secure setup</li>
-          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Detects your DNS provider automatically</li>
-          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Forward to your IT contact if you don't have access</li>
+          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Entri detects your DNS provider automatically</li>
+          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Access is scoped to these DNS records only</li>
+          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Don't have DNS access? Forward setup to your IT contact from Entri</li>
         </ul>
         <div class="connect-actions">
           <button class="btn btn-primary btn-large" onclick="state.showEntriModal=true; render();">Connect with Entri</button>
           <button class="btn btn-secondary btn-large" onclick="alert('In production: would show manual DNS records to copy/paste')">Set up manually</button>
         </div>
-        <p class="connect-fineprint">By selecting "Connect with Entri" you agree to Entri's Terms of Service and Privacy Policy.</p>
+        <p class="connect-fineprint">By selecting "Connect with Entri" you agree to Entri's <a href="https://www.entri.com/terms" style="color: var(--text-muted); text-decoration: underline;" target="_blank">Terms of Service</a> and <a href="https://www.entri.com/privacy" style="color: var(--text-muted); text-decoration: underline;" target="_blank">Privacy Policy</a>.</p>
       </div>
       <div class="connect-art" aria-hidden="true">
         <div class="connect-art-card secondary">
