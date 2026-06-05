@@ -1744,28 +1744,28 @@ const state = {
 
   // Brand
   brand: {
-    name: 'Muskingum County Fair',
-    website: 'muskingumcofair.com',
+    name: "Evan's Pet Care",
+    website: 'evanspetcare.com',
   },
 
   // Business info — required gate
   business: {
-    dba: 'Muskingum County Fair',
-    address1: '',
-    address2: '',
-    city: '',
-    state: '',
-    zip: '',
+    dba: "Evan's Pet Care",
+    address1: '482 Maple Avenue',
+    address2: 'Suite 12',
+    city: 'Columbus',
+    state: 'OH',
+    zip: '43215',
     country: 'United States',
   },
 
   // Email channel (the managed domain — always provisioned)
   email: {
-    prefix: 'marketing',
-    displayName: 'Muskingum County Fair',
+    prefix: 'hello',
+    displayName: "Evan's Pet Care",
     replyTo: '',
     // managed domain suffix (always provisioned)
-    managedDomain: 'muskingum-county-fair.fairs-mail.com',
+    managedDomain: 'evans-pet-care.sent-mail.com',
     // True once the managed identity has been auto-populated from the BYO
     // setup the user just completed. Drives the "pre-filled" note on the
     // Sender Details step. Cleared the moment the user edits a field there.
@@ -1781,13 +1781,13 @@ const state = {
     status: 'none',
     // sub-step: 'root' | 'subdomain' | 'connect' | 'verifying'
     subStep: null,
-    rootDomain: 'muskingumcofair.com',
+    rootDomain: 'evanspetcare.com',
     subdomain: 'send',
     // BYO-specific sender identity. Each connected domain owns its own
     // prefix/displayName/replyTo. We seed these from the managed config
     // when entering the sub-journey so users start from a sensible default.
-    prefix: 'marketing',
-    displayName: 'Muskingum County Fair',
+    prefix: 'hello',
+    displayName: "Evan's Pet Care",
     replyTo: '',
     // If user backs out mid-flow, this becomes true
     paused: false,
@@ -2264,12 +2264,12 @@ function businessStep() {
    Configures the managed-domain sender identity. If the user just
    went through BYO, these fields are pre-filled from that setup so
    they don't enter the same details twice. The managed domain is
-   always configured because it's the fallback sender.
+   always configured during onboarding.
    ========================================================= */
 function senderDetailsStep() {
   const byo = state.byo;
-  // The managed domain is the subject of this step. (Even a BYO tenant needs
-  // managed configured as the fallback, so the preview always shows managed.)
+  // The managed domain is the subject of this step — the preview always
+  // shows managed since that's what these fields configure.
   const senderDomain = state.email.managedDomain;
   const replyToPlaceholder = suggestedReplyTo(senderDomain);
   const replyToWarn = replyToCrossDomain(state.email.replyTo, senderDomain);
@@ -2289,7 +2289,7 @@ function senderDetailsStep() {
     <div class="shell-main-narrow">
       <div class="step-header">
         <h1>Set up your sender details</h1>
-        <p>This is the sender identity for your managed domain — the address Reach always keeps ready as a fallback. ${byo.status === 'verified' || byo.paused ? 'We carried these over from your branded domain so you don\'t have to enter them twice.' : 'Configure how your emails appear in your customers\' inbox.'}</p>
+        <p>This is the sender identity for your managed domain — set up for you and ready to send. ${byo.status === 'verified' || byo.paused ? 'We carried these over from your branded domain so you don\'t have to enter them twice.' : 'Configure how your emails appear in your customers\' inbox.'}</p>
       </div>
 
       ${byoPaused ? `
@@ -2351,7 +2351,7 @@ function senderDetailsStep() {
                 ${displayName}
                 <span class="inbox-via">via <strong style="color:var(--warning);">${state.email.managedDomain}</strong></span>
               </div>
-              <div class="inbox-subject">${state.email.prefix || 'hello'}@${senderDomain} · Get your tickets for the 2026 Fair</div>
+              <div class="inbox-subject">${state.email.prefix || 'hello'}@${senderDomain} · Your dog's grooming is booked for Saturday</div>
             </div>
           </div>
         </div>
@@ -2383,7 +2383,7 @@ function bringYourDomainStep() {
     <div class="shell-main-narrow">
       <div class="step-header">
         <h1>Choose your sending domain</h1>
-        <p>Reach gives you a managed domain so you can start sending right away. For better deliverability and brand trust, you can also send from your own domain — we'll walk you through it. Whatever you choose, you'll confirm your sender details on the next step.</p>
+        <p>You have a managed domain set up so you can start sending right away. For better deliverability and brand trust, you can also send from your own domain — we'll walk you through it. Whatever you choose, you'll confirm your sender details on the next step.</p>
       </div>
 
       ${showSplash ? `
@@ -2708,7 +2708,7 @@ function renderSubJourneySubdomain() {
             <div class="inbox-avatar">${(state.byo.displayName || 'E').charAt(0).toUpperCase()}</div>
             <div class="inbox-meta">
               <div class="inbox-from">${state.byo.displayName || 'Your business'}</div>
-              <div class="inbox-subject">${state.byo.prefix || 'hello'}@${fullSendingDomain} · Get your tickets for the 2026 Fair</div>
+              <div class="inbox-subject">${state.byo.prefix || 'hello'}@${fullSendingDomain} · Your dog's grooming is booked for Saturday</div>
             </div>
           </div>
         </div>
@@ -2994,11 +2994,11 @@ function closedScreen() {
 function resetPrototype() {
   state.step = 'brand';
   state.completed = new Set();
-  state.brand.name = 'Muskingum County Fair';
-  state.brand.website = 'muskingumcofair.com';
-  state.business = { dba: 'Muskingum County Fair', address1: '', address2: '', city: '', state: '', zip: '', country: 'United States' };
-  state.email = { prefix: 'marketing', displayName: 'Muskingum County Fair', replyTo: '', managedDomain: 'muskingum-county-fair.fairs-mail.com', prefilledFromByo: false, managedTouched: false };
-  state.byo = { status: 'none', subStep: null, rootDomain: 'muskingumcofair.com', subdomain: 'send', prefix: 'marketing', displayName: '', replyTo: '', paused: false, pausedAt: null, verifyProgress: 0 };
+  state.brand.name = "Evan's Pet Care";
+  state.brand.website = 'evanspetcare.com';
+  state.business = { dba: "Evan's Pet Care", address1: '482 Maple Avenue', address2: 'Suite 12', city: 'Columbus', state: 'OH', zip: '43215', country: 'United States' };
+  state.email = { prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', managedDomain: 'evans-pet-care.sent-mail.com', prefilledFromByo: false, managedTouched: false };
+  state.byo = { status: 'none', subStep: null, rootDomain: 'evanspetcare.com', subdomain: 'send', prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', paused: false, pausedAt: null, verifyProgress: 0 };
   state.merge = { firstName: '', lastName: '' };
   state.automations = { welcome: true, birthday: true, thankyou: false };
   state.showEntriModal = false;

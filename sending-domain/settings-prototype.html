@@ -1436,7 +1436,7 @@ const state = {
   byo: {
     // 'in-progress' | null
     subStep: null,
-    rootDomain: 'muskingumcofair.com',
+    rootDomain: 'evanspetcare.com',
     subdomain: 'send',
     // BYO-specific sender identity, collected in the Subdomain sub-step.
     // Seeded from the managed domain on startAddDomain() and then editable
@@ -1457,7 +1457,7 @@ const state = {
 
   // Account-level email metadata (used as defaults when adding new domains)
   email: {
-    managedDomain: 'muskingum-county-fair.fairs-mail.com',
+    managedDomain: 'evans-pet-care.sent-mail.com',
   },
 
   // Master→detail nav within Email Channel: null = list view, otherwise a domain id
@@ -1472,27 +1472,27 @@ const state = {
   domains: [
     {
       id: 'send',
-      fullDomain: 'send.muskingumcofair.com',
+      fullDomain: 'send.evanspetcare.com',
       purpose: 'Marketing',
       status: 'verified',
       lastVerified: '2 min ago',
       isDefault: true,
       isManaged: false,
       prefix: 'marketing',
-      displayName: 'Muskingum County Fair',
-      replyTo: 'info@muskingumcofair.com',
+      displayName: "Evan's Pet Care",
+      replyTo: 'hello@evanspetcare.com',
     },
     {
       id: 'managed',
-      fullDomain: 'muskingum-county-fair.fairs-mail.com',
+      fullDomain: 'evans-pet-care.sent-mail.com',
       purpose: 'Managed domain · always available',
       status: 'managed',
       lastVerified: null,
       isDefault: false,
       isManaged: true,
       prefix: 'marketing',
-      displayName: 'Muskingum County Fair',
-      replyTo: 'info@muskingumcofair.com',
+      displayName: "Evan's Pet Care",
+      replyTo: 'hello@evanspetcare.com',
     },
   ],
 
@@ -1539,18 +1539,18 @@ function loadDemoScenario(key) {
   state.tab = 'email-channel';
   state.selectedDomainId = null;
   state.pendingEdits = null;
-  state.byo = { subStep: null, rootDomain: 'muskingumcofair.com', subdomain: 'send', paused: false, pausedAt: null, verifyProgress: 0, isVerifying: false, inlineForDomainId: null };
+  state.byo = { subStep: null, rootDomain: 'evanspetcare.com', subdomain: 'send', paused: false, pausedAt: null, verifyProgress: 0, isVerifying: false, inlineForDomainId: null };
 
   // Default identity used for all baseline domains in demo scenarios
   const defaultIdentity = (prefix) => ({
     prefix,
-    displayName: 'Muskingum County Fair',
-    replyTo: 'info@muskingumcofair.com',
+    displayName: "Evan's Pet Care",
+    replyTo: 'hello@evanspetcare.com',
   });
 
   const managed = {
     id: 'managed',
-    fullDomain: 'muskingum-county-fair.fairs-mail.com',
+    fullDomain: 'evans-pet-care.sent-mail.com',
     purpose: 'Managed domain · always available',
     status: 'managed',
     lastVerified: null,
@@ -1561,26 +1561,26 @@ function loadDemoScenario(key) {
 
   if (key === 'verified-1') {
     state.domains = [
-      { id: 'send', fullDomain: 'send.muskingumcofair.com', purpose: 'Marketing', status: 'verified', lastVerified: '2 min ago', isDefault: true, isManaged: false, ...defaultIdentity('marketing') },
+      { id: 'send', fullDomain: 'send.evanspetcare.com', purpose: 'Marketing', status: 'verified', lastVerified: '2 min ago', isDefault: true, isManaged: false, ...defaultIdentity('marketing') },
       managed,
     ];
   } else if (key === 'verified-2') {
     state.domains = [
-      { id: 'send', fullDomain: 'send.muskingumcofair.com', purpose: 'Marketing', status: 'verified', lastVerified: '2 hr ago', isDefault: true, isManaged: false, ...defaultIdentity('marketing') },
-      { id: 'notif', fullDomain: 'notifications.muskingumcofair.com', purpose: 'Transactional', status: 'verified', lastVerified: '1 day ago', isDefault: false, isManaged: false, prefix: 'noreply', displayName: 'Muskingum County Fair Tickets', replyTo: 'support@muskingumcofair.com' },
+      { id: 'send', fullDomain: 'send.evanspetcare.com', purpose: 'Marketing', status: 'verified', lastVerified: '2 hr ago', isDefault: true, isManaged: false, ...defaultIdentity('marketing') },
+      { id: 'notif', fullDomain: 'notifications.evanspetcare.com', purpose: 'Transactional', status: 'verified', lastVerified: '1 day ago', isDefault: false, isManaged: false, prefix: 'noreply', displayName: "Evan's Pet Care Reminders", replyTo: 'support@evanspetcare.com' },
       managed,
     ];
   } else if (key === 'pending') {
     state.domains = [
-      { id: 'send', fullDomain: 'send.muskingumcofair.com', purpose: 'Marketing · Verifying 1 of 3 records', status: 'pending', lastVerified: null, isDefault: true, isManaged: false, ...defaultIdentity('marketing') },
+      { id: 'send', fullDomain: 'send.evanspetcare.com', purpose: 'Marketing · Verifying 1 of 3 records', status: 'pending', lastVerified: null, isDefault: true, isManaged: false, ...defaultIdentity('marketing') },
       managed,
     ];
     // Show a meaningful midway state in the DNS section: DKIM verified, Return-Path checking, DMARC pending
     state.byo.verifyProgress = 1;
   } else if (key === 'disconnected') {
     state.domains = [
-      { id: 'send', fullDomain: 'send.muskingumcofair.com', purpose: 'Marketing · DKIM record missing', status: 'disconnected', lastVerified: '3 days ago', isDefault: true, isManaged: false, ...defaultIdentity('marketing') },
-      { id: 'notif', fullDomain: 'notifications.muskingumcofair.com', purpose: 'Transactional', status: 'verified', lastVerified: '2 hr ago', isDefault: false, isManaged: false, prefix: 'noreply', displayName: 'Muskingum County Fair Tickets', replyTo: 'support@muskingumcofair.com' },
+      { id: 'send', fullDomain: 'send.evanspetcare.com', purpose: 'Marketing · DKIM record missing', status: 'disconnected', lastVerified: '3 days ago', isDefault: true, isManaged: false, ...defaultIdentity('marketing') },
+      { id: 'notif', fullDomain: 'notifications.evanspetcare.com', purpose: 'Transactional', status: 'verified', lastVerified: '2 hr ago', isDefault: false, isManaged: false, prefix: 'noreply', displayName: "Evan's Pet Care Reminders", replyTo: 'support@evanspetcare.com' },
       managed,
     ];
   } else if (key === 'managed-only') {
@@ -1714,7 +1714,7 @@ function startInlineDnsWizard(domainId) {
   const d = state.domains.find(x => x.id === domainId);
   if (!d) return;
   state.byo.subdomain = 'send';
-  state.byo.rootDomain = 'muskingumcofair.com';
+  state.byo.rootDomain = 'evanspetcare.com';
   state.byo.subStep = 'root';
   state.byo.inlineForDomainId = domainId;
   state.byo.paused = false;
@@ -2082,7 +2082,7 @@ function emailChannelDomainDetailPage(domainId) {
                   ${edits.displayName || 'Your business'}
                   ${showVia ? `<span class="inbox-via">via <strong style="color:var(--warning);">${d.fullDomain}</strong></span>` : ''}
                 </div>
-                <div class="inbox-subject">${edits.prefix || 'hello'}@${d.fullDomain} · Get your tickets for the 2026 Fair</div>
+                <div class="inbox-subject">${edits.prefix || 'hello'}@${d.fullDomain} · Your dog's grooming is booked for Saturday</div>
               </div>
             </div>
           </div>
@@ -2333,7 +2333,7 @@ function renderInlineWizardRoot() {
         <label>Root domain</label>
         <input class="form-input" type="text" value="${state.byo.rootDomain}" data-focus-key="byo.rootDomain"
           oninput="state.byo.rootDomain=this.value;" />
-        <span class="helper">For example: muskingumcofair.com</span>
+        <span class="helper">For example: evanspetcare.com</span>
       </div>
     </div>
   `;
@@ -2556,7 +2556,7 @@ function byoRootSubstep() {
       <div style="max-width: 480px;">
         <div class="form-group">
           <label>Root domain</label>
-          <span class="helper">For example: muskingumcofair.com</span>
+          <span class="helper">For example: evanspetcare.com</span>
           <input class="form-input" type="text" value="${state.byo.rootDomain}" data-focus-key="byo.rootDomain"
             oninput="state.byo.rootDomain=this.value;" />
         </div>
@@ -2646,7 +2646,7 @@ function byoSubdomainSubstep() {
               <div class="inbox-avatar">${(state.byo.displayName || 'E').charAt(0).toUpperCase()}</div>
               <div class="inbox-meta">
                 <div class="inbox-from">${state.byo.displayName || 'Your business'}</div>
-                <div class="inbox-subject">${state.byo.prefix || 'hello'}@${fullSendingDomain} · Get your tickets for the 2026 Fair</div>
+                <div class="inbox-subject">${state.byo.prefix || 'hello'}@${fullSendingDomain} · Your dog's grooming is booked for Saturday</div>
               </div>
             </div>
           </div>
