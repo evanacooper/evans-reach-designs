@@ -794,6 +794,46 @@
     text-align: center;
   }
 
+  /* "Pre-filled from your branded domain setup" note on Sender Details */
+  .prefill-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--success-bg, #f0fdf4);
+    border: 1px solid var(--success-border, #bbf7d0);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 22px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #166534;
+  }
+  .prefill-note svg { flex-shrink: 0; margin-top: 1px; color: var(--success, #16a34a); }
+
+  /* "Your branded domain setup is paused" banner on Sender Details */
+  .resume-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--warning-bg, #fffbeb);
+    border: 1px solid var(--warning-border, #fde68a);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 22px;
+  }
+  .resume-banner > svg { flex-shrink: 0; color: var(--warning, #d97706); }
+  .resume-banner-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+  .resume-banner-body strong { font-size: 13px; color: #92400e; }
+  .resume-banner-body span { font-size: 12.5px; color: #a16207; line-height: 1.45; }
+  .resume-banner-body code { font-family: var(--font-mono); font-size: 11.5px; background: rgba(146,64,14,0.08); padding: 1px 5px; border-radius: 4px; }
+  .btn-sm { padding: 7px 12px; font-size: 12.5px; flex-shrink: 0; }
+
   /* Soft warning chip used for deliverability nudges */
   .deliverability-chip {
     margin-top: 8px;
@@ -1719,13 +1759,20 @@ const state = {
     country: 'United States',
   },
 
-  // Email channel
+  // Email channel (the managed domain — always provisioned)
   email: {
     prefix: 'marketing',
     displayName: 'Muskingum County Fair',
     replyTo: '',
     // managed domain suffix (always provisioned)
     managedDomain: 'muskingum-county-fair.fairs-mail.com',
+    // True once the managed identity has been auto-populated from the BYO
+    // setup the user just completed. Drives the "pre-filled" note on the
+    // Sender Details step. Cleared the moment the user edits a field there.
+    prefilledFromByo: false,
+    // True once the user has manually touched any managed identity field on
+    // the Sender Details step. Prevents the BYO copy from clobbering edits.
+    managedTouched: false,
   },
 
   // BYO sub-journey state
@@ -1771,8 +1818,8 @@ const state = {
 const STEPS = [
   { key: 'brand', label: 'Brand' },
   { key: 'business', label: 'Business Info' },
-  { key: 'senderDetails', label: 'Sender Details' },
   { key: 'byo', label: 'Sending Domain' },
+  { key: 'senderDetails', label: 'Sender Details' },
   { key: 'sms', label: 'SMS' },
   { key: 'automations', label: 'Automations' },
 ];
@@ -1805,12 +1852,35 @@ function continueStep() {
   // Mark current as complete and advance
   state.completed.add(state.step);
   const idx = STEPS.findIndex(s => s.key === state.step);
-  if (idx === STEPS.length - 1) {
-    state.step = 'complete';
-  } else {
-    state.step = STEPS[idx + 1].key;
+  const nextKey = idx === STEPS.length - 1 ? 'complete' : STEPS[idx + 1].key;
+
+  // Entering Sender Details? If the user just went through BYO (complete OR
+  // paused mid-flow), carry their branded-domain identity over to the managed
+  // domain so they don't fill it twice. Only copy if the user hasn't already
+  // edited the managed fields by hand.
+  if (nextKey === 'senderDetails') {
+    maybePrefillManagedFromByo();
   }
+
+  state.step = nextKey;
   render();
+}
+
+/* Copy the BYO sender identity into the managed identity when the user
+   arrives at Sender Details, so a BYO user doesn't re-enter the same details.
+   Runs only when BYO actually produced data and the managed fields are still
+   untouched. */
+function maybePrefillManagedFromByo() {
+  const byoRan = state.byo.status !== 'none' || state.byo.paused;
+  if (!byoRan) return;            // managed-only path — nothing to copy
+  if (state.email.managedTouched) return; // user already customized managed
+
+  state.email.prefix = state.byo.prefix || state.email.prefix;
+  state.email.displayName = state.byo.displayName || state.email.displayName;
+  // Reply-to: carry over the BYO reply-to if the user set one; the business
+  // reply-to is correct regardless of which domain mail is sent from.
+  if (state.byo.replyTo) state.email.replyTo = state.byo.replyTo;
+  state.email.prefilledFromByo = true;
 }
 
 function backStep() {
@@ -2189,35 +2259,63 @@ function businessStep() {
 }
 
 /* =========================================================
-   STEP: Sender Details
+   STEP: Sender Details  (now the SECOND of the two email steps)
    ---------------------------------------------------------
-   Pure form. The managed domain is preset; the user edits prefix,
-   display name, reply-to. Inbox preview shows the result. No
-   BYO surfaces on this step — the next step is entirely about
-   that choice.
+   Configures the managed-domain sender identity. If the user just
+   went through BYO, these fields are pre-filled from that setup so
+   they don't enter the same details twice. The managed domain is
+   always configured because it's the fallback sender.
    ========================================================= */
 function senderDetailsStep() {
   const byo = state.byo;
-  const senderDomain = byo.status === 'verified' ? `${byo.subdomain}.${byo.rootDomain}` : state.email.managedDomain;
-  const showVia = byo.status !== 'verified';
+  // The managed domain is the subject of this step. (Even a BYO tenant needs
+  // managed configured as the fallback, so the preview always shows managed.)
+  const senderDomain = state.email.managedDomain;
   const replyToPlaceholder = suggestedReplyTo(senderDomain);
   const replyToWarn = replyToCrossDomain(state.email.replyTo, senderDomain);
   const displayInitial = (state.email.displayName || 'E').charAt(0).toUpperCase();
   const displayName = state.email.displayName || 'Your business';
 
+  // Edit handler shared by all three fields: marks managed as user-touched and
+  // clears the "pre-filled" note so it doesn't linger once the user customizes.
+  const touch = "state.email.managedTouched=true; state.email.prefilledFromByo=false;";
+
+  // Banner: BYO setup is paused mid-flow — offer to resume or carry on.
+  const byoPaused = byo.paused;
+  // Note: managed values were auto-filled from the BYO setup the user finished.
+  const showPrefillNote = state.email.prefilledFromByo && !byoPaused;
+
   const content = `
     <div class="shell-main-narrow">
       <div class="step-header">
         <h1>Set up your sender details</h1>
-        <p>These are who your customers see in their inbox by default. We've already set up a sending domain for you — you can also send from your own domain in the next step.</p>
+        <p>This is the sender identity for your managed domain — the address Reach always keeps ready as a fallback. ${byo.status === 'verified' || byo.paused ? 'We carried these over from your branded domain so you don\'t have to enter them twice.' : 'Configure how your emails appear in your customers\' inbox.'}</p>
       </div>
+
+      ${byoPaused ? `
+        <div class="resume-banner">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l2.5 2.5"/></svg>
+          <div class="resume-banner-body">
+            <strong>Your branded domain setup is paused</strong>
+            <span>You started connecting <code>${byo.subdomain}.${byo.rootDomain}</code> but didn't finish. You can pick it back up, or continue with the managed domain for now and connect your own later.</span>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="state.step='byo'; enterBYO();">Resume domain setup →</button>
+        </div>
+      ` : ''}
+
+      ${showPrefillNote ? `
+        <div class="prefill-note">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+          <span>Pre-filled from your branded domain setup — these will be used for the managed domain too. Edit anything you'd like to be different.</span>
+        </div>
+      ` : ''}
 
       <div class="form-group">
         <label>Sending email address</label>
         <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code></span>
         <div class="sender-prefix-row">
           <input class="form-input" type="text" value="${state.email.prefix}" data-focus-key="email.prefix"
-            oninput="state.email.prefix=this.value; render();" />
+            oninput="${touch} state.email.prefix=this.value; render();" />
           <span class="at-sign">@</span>
           <span class="domain-suffix">${state.email.managedDomain}</span>
         </div>
@@ -2227,14 +2325,14 @@ function senderDetailsStep() {
         <label>Display name<span class="req-asterisk">*</span></label>
         <span class="helper">What customers see in their inbox before the email opens.</span>
         <input class="form-input" type="text" value="${state.email.displayName}" data-focus-key="email.displayName"
-          oninput="state.email.displayName=this.value; render();" />
+          oninput="${touch} state.email.displayName=this.value; render();" />
       </div>
 
       <div class="form-group">
         <label>Reply-to email</label>
         <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
         <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.email.replyTo}" data-focus-key="email.replyTo"
-          oninput="state.email.replyTo=this.value; render();" />
+          oninput="${touch} state.email.replyTo=this.value; render();" />
         ${replyToWarn ? `
           <span class="deliverability-chip">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg>
@@ -2251,7 +2349,7 @@ function senderDetailsStep() {
             <div class="inbox-meta">
               <div class="inbox-from">
                 ${displayName}
-                ${showVia ? `<span class="inbox-via">via <strong style="color:var(--warning);">${state.email.managedDomain}</strong></span>` : ''}
+                <span class="inbox-via">via <strong style="color:var(--warning);">${state.email.managedDomain}</strong></span>
               </div>
               <div class="inbox-subject">${state.email.prefix || 'hello'}@${senderDomain} · Get your tickets for the 2026 Fair</div>
             </div>
@@ -2285,7 +2383,7 @@ function bringYourDomainStep() {
     <div class="shell-main-narrow">
       <div class="step-header">
         <h1>Choose your sending domain</h1>
-        <p>You're already set up to send from a managed domain. For better deliverability and brand trust, you can also send from your own — we'll walk you through it. Either way, your sender details from the previous step carry over.</p>
+        <p>Reach gives you a managed domain so you can start sending right away. For better deliverability and brand trust, you can also send from your own domain — we'll walk you through it. Whatever you choose, you'll confirm your sender details on the next step.</p>
       </div>
 
       ${showSplash ? `
@@ -2428,11 +2526,15 @@ function emailSubJourneyPage() {
 }
 
 /* After verification completes (or user clicks "Continue while verifying"),
-   exit the sub-journey, set status to verified, and let render() route back
-   to the Email Channel page where the DNS section shows the configured variant. */
+   exit the sub-journey, mark BYO verified, and advance straight to Sender
+   Details — carrying the BYO identity over so the managed domain is pre-filled
+   and the user doesn't re-enter the same details. */
 function finishVerifying() {
   state.byo.status = 'verified';
   state.byo.subStep = null;
+  state.completed.add('byo');
+  maybePrefillManagedFromByo();
+  state.step = 'senderDetails';
   render();
 }
 
@@ -2895,7 +2997,7 @@ function resetPrototype() {
   state.brand.name = 'Muskingum County Fair';
   state.brand.website = 'muskingumcofair.com';
   state.business = { dba: 'Muskingum County Fair', address1: '', address2: '', city: '', state: '', zip: '', country: 'United States' };
-  state.email = { prefix: 'marketing', displayName: 'Muskingum County Fair', replyTo: '', managedDomain: 'muskingum-county-fair.fairs-mail.com' };
+  state.email = { prefix: 'marketing', displayName: 'Muskingum County Fair', replyTo: '', managedDomain: 'muskingum-county-fair.fairs-mail.com', prefilledFromByo: false, managedTouched: false };
   state.byo = { status: 'none', subStep: null, rootDomain: 'muskingumcofair.com', subdomain: 'send', prefix: 'marketing', displayName: '', replyTo: '', paused: false, pausedAt: null, verifyProgress: 0 };
   state.merge = { firstName: '', lastName: '' };
   state.automations = { welcome: true, birthday: true, thankyou: false };
