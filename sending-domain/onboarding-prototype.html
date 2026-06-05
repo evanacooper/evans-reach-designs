@@ -1869,16 +1869,11 @@ function backStep() {
 /* =========================================================
    BRING YOUR DOMAIN — single page actions
    ========================================================= */
-/* Skip the branded domain — swap the page to the reassurance state. */
+/* Skip the branded domain — just move on to the next step. No interstitial
+   screen; the user can always connect a domain later from settings. */
 function skipByo() {
   state.byo.status = 'skipped';
-  render();
-}
-
-/* Undo skip — return to the form. */
-function unskipByo() {
-  state.byo.status = 'none';
-  render();
+  continueStep();
 }
 
 /* Entri modal succeeded — flip the page to the inline verifying state and
@@ -2140,22 +2135,16 @@ function bringYourDomainStep() {
     return shellWrap({ content: byoVerifyingContent(), footerOpts: { canContinue: true } });
   }
 
-  // Skipped — show the reassurance state instead of the form.
-  if (byo.status === 'skipped') {
-    return shellWrap({ content: byoSkippedContent(), footerOpts: { canContinue: true } });
-  }
-
-  // Default — the full single-page form.
+  // Default — the full single-page form. (A user who skipped and navigated
+  // back lands here too, so they can still connect.)
   const content = `
     <div class="shell-main-narrow">
-      <div class="step-header">
-        <h1>Send from your own domain</h1>
-        <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes — or skip for now and do it later.</p>
-      </div>
-
-      <!-- Skip available up front, not just at the end -->
-      <div style="margin-bottom: 24px;">
-        <button class="btn btn-secondary" onclick="skipByo()">Skip for now — I'll use a managed domain</button>
+      <div class="step-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:24px;">
+        <div>
+          <h1>Send from your own domain</h1>
+          <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes.</p>
+        </div>
+        <button class="btn btn-primary" style="flex-shrink:0; white-space:nowrap;" onclick="skipByo()">Skip for now</button>
       </div>
 
       <!-- What Entri is + how DNS setup works -->
@@ -2245,16 +2234,19 @@ function bringYourDomainStep() {
         </div>
       </div>
 
-      <!-- Connect + skip -->
-      <div class="domain-choice-actions">
-        <button class="btn btn-primary" onclick="state.showEntriModal=true; render();">Connect with Entri</button>
-        <button class="btn btn-secondary" onclick="skipByo()">Skip for now</button>
-      </div>
-      <p class="domain-choice-reassurance">By selecting "Connect with Entri" you agree to Entri's <a href="https://www.entri.com/terms" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Terms of Service</a> and <a href="https://www.entri.com/privacy" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Privacy Policy</a>.</p>
+      <p class="domain-choice-reassurance" style="text-align:left; margin-top:20px;">By selecting "Connect with Entri" you agree to Entri's <a href="https://www.entri.com/terms" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Terms of Service</a> and <a href="https://www.entri.com/privacy" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Privacy Policy</a>.</p>
     </div>
   `;
 
-  return shellWrap({ content, footerOpts: { canContinue: true } });
+  // Single footer action: Connect with Entri (opens the modal). Skip lives in
+  // the header. Two buttons total on the page, both move the user forward.
+  return shellWrap({
+    content,
+    footerOpts: {
+      continueLabel: 'Connect with Entri',
+      onContinue: 'state.showEntriModal=true; render();',
+    },
+  });
 }
 
 /* Inline verifying / verified state shown on the Bring Your Domain page
@@ -2309,36 +2301,6 @@ function byoVerifyingContent() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  `;
-}
-
-/* Inline reassurance state shown when the user skips Bring Your Domain. */
-function byoSkippedContent() {
-  return `
-    <div class="shell-main-narrow">
-      <div class="step-header">
-        <h1>No problem — you can do this anytime</h1>
-        <p>You'll start out sending from your managed domain, which is ready to go. Whenever you want the deliverability and brand benefits of your own domain, connect it in a couple of minutes from <strong>Settings → Email Channel</strong>.</p>
-      </div>
-
-      <section class="entri-context">
-        <div class="entri-context-header">
-          <span class="entri-context-icon">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l5-4 5 4-5 4-5-4z"/><path d="M3 8v3l5 3 5-3V8"/></svg>
-          </span>
-          <h4>Why connect your own domain later</h4>
-        </div>
-        <ul class="entri-context-list">
-          <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg><span>Higher inbox placement on Gmail and Outlook</span></li>
-          <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg><span>Your brand on every email — no platform tag</span></li>
-          <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg><span>About 5 minutes with Entri whenever you're ready</span></li>
-        </ul>
-      </section>
-
-      <div style="margin-top: 20px;">
-        <button class="btn btn-secondary" onclick="unskipByo()">← Actually, let's set it up now</button>
       </div>
     </div>
   `;
