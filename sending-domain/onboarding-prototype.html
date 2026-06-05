@@ -1752,12 +1752,24 @@
     gap: 10px;
     justify-content: center;
   }
-  /* Intro modal is wider + left-aligned to fit the how-it-works list */
+  /* Intro modal: left-aligned, compact. No logo, tighter padding so the
+     content doesn't float in a sea of whitespace. */
   .entri-modal-intro {
-    max-width: 520px;
-    text-align: center;
+    max-width: 480px;
+    text-align: left;
     position: relative;
+    padding: 28px 28px 22px;
   }
+  .entri-modal-intro h2 {
+    margin: 0 0 8px;
+    padding-right: 28px; /* clear the close button */
+  }
+  .entri-modal-intro p { margin: 0 0 18px; }
+  .entri-modal-intro .entri-modal-actions {
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+  .entri-modal-intro .demo-note { text-align: left; margin-top: 14px; }
   .entri-modal-close {
     position: absolute;
     top: 14px;
@@ -2705,10 +2717,9 @@ function entriIntroModal(fullDomain) {
         <button class="entri-modal-close" onclick="entriClose()" aria-label="Close">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
         </button>
-        <div class="entri-modal-mark">E</div>
         <h2>Connect ${fullDomain} with Entri</h2>
-        <p>Entri sets up your DNS records for you. Here's what happens when you continue:</p>
-        <ul class="entri-context-list" style="text-align:left; margin: 0 0 24px;">
+        <p>Entri sets up the DNS records for your new sending domain. Here's what happens when you continue:</p>
+        <ul class="entri-context-list" style="margin: 0 0 24px;">
           <li>
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
             <span><strong>We use Entri</strong> — a DNS automation partner used by major email platforms. You sign in to your DNS provider through Entri and they add the right records automatically. No copy-paste, no manual errors.</span>
