@@ -1775,24 +1775,17 @@ const state = {
     managedTouched: false,
   },
 
-  // BYO sub-journey state
+  // Bring Your Domain state (single page — no sub-journey)
   byo: {
-    // 'none' | 'in-progress' | 'verifying' | 'verified'
+    // 'none' | 'verifying' | 'verified' | 'skipped'
     status: 'none',
-    // sub-step: 'root' | 'subdomain' | 'connect' | 'verifying'
-    subStep: null,
     rootDomain: 'evanspetcare.com',
     subdomain: 'send',
-    // BYO-specific sender identity. Each connected domain owns its own
-    // prefix/displayName/replyTo. We seed these from the managed config
-    // when entering the sub-journey so users start from a sensible default.
+    // Branded-domain sender identity, collected inline on the BYO page.
     prefix: 'hello',
     displayName: "Evan's Pet Care",
     replyTo: '',
-    // If user backs out mid-flow, this becomes true
-    paused: false,
-    pausedAt: null, // sub-step name when paused
-    // Verifying screen progress (0=all pending, 1=DKIM ok, 2=DKIM+RP ok, 3=all ok)
+    // Verifying progress (0=all pending, 1=DKIM ok, 2=DKIM+RP ok, 3=all ok)
     verifyProgress: 0,
   },
 
@@ -1818,31 +1811,16 @@ const state = {
 const STEPS = [
   { key: 'brand', label: 'Brand' },
   { key: 'business', label: 'Business Info' },
-  { key: 'byo', label: 'Sending Domain' },
-  { key: 'senderDetails', label: 'Sender Details' },
+  { key: 'byo', label: 'Bring Your Domain' },
+  { key: 'senderDetails', label: 'Managed Domain' },
   { key: 'sms', label: 'SMS' },
   { key: 'automations', label: 'Automations' },
-];
-
-const BYO_SUBSTEPS = [
-  { key: 'root', label: 'Root domain' },
-  { key: 'subdomain', label: 'Subdomain' },
-  { key: 'connect', label: 'Connect' },
 ];
 
 /* =========================================================
    STEP NAVIGATION
    ========================================================= */
 function goToStep(key) {
-  // Leaving the BYO step while the inline DNS wizard is open?
-  // Pause the wizard so the user can resume on return.
-  if (state.step === 'byo' && key !== 'byo') {
-    if (state.byo.status === 'in-progress' && state.byo.subStep) {
-      state.byo.paused = true;
-      state.byo.pausedAt = state.byo.subStep;
-      state.byo.subStep = null;
-    }
-  }
   state.step = key;
   // Don't auto-complete; only mark complete on Continue
   render();
@@ -1854,10 +1832,9 @@ function continueStep() {
   const idx = STEPS.findIndex(s => s.key === state.step);
   const nextKey = idx === STEPS.length - 1 ? 'complete' : STEPS[idx + 1].key;
 
-  // Entering Sender Details? If the user just went through BYO (complete OR
-  // paused mid-flow), carry their branded-domain identity over to the managed
-  // domain so they don't fill it twice. Only copy if the user hasn't already
-  // edited the managed fields by hand.
+  // Entering Managed Domain? If the user connected (or is verifying) a branded
+  // domain, carry that identity over so they don't re-enter the same details.
+  // Only copy if the managed fields haven't been hand-edited yet.
   if (nextKey === 'senderDetails') {
     maybePrefillManagedFromByo();
   }
@@ -1866,19 +1843,17 @@ function continueStep() {
   render();
 }
 
-/* Copy the BYO sender identity into the managed identity when the user
-   arrives at Sender Details, so a BYO user doesn't re-enter the same details.
-   Runs only when BYO actually produced data and the managed fields are still
-   untouched. */
+/* Copy the branded-domain sender identity into the managed identity when the
+   user reaches the Managed Domain step, so they don't re-enter the same
+   details. Runs only when a branded domain was actually set up (verifying or
+   verified) and the managed fields are still untouched. */
 function maybePrefillManagedFromByo() {
-  const byoRan = state.byo.status !== 'none' || state.byo.paused;
-  if (!byoRan) return;            // managed-only path — nothing to copy
-  if (state.email.managedTouched) return; // user already customized managed
+  const byoRan = state.byo.status === 'verifying' || state.byo.status === 'verified';
+  if (!byoRan) return;                     // skipped or untouched — nothing to copy
+  if (state.email.managedTouched) return;  // user already customized managed
 
   state.email.prefix = state.byo.prefix || state.email.prefix;
   state.email.displayName = state.byo.displayName || state.email.displayName;
-  // Reply-to: carry over the BYO reply-to if the user set one; the business
-  // reply-to is correct regardless of which domain mail is sent from.
   if (state.byo.replyTo) state.email.replyTo = state.byo.replyTo;
   state.email.prefilledFromByo = true;
 }
@@ -1892,92 +1867,34 @@ function backStep() {
 }
 
 /* =========================================================
-   BYO SUB-JOURNEY
+   BRING YOUR DOMAIN — single page actions
    ========================================================= */
-function enterBYO() {
-  // First-time entry seeds the BYO identity from the managed config so users
-  // start from a sensible default. Resume preserves any edits made earlier.
-  const isFirstEntry = state.byo.pausedAt === null && !state.byo.paused;
-  if (isFirstEntry) {
-    if (!state.byo.displayName) state.byo.displayName = state.email.displayName;
-    if (!state.byo.prefix) state.byo.prefix = state.email.prefix;
-    // Reply-to is left blank by default so the auto-suggest placeholder shows
-    // an address on the BYO root domain rather than copying from managed.
-  }
-  state.byo.status = 'in-progress';
-  state.byo.paused = false;
-  state.byo.subStep = state.byo.pausedAt || 'root';
-  state.byo.pausedAt = null;
+/* Skip the branded domain — swap the page to the reassurance state. */
+function skipByo() {
+  state.byo.status = 'skipped';
   render();
 }
 
-function exitBYOPaused() {
-  // Bail out, keep partial state
-  if (state.byo.subStep && state.byo.status === 'in-progress') {
-    state.byo.paused = true;
-    state.byo.pausedAt = state.byo.subStep;
-  }
-  state.byo.status = state.byo.paused ? 'in-progress' : 'none';
-  state.byo.subStep = null;
-  // Stay on the Sending Domain step
-  state.step = 'byo';
+/* Undo skip — return to the form. */
+function unskipByo() {
+  state.byo.status = 'none';
   render();
 }
 
-function byoNext() {
-  const order = BYO_SUBSTEPS.map(s => s.key);
-  const idx = order.indexOf(state.byo.subStep);
-  if (idx === order.length - 1) {
-    // On Connect step — clicking primary button launches Entri modal
-    state.showEntriModal = true;
-  } else {
-    state.byo.subStep = order[idx + 1];
-  }
-  render();
-}
-
-function byoBack() {
-  const order = BYO_SUBSTEPS.map(s => s.key);
-  const idx = order.indexOf(state.byo.subStep);
-  if (idx === 0) {
-    // First sub-step, Back returns to managed view
-    exitBYOPaused();
-  } else {
-    state.byo.subStep = order[idx - 1];
-    render();
-  }
-}
-
+/* Entri modal succeeded — flip the page to the inline verifying state and
+   animate the three records propagating. */
 function entriSuccess() {
   state.showEntriModal = false;
   state.byo.status = 'verifying';
-  state.byo.subStep = null; // exits sub-flow display, but verifying screen takes over
   state.byo.verifyProgress = 0;
-  // Animate progression. Stay in 'verifying' status when all 3 records are
-  // checked so the user sees the success state before the screen swaps —
-  // finishVerifying() (Continue button) flips status to 'verified' and routes
-  // back to the Email Channel page.
   setTimeout(() => { state.byo.verifyProgress = 1; render(); }, 1800);
   setTimeout(() => { state.byo.verifyProgress = 2; render(); }, 3600);
-  setTimeout(() => {
-    state.byo.verifyProgress = 3;
-    render();
-  }, 5400);
+  setTimeout(() => { state.byo.verifyProgress = 3; state.byo.status = 'verified'; render(); }, 5400);
   render();
 }
 
 function entriClose() {
   state.showEntriModal = false;
-  // Stay on Connect sub-step
-  render();
-}
-
-function dismissResume() {
-  state.byo.paused = false;
-  state.byo.pausedAt = null;
-  state.byo.subStep = null;
-  state.byo.status = 'none';
-  // Reset partial choices
   render();
 }
 
@@ -2097,69 +2014,6 @@ function shellWrap({ content, footerOpts = {}, hideFooter = false }) {
   `;
 }
 
-/* Sub-journey sidebar: replaces the main step sidebar with a back-link
-   parent and the BYO sub-steps. Used by the Connect DNS sub-journey. */
-function subJourneySidebar({ activeKey, completedKeys = [], showVerifying = false }) {
-  const items = [...BYO_SUBSTEPS];
-  if (showVerifying) items.push({ key: 'verifying', label: 'Verifying' });
-  return `
-    <aside class="shell-sidebar">
-      <div class="shell-sidebar-eyebrow">Email setup</div>
-      <button class="step-item" data-state="parent" onclick="exitBYOPaused()" style="font-weight: 600; color: var(--text);">
-        <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: var(--text-muted);">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
-        </span>
-        Sending Domain
-      </button>
-      <ul style="list-style: none; margin: 4px 0 0; padding: 0 0 0 22px; border-left: 1px dashed var(--border-strong); margin-left: 22px; display: flex; flex-direction: column; gap: 2px;">
-        ${items.map((s) => {
-          const isActive = s.key === activeKey;
-          const isComplete = completedKeys.includes(s.key);
-          const stateAttr = isComplete ? 'complete' : (isActive ? 'active' : 'upcoming');
-          // Step marker: no numbers.
-          //   Upcoming = hollow ring; Active = filled dot inside hollow ring; Complete = green check.
-          let markerInner = '';
-          let markerStyle = 'width: 16px; height: 16px; border-radius: 999px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; position: relative;';
-          if (stateAttr === 'active') {
-            markerStyle += ' background: var(--bg-elevated); border: 1.5px solid var(--text);';
-            markerInner = '<span style="width: 7px; height: 7px; border-radius: 999px; background: var(--text);"></span>';
-          } else if (stateAttr === 'complete') {
-            markerStyle += ' background: var(--success); border: 1.5px solid var(--success); color: white; font-size: 10px; font-weight: 700;';
-            markerInner = '✓';
-          } else {
-            markerStyle += ' background: var(--bg-elevated); border: 1.5px solid var(--border-strong);';
-          }
-          return `<li style="display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 13px;${
-            stateAttr === 'active' ? ' background: var(--bg-elevated); color: var(--text); font-weight: 500; box-shadow: var(--shadow-card);'
-            : stateAttr === 'complete' ? ' color: var(--text);'
-            : ' color: var(--text-muted);'
-          }">
-            <span style="${markerStyle}">${markerInner}</span>
-            ${s.label}
-          </li>`;
-        }).join('')}
-      </ul>
-    </aside>
-  `;
-}
-
-/* Shell wrapper for the Connect DNS sub-journey. Replaces the main sidebar
-   with the sub-journey sidebar; footer Back/Continue map to sub-journey nav. */
-function shellWrapSubJourney({ content, activeKey, completedKeys = [], showVerifying = false, hideFooter = false, footerOpts = {} }) {
-  return `
-    <div class="shell">
-      ${shellHeader()}
-      <div class="shell-body">
-        ${subJourneySidebar({ activeKey, completedKeys, showVerifying })}
-        <main class="shell-main">
-          ${content}
-        </main>
-      </div>
-      ${hideFooter ? '' : shellFooter(footerOpts)}
-    </div>
-  `;
-}
-
 /* =========================================================
    STEP CONTENT
    ========================================================= */
@@ -2266,59 +2120,270 @@ function businessStep() {
    they don't enter the same details twice. The managed domain is
    always configured during onboarding.
    ========================================================= */
+/* =========================================================
+   STEP: Bring Your Domain  (single page — no sub-journey)
+   ---------------------------------------------------------
+   Explains the benefits + what Entri is, collects all the
+   branded-domain fields inline, and connects via Entri right
+   here. The user can skip; skipping swaps the page to a short
+   reassurance state. After Entri succeeds, the page flips to an
+   inline "connected — verifying" state with the records animation.
+   ========================================================= */
+function bringYourDomainStep() {
+  const byo = state.byo;
+  const fullSendingDomain = `${byo.subdomain}.${byo.rootDomain}`;
+  const replyToPlaceholder = suggestedReplyTo(fullSendingDomain);
+  const replyToWarn = replyToCrossDomain(byo.replyTo, fullSendingDomain);
+
+  // Verifying / verified — show the inline status instead of the form.
+  if (byo.status === 'verifying' || byo.status === 'verified') {
+    return shellWrap({ content: byoVerifyingContent(), footerOpts: { canContinue: true } });
+  }
+
+  // Skipped — show the reassurance state instead of the form.
+  if (byo.status === 'skipped') {
+    return shellWrap({ content: byoSkippedContent(), footerOpts: { canContinue: true } });
+  }
+
+  // Default — the full single-page form.
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Send from your own domain</h1>
+        <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes — or skip for now and do it later.</p>
+      </div>
+
+      <!-- What Entri is + how DNS setup works -->
+      <section class="entri-context" aria-labelledby="entri-context-title">
+        <div class="entri-context-header">
+          <span class="entri-context-icon">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>
+          </span>
+          <h4 id="entri-context-title">How it works</h4>
+        </div>
+        <ul class="entri-context-list">
+          <li>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+            <span><strong>We use Entri</strong> — a DNS automation partner used by major email platforms — to publish the records for you. You sign in to your DNS provider through Entri and they add the right records automatically. No copy-paste, no manual errors.</span>
+          </li>
+          <li>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+            <span><strong>DNS access only.</strong> Entri only touches the records we need to publish (DKIM, Return-Path, DMARC) — nothing else in your provider account.</span>
+          </li>
+          <li>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+            <span><strong>Don't have DNS access?</strong> Forward the setup to your IT contact from Entri, or add the records manually.</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Domain fields -->
+      <div class="form-group" style="margin-top: 24px;">
+        <label>Your domain</label>
+        <span class="helper">The domain your customers know you by — usually your website. We pulled this from your business info.</span>
+        <input class="form-input" type="text" value="${byo.rootDomain}" data-focus-key="byo.rootDomain"
+          oninput="state.byo.rootDomain=this.value; render();" />
+      </div>
+
+      <div class="form-group">
+        <label>Sending subdomain</label>
+        <span class="helper">Where your emails send from. Common choices: <code>send</code>, <code>email</code>, <code>notifications</code>. Use one you're not already using elsewhere.</span>
+        <div class="subdomain-row">
+          <input class="form-input" type="text" value="${byo.subdomain}" data-focus-key="byo.subdomain"
+            oninput="state.byo.subdomain=this.value; render();" />
+          <span class="domain-suffix">.${byo.rootDomain}</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 24px;">
+        <label>Sending email address</label>
+        <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code>.</span>
+        <div class="sender-prefix-row">
+          <input class="form-input" type="text" value="${byo.prefix}" data-focus-key="byo.prefix"
+            oninput="state.byo.prefix=this.value; render();" />
+          <span class="at-sign">@</span>
+          <span class="domain-suffix">${fullSendingDomain}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Display name<span class="req-asterisk">*</span></label>
+        <span class="helper">What customers see in their inbox before the email opens.</span>
+        <input class="form-input" type="text" value="${byo.displayName}" data-focus-key="byo.displayName"
+          oninput="state.byo.displayName=this.value; render();" />
+      </div>
+
+      <div class="form-group">
+        <label>Reply-to email</label>
+        <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
+        <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${byo.replyTo}" data-focus-key="byo.replyTo"
+          oninput="state.byo.replyTo=this.value; render();" />
+        ${replyToWarn ? `
+          <span class="deliverability-chip">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg>
+            Reply-to on a different root domain can hurt deliverability
+          </span>
+        ` : ''}
+      </div>
+
+      <!-- Inbox preview -->
+      <div style="margin-top: 24px;">
+        <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:10px;">How it appears in inbox</div>
+        <div class="inbox-preview">
+          <div class="inbox-row">
+            <div class="inbox-avatar">${(byo.displayName || 'E').charAt(0).toUpperCase()}</div>
+            <div class="inbox-meta">
+              <div class="inbox-from">${byo.displayName || 'Your business'}</div>
+              <div class="inbox-subject">${byo.prefix || 'hello'}@${fullSendingDomain} · Your dog's grooming is booked for Saturday</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Records Entri will publish (transparency before the connect click) -->
+      <div style="margin-top: 24px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-subtle); padding: 12px 14px;">
+        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px;">Records Entri will publish</div>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text); font-family: var(--font-mono);">
+          <li>DKIM key — proves mail is from you</li>
+          <li>Return-Path — handles bounces</li>
+          <li>DMARC policy — protects your reputation</li>
+        </ul>
+      </div>
+
+      <!-- Connect + skip -->
+      <div class="domain-choice-actions">
+        <button class="btn btn-primary" onclick="state.showEntriModal=true; render();">Connect with Entri</button>
+        <button class="btn btn-secondary" onclick="skipByo()">Skip for now</button>
+      </div>
+      <p class="domain-choice-reassurance">By selecting "Connect with Entri" you agree to Entri's <a href="https://www.entri.com/terms" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Terms of Service</a> and <a href="https://www.entri.com/privacy" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Privacy Policy</a>.</p>
+    </div>
+  `;
+
+  return shellWrap({ content, footerOpts: { canContinue: true } });
+}
+
+/* Inline verifying / verified state shown on the Bring Your Domain page
+   after Entri succeeds. */
+function byoVerifyingContent() {
+  const byo = state.byo;
+  const p = byo.verifyProgress;
+  const dkimState = p >= 1 ? 'ok' : (p === 0 ? 'working' : 'pending');
+  const rpState = p >= 2 ? 'ok' : (p === 1 ? 'working' : 'pending');
+  const dmarcState = p >= 3 ? 'ok' : (p === 2 ? 'working' : 'pending');
+  const done = p >= 3;
+
+  const icon = (st) => st === 'ok'
+    ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.5 2.5L10 3.5"/></svg>`
+    : (st === 'working' ? `<div class="spinner" style="border-top-color: var(--info);"></div>` : '');
+  const label = (st) => st === 'ok' ? 'verified just now' : (st === 'working' ? 'checking…' : 'pending');
+
+  return `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>${done ? 'Your domain is connected' : 'Connecting your domain'}</h1>
+        <p>${done
+          ? `All records are live. Email will send from <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${byo.subdomain}.${byo.rootDomain}</code> with your brand. Continue to confirm your managed address.`
+          : `Entri published your DNS records — we're confirming they've propagated worldwide. This usually takes 1–5 minutes. You can continue setting up; we'll let you know when it's done.`}</p>
+      </div>
+      <div class="dns-section" data-state="${done ? '' : 'pending'}">
+        <div class="dns-section-header">
+          <span class="dns-section-icon" data-tone="${done ? 'success' : 'info'}">
+            ${done
+              ? '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>'
+              : '<div class="spinner" style="width: 12px; height: 12px;"></div>'}
+          </span>
+          <span class="dns-section-title">${byo.subdomain}.${byo.rootDomain}</span>
+          <span style="margin-left: auto; font-size: 12px; color: var(--text-muted);">${done ? 'all records verified' : 'usually 1–5 minutes'}</span>
+        </div>
+        <div class="dns-section-body" style="padding: 0;">
+          <div class="verifying-list">
+            <div class="verifying-row">
+              <div class="verifying-icon" data-state="${dkimState}">${icon(dkimState)}</div>
+              <div><div class="label">DKIM signing key</div><div class="verifying-row-meta">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_domainkey.${byo.subdomain}</code></div></div>
+              <span class="timestamp">${label(dkimState)}</span>
+            </div>
+            <div class="verifying-row">
+              <div class="verifying-icon" data-state="${rpState}">${icon(rpState)}</div>
+              <div><div class="label">Return-Path</div><div class="verifying-row-meta">CNAME for <code style="font-family:var(--font-mono);font-size:11.5px;">pm-bounces.${byo.subdomain}</code></div></div>
+              <span class="timestamp">${label(rpState)}</span>
+            </div>
+            <div class="verifying-row">
+              <div class="verifying-icon" data-state="${dmarcState}">${icon(dmarcState)}</div>
+              <div><div class="label">DMARC policy</div><div class="verifying-row-meta">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_dmarc.${byo.subdomain}</code></div></div>
+              <span class="timestamp">${label(dmarcState)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* Inline reassurance state shown when the user skips Bring Your Domain. */
+function byoSkippedContent() {
+  return `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>No problem — you can do this anytime</h1>
+        <p>You'll start out sending from your managed domain, which is ready to go. Whenever you want the deliverability and brand benefits of your own domain, connect it in a couple of minutes from <strong>Settings → Email Channel</strong>.</p>
+      </div>
+
+      <section class="entri-context">
+        <div class="entri-context-header">
+          <span class="entri-context-icon">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l5-4 5 4-5 4-5-4z"/><path d="M3 8v3l5 3 5-3V8"/></svg>
+          </span>
+          <h4>Why connect your own domain later</h4>
+        </div>
+        <ul class="entri-context-list">
+          <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg><span>Higher inbox placement on Gmail and Outlook</span></li>
+          <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg><span>Your brand on every email — no platform tag</span></li>
+          <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg><span>About 5 minutes with Entri whenever you're ready</span></li>
+        </ul>
+      </section>
+
+      <div style="margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="unskipByo()">← Actually, let's set it up now</button>
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================================
+   STEP: Managed Domain  (was Sender Details)
+   ---------------------------------------------------------
+   The always-on sending address. Framed as ready-to-send now, and
+   the address that keeps mail flowing if a branded domain ever has
+   an issue. Pre-filled from the branded-domain setup when present.
+   ========================================================= */
 function senderDetailsStep() {
   const byo = state.byo;
-  // The managed domain is the subject of this step — the preview always
-  // shows managed since that's what these fields configure.
   const senderDomain = state.email.managedDomain;
   const replyToPlaceholder = suggestedReplyTo(senderDomain);
   const replyToWarn = replyToCrossDomain(state.email.replyTo, senderDomain);
   const displayInitial = (state.email.displayName || 'E').charAt(0).toUpperCase();
   const displayName = state.email.displayName || 'Your business';
-
-  // Edit handler shared by all three fields: marks managed as user-touched and
-  // clears the "pre-filled" note so it doesn't linger once the user customizes.
   const touch = "state.email.managedTouched=true; state.email.prefilledFromByo=false;";
 
-  // Banner: BYO setup is paused mid-flow — offer to resume or carry on.
-  const byoPaused = byo.paused;
-  // Did the user just come through the branded-domain flow? If so, this step
-  // is a quick review of an auto-created backup address, not fresh setup work.
-  const cameFromByo = (byo.status === 'verified' || byo.paused);
-  // Note: managed values were auto-filled from the BYO setup the user finished.
-  const showPrefillNote = state.email.prefilledFromByo && !byoPaused;
+  // Did the user connect a branded domain? Changes the framing + shows the note.
+  const hasBranded = (byo.status === 'verifying' || byo.status === 'verified');
+  const showPrefillNote = state.email.prefilledFromByo;
 
-  // Header copy adapts to the arrival state so a BYO user doesn't feel like
-  // they're being asked to re-enter what they just provided.
-  const headerTitle = cameFromByo
-    ? 'Review your backup sending address'
-    : 'Set up your sender details';
-  const headerCopy = cameFromByo
-    ? `Alongside your branded domain, every account keeps a ready-to-go address on a managed domain so you're never unable to send. We've already filled it in with the same details you just provided — give it a quick look and continue.`
-    : `This is who your customers see in their inbox. Configure how your emails appear, and you're ready to send.`;
+  const headerCopy = hasBranded
+    ? `Every account also keeps a managed sending address that's always ready — so you can send right now, and you're covered if your own domain ever has an issue. We filled it in with the details you just provided. Give it a quick look and continue.`
+    : `This address is set up and ready — you can start sending as soon as you finish onboarding. Configure how your emails appear in your customers' inbox.`;
 
   const content = `
     <div class="shell-main-narrow">
       <div class="step-header">
-        <h1>${headerTitle}</h1>
+        <h1>Your managed sending address</h1>
         <p>${headerCopy}</p>
       </div>
-
-      ${byoPaused ? `
-        <div class="resume-banner">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l2.5 2.5"/></svg>
-          <div class="resume-banner-body">
-            <strong>Your branded domain setup is paused</strong>
-            <span>You started connecting <code>${byo.subdomain}.${byo.rootDomain}</code> but didn't finish. You can pick it back up, or continue with this address for now and connect your own later.</span>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="state.step='byo'; enterBYO();">Resume domain setup →</button>
-        </div>
-      ` : ''}
 
       ${showPrefillNote ? `
         <div class="prefill-note">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
-          <span>Filled in from your branded domain setup. These details apply to your backup address too — edit anything you'd like to be different.</span>
+          <span>Filled in from your branded domain setup. Edit anything you'd like to be different for this address.</span>
         </div>
       ` : ''}
 
@@ -2374,472 +2439,6 @@ function senderDetailsStep() {
   return shellWrap({ content, footerOpts: { canContinue: emailRequiredFilled() } });
 }
 
-/* =========================================================
-   STEP: Sending Domain
-   ---------------------------------------------------------
-   The page is the decision. Slim comparison panel + single
-   primary CTA + explicit "do later in settings" reassurance.
-   When BYO is paused/verified or the sub-journey is open, the
-   appropriate state UI replaces the splash content.
-   ========================================================= */
-function bringYourDomainStep() {
-  const byo = state.byo;
-  const displayInitial = (state.email.displayName || 'E').charAt(0).toUpperCase();
-  const displayName = state.email.displayName || 'Your business';
-
-  // When BYO is paused or verified, the DNS section variant takes the page.
-  // Otherwise we render the slim comparison + CTA.
-  const showSplash = byo.status !== 'verified' && !byo.paused;
-
-  const content = `
-    <div class="shell-main-narrow">
-      <div class="step-header">
-        <h1>Choose your sending domain</h1>
-        <p>You have a managed domain set up so you can start sending right away. For better deliverability and brand trust, you can also send from your own domain — we'll walk you through it. Whatever you choose, you'll confirm your sender details on the next step.</p>
-      </div>
-
-      ${showSplash ? `
-        <!-- Slim comparison: managed vs branded, side-by-side -->
-        <section class="compare-panel" aria-label="Compare managed and branded sending domains">
-          <div class="compare-panel-grid">
-            <div class="compare-panel-col" data-tone="managed">
-              <div class="compare-panel-col-header">
-                <h4>Managed domain</h4>
-                <span class="compare-panel-col-label">Already set up</span>
-              </div>
-              <div class="compare-panel-mini-inbox">
-                <div class="mini-avatar">${displayInitial}</div>
-                <div>
-                  <div class="mini-from">${displayName}<span class="mini-via">via ${state.email.managedDomain}</span></div>
-                  <div class="mini-subject">${state.email.prefix || 'marketing'}@${state.email.managedDomain}</div>
-                </div>
-              </div>
-            </div>
-            <div class="compare-panel-col" data-tone="branded">
-              <div class="compare-panel-col-header">
-                <h4>Your own domain</h4>
-                <span class="compare-panel-col-label" data-tone="recommended">Recommended</span>
-              </div>
-              <div class="compare-panel-mini-inbox">
-                <div class="mini-avatar">${displayInitial}</div>
-                <div>
-                  <div class="mini-from">${displayName}</div>
-                  <div class="mini-subject">${state.email.prefix || 'marketing'}@send.${(state.brand.website || 'yourdomain.com').replace(/^www\./,'')}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- How DNS setup works: trust signals for Entri before the user hits Connect -->
-        <section class="entri-context" aria-labelledby="entri-context-title">
-          <div class="entri-context-header">
-            <span class="entri-context-icon">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>
-            </span>
-            <h4 id="entri-context-title">How DNS setup works if you bring your own domain</h4>
-          </div>
-          <ul class="entri-context-list">
-            <li>
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
-              <span><strong>We use Entri</strong> — a DNS automation partner used by major email platforms — to publish the records on your behalf. You sign in to your DNS provider through Entri and they add the right records automatically. No copy-paste, no manual errors.</span>
-            </li>
-            <li>
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
-              <span><strong>DNS access only.</strong> Entri only touches the DNS records we need to publish (DKIM, Return-Path, DMARC). They never see anything else in your provider account.</span>
-            </li>
-            <li>
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
-              <span><strong>Don't have DNS access?</strong> No problem — you can forward the setup to your IT contact directly from Entri's interface, or copy the records and add them manually.</span>
-            </li>
-          </ul>
-        </section>
-
-        <!-- Two clear CTAs -->
-        <div class="domain-choice-actions">
-          <button class="btn btn-primary" onclick="enterBYO()">Use my own domain →</button>
-          <button class="btn btn-secondary" onclick="continueStep()">Continue with managed domain</button>
-        </div>
-        <p class="domain-choice-reassurance">You can change this anytime later from <strong style="color:var(--text);">Settings → Email Channel</strong>.</p>
-      ` : renderOnboardingDnsSection()}
-    </div>
-  `;
-
-  return shellWrap({ content, footerOpts: { canContinue: true } });
-}
-
-/* =========================================================
-   DNS CONNECTION SECTION on the Sending Domain step
-   ---------------------------------------------------------
-   Returns the paused or configured variant. The splash (offer)
-   state lives inline in bringYourDomainStep() so it doesn't go
-   through this dispatcher. The wizard and verifying states are
-   full-page sub-journey renderings (emailSubJourneyPage).
-   ========================================================= */
-function renderOnboardingDnsSection() {
-  const byo = state.byo;
-  if (byo.status === 'verified') return renderDnsConfiguredVariant();
-  if (byo.paused) return renderDnsPausedVariant();
-  // Fallback (shouldn't be reached — bringYourDomainStep handles the splash inline)
-  return renderDnsSplashVariant();
-}
-
-/* =========================================================
-   CONNECT DNS SUB-JOURNEY (full-pane page within the Email step)
-   ---------------------------------------------------------
-   When byo.subStep is set or byo.status === 'verifying', the entire
-   right pane swaps to the sub-journey, the sidebar swaps to the
-   Connect DNS sub-step list with an Email Channel back link, and
-   the footer Back/Continue map to sub-journey navigation.
-   ========================================================= */
-function emailSubJourneyPage() {
-  const byo = state.byo;
-
-  // Verifying mode (after Entri success) — special sub-step
-  if (byo.status === 'verifying') {
-    const order = BYO_SUBSTEPS.map(s => s.key);
-    const completedKeys = order; // all 4 sub-steps complete by the time we verify
-    const verifyDone = byo.verifyProgress >= 3;
-    const footerOpts = verifyDone
-      ? { showBack: false, continueLabel: 'Continue setup →', onContinue: 'finishVerifying()' }
-      : { showBack: false, continueLabel: 'Continue while verifying →', onContinue: 'finishVerifying()' };
-    return shellWrapSubJourney({
-      content: renderSubJourneyVerifying(),
-      activeKey: 'verifying',
-      completedKeys,
-      showVerifying: true,
-      footerOpts,
-    });
-  }
-
-  // Wizard mode (sub-step set)
-  const order = BYO_SUBSTEPS.map(s => s.key);
-  const currentIdx = order.indexOf(byo.subStep);
-  const completedKeys = order.slice(0, currentIdx);
-
-  let content;
-  if (byo.subStep === 'root') content = renderSubJourneyRoot();
-  else if (byo.subStep === 'subdomain') content = renderSubJourneySubdomain();
-  else if (byo.subStep === 'connect') content = renderSubJourneyConnect();
-
-  // The Connect sub-step has its own primary actions (Connect with Entri /
-  // Set up manually) in the content, so the footer hides Continue.
-  const isConnect = byo.subStep === 'connect';
-  const footerOpts = isConnect
-    ? { onBack: 'byoBack()', showBack: true, showContinue: false, continueHint: 'Choose an option above to continue' }
-    : { onBack: 'byoBack()', showBack: true, onContinue: 'byoNext()', continueLabel: 'Continue' };
-  return shellWrapSubJourney({
-    content,
-    activeKey: byo.subStep,
-    completedKeys,
-    showVerifying: false,
-    footerOpts,
-  });
-}
-
-/* After verification completes (or user clicks "Continue while verifying"),
-   exit the sub-journey, mark BYO verified, and advance straight to Sender
-   Details — carrying the BYO identity over so the managed domain is pre-filled
-   and the user doesn't re-enter the same details. */
-function finishVerifying() {
-  state.byo.status = 'verified';
-  state.byo.subStep = null;
-  state.completed.add('byo');
-  maybePrefillManagedFromByo();
-  state.step = 'senderDetails';
-  render();
-}
-
-/* Splash — first-time state, BYO not started */
-function renderDnsSplashVariant() {
-  // Closing pitch for BYO at the bottom of the Email Channel page. Calm,
-  // not pushy. The explicit "do later in settings" reassurance is the most
-  // important sentence on this card — make sure it reads.
-  return `
-    <section class="step-section" aria-labelledby="byo-pitch-title">
-      <div style="display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-elevated);">
-        <span class="path-card-icon" style="flex-shrink:0;">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l7-4 7 4-7 4-7-4z"/><path d="M3 8v3l7 4 7-4V8"/></svg>
-        </span>
-        <div style="flex: 1; min-width: 0;">
-          <h2 id="byo-pitch-title" style="margin: 0 0 4px; font-size: 15px; font-weight: 600;">Want better deliverability? Connect your own domain.</h2>
-          <p style="margin: 0 0 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.55;">Your customers will see emails from <strong>your domain</strong> instead of the platform's, which lands you in more inboxes on Gmail and Outlook. The setup is a one-time DNS step — about 5 minutes — and we'll walk you through it.</p>
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="enterBYO()">Connect your domain</button>
-            <span style="font-size: 12.5px; color: var(--text-muted);">or just click <strong style="color:var(--text);">Continue</strong> below — you can do this anytime from <strong style="color:var(--text);">Settings → Email Channel</strong>.</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-/* Paused — user bailed out mid-wizard, partial state preserved */
-function renderDnsPausedVariant() {
-  const byo = state.byo;
-  const pausedSubLabel = BYO_SUBSTEPS.find(s => s.key === byo.pausedAt)?.label || 'Subdomain';
-  return `
-    <div class="path-card">
-      <div class="path-card-header">
-        <span class="path-card-icon" style="background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning);">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l2.5 2.5"/></svg>
-        </span>
-        <div>
-          <h2>Send from your own domain — paused</h2>
-          <p>You started connecting <code style="font-family: var(--font-mono); font-size: 12px;">${byo.subdomain}.${byo.rootDomain}</code> and paused at ${pausedSubLabel}. Your choices are saved.</p>
-        </div>
-      </div>
-      <div class="path-card-body">
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button class="btn btn-primary" onclick="enterBYO()">Resume setup</button>
-          <button class="btn btn-secondary" onclick="dismissResume()">Remove in-progress domain</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-/* Configured — BYO verified */
-function renderDnsConfiguredVariant() {
-  const byo = state.byo;
-  return `
-    <div class="path-card">
-      <div class="path-card-header">
-        <span class="path-card-icon" style="background: var(--success-pill-bg); border-color: var(--success-border); color: var(--success);">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
-        </span>
-        <div>
-          <h2>Your domain is connected</h2>
-          <p>Outbound mail is DKIM-signed under <code style="font-family: var(--font-mono); font-size: 12px;">${byo.subdomain}.${byo.rootDomain}</code>. Recipients see your business — no platform tag.</p>
-        </div>
-        <span class="path-card-status-pill">Verified</span>
-      </div>
-      <div class="path-card-body" style="font-size: 13px; color: var(--text-secondary);">
-        <p style="margin: 0;">When you finish onboarding, your branded domain becomes the default sender. You can manage both domains anytime from Settings → Email Channel.</p>
-      </div>
-    </div>
-  `;
-}
-
-/* =========================================================
-   SUB-JOURNEY SCREENS — full right-pane renderings used by
-   emailSubJourneyPage. Each returns just the content area;
-   the surrounding shell + sidebar + footer come from
-   shellWrapSubJourney.
-   ========================================================= */
-function renderSubJourneyRoot() {
-  return `
-    <div class="shell-main-narrow">
-      <div class="step-header">
-        <h1>What's your root domain?</h1>
-        <p>This is the domain your customers know you by — usually the same as your website.</p>
-      </div>
-      <div class="form-group">
-        <label>Root domain</label>
-        <input class="form-input" type="text" value="${state.byo.rootDomain}" data-focus-key="byo.rootDomain"
-          oninput="state.byo.rootDomain=this.value;" />
-        <span class="helper">For example: ${state.brand.website}</span>
-      </div>
-      <div class="info-banner" style="margin-top: 12px;">
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6.5v4M10 13.5h.01"/></svg>
-        <div>We pulled this from your business website. Looks wrong? Edit above.</div>
-      </div>
-    </div>
-  `;
-}
-
-function renderSubJourneySubdomain() {
-  const fullSendingDomain = `${state.byo.subdomain}.${state.byo.rootDomain}`;
-  const replyToPlaceholder = suggestedReplyTo(fullSendingDomain);
-  const replyToWarn = replyToCrossDomain(state.byo.replyTo, fullSendingDomain);
-
-  return `
-    <div class="shell-main-narrow">
-      <div class="step-header">
-        <h1>Configure your sending domain</h1>
-        <p>Pick a subdomain and set the sender details your customers will see in their inbox.</p>
-      </div>
-
-      <!-- Subdomain picker -->
-      <div class="preview-chip">
-        <svg width="14" height="14" style="color:var(--text-muted);" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.5"/><path d="M2 10s2.5-5 8-5 8 5 8 5-2.5 5-8 5-8-5-8-5z"/></svg>
-        <div>
-          <div class="preview-chip-label">Sending domain preview</div>
-          <div class="preview-chip-value">${fullSendingDomain}</div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Sending subdomain</label>
-        <span class="helper">Common choices: <code>send</code>, <code>email</code>, <code>notifications</code>. Use one you're not already using elsewhere.</span>
-        <div class="subdomain-row">
-          <input class="form-input" type="text" value="${state.byo.subdomain}" data-focus-key="byo.subdomain"
-            oninput="state.byo.subdomain=this.value; render();" />
-          <span class="domain-suffix">.${state.byo.rootDomain}</span>
-        </div>
-      </div>
-
-      <!-- Sender identity for the BYO domain. Same component shape as the
-           managed-domain config above on the Email step. -->
-      <div class="form-group" style="margin-top: 24px;">
-        <label>Sending email address</label>
-        <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code>.</span>
-        <div class="sender-prefix-row">
-          <input class="form-input" type="text" value="${state.byo.prefix}" data-focus-key="byo.prefix"
-            oninput="state.byo.prefix=this.value; render();" />
-          <span class="at-sign">@</span>
-          <span class="domain-suffix">${fullSendingDomain}</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Display name<span class="req-asterisk">*</span></label>
-        <span class="helper">What customers see in their inbox before the email opens.</span>
-        <input class="form-input" type="text" value="${state.byo.displayName}" data-focus-key="byo.displayName"
-          oninput="state.byo.displayName=this.value; render();" />
-      </div>
-
-      <div class="form-group">
-        <label>Reply-to email</label>
-        <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
-        <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.byo.replyTo}" data-focus-key="byo.replyTo"
-          oninput="state.byo.replyTo=this.value; render();" />
-        ${replyToWarn ? `
-          <span class="deliverability-chip">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg>
-            Reply-to on a different root domain can hurt deliverability
-          </span>
-        ` : ''}
-      </div>
-
-      <!-- Inbox preview -->
-      <div style="margin-top: 24px;">
-        <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:10px;">How it appears in inbox</div>
-        <div class="inbox-preview">
-          <div class="inbox-row">
-            <div class="inbox-avatar">${(state.byo.displayName || 'E').charAt(0).toUpperCase()}</div>
-            <div class="inbox-meta">
-              <div class="inbox-from">${state.byo.displayName || 'Your business'}</div>
-              <div class="inbox-subject">${state.byo.prefix || 'hello'}@${fullSendingDomain} · Your dog's grooming is booked for Saturday</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderSubJourneyConnect() {
-  const fullDomain = `${state.byo.subdomain}.${state.byo.rootDomain}`;
-  return `
-    <div class="connect-screen">
-      <div>
-        <h1 style="font-size:26px; font-weight:600; margin:0 0 8px; letter-spacing:-0.02em;">Connect with Entri</h1>
-        <p style="margin:0 0 16px; color:var(--text-secondary); font-size:15px;">When you click below, Entri opens and signs into your DNS provider on your behalf. They publish three records that authorize us to send mail as <code style="font-family: var(--font-mono); font-size: 13px; background: var(--bg-subtle); padding: 1px 6px; border-radius: 4px;">${fullDomain}</code> — then we take over to verify everything.</p>
-
-        <!-- What's about to happen -->
-        <div style="border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-subtle); padding: 12px 14px; margin-bottom: 16px;">
-          <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px;">Records Entri will publish</div>
-          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text); font-family: var(--font-mono);">
-            <li>DKIM key — proves mail is from you</li>
-            <li>Return-Path — handles bounces</li>
-            <li>DMARC policy — protects your reputation</li>
-          </ul>
-        </div>
-
-        <ul>
-          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Entri detects your DNS provider automatically</li>
-          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Access is scoped to these DNS records only</li>
-          <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M6.5 10l2.5 2.5 5-5"/></svg> Don't have DNS access? Forward setup to your IT contact from Entri</li>
-        </ul>
-        <div class="connect-actions">
-          <button class="btn btn-primary btn-large" onclick="state.showEntriModal=true; render();">Connect with Entri</button>
-          <button class="btn btn-secondary btn-large" onclick="alert('In production: would show manual DNS records to copy/paste')">Set up manually</button>
-        </div>
-        <p class="connect-fineprint">By selecting "Connect with Entri" you agree to Entri's <a href="https://www.entri.com/terms" style="color: var(--text-muted); text-decoration: underline;" target="_blank">Terms of Service</a> and <a href="https://www.entri.com/privacy" style="color: var(--text-muted); text-decoration: underline;" target="_blank">Privacy Policy</a>.</p>
-      </div>
-      <div class="connect-art" aria-hidden="true">
-        <div class="connect-art-card secondary">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M10 10h20v20H10z" stroke="#9ca3af" stroke-width="2" stroke-dasharray="2 3"/></svg>
-        </div>
-        <div class="connect-art-card primary">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14" fill="var(--text)"/><path d="M14 20l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderSubJourneyVerifying() {
-  const byo = state.byo;
-  const p = byo.verifyProgress;
-  const dkimState = p >= 1 ? 'ok' : (p === 0 ? 'working' : 'pending');
-  const rpState = p >= 2 ? 'ok' : (p === 1 ? 'working' : 'pending');
-  const dmarcState = p >= 3 ? 'ok' : (p === 2 ? 'working' : 'pending');
-
-  const renderIcon = (st) => {
-    if (st === 'ok') return `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.5 2.5L10 3.5"/></svg>`;
-    if (st === 'working') return `<div class="spinner" style="border-top-color: var(--info);"></div>`;
-    return '';
-  };
-  const renderLabel = (st) => st === 'ok' ? 'verified just now' : (st === 'working' ? 'checking…' : 'pending');
-
-  return `
-    <div class="shell-main-narrow">
-      <div class="step-header">
-        <h1>${p < 3 ? 'Verifying your domain' : 'Domain verified'}</h1>
-        <p>${p < 3
-          ? `Entri is publishing your DNS records. We'll be notified the moment each one propagates worldwide. This usually takes 1–5 minutes.`
-          : `All records are live. Your branded sending domain is ready to use.`}</p>
-      </div>
-      <div class="dns-section" data-state="${p < 3 ? 'pending' : ''}">
-        <div class="dns-section-header">
-          <span class="dns-section-icon" data-tone="${p < 3 ? 'info' : 'success'}">
-            ${p < 3
-              ? '<div class="spinner" style="width: 12px; height: 12px;"></div>'
-              : '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>'}
-          </span>
-          <span class="dns-section-title">${byo.subdomain}.${byo.rootDomain}</span>
-          <span style="margin-left: auto; font-size: 12px; color: var(--text-muted);">${p < 3 ? 'usually 1–5 minutes' : 'all records verified'}</span>
-        </div>
-        <div class="dns-section-body" style="padding: 0;">
-          <div class="verifying-list">
-            <div class="verifying-row">
-              <div class="verifying-icon" data-state="${dkimState}">${renderIcon(dkimState)}</div>
-              <div>
-                <div class="label">DKIM signing key</div>
-                <div class="verifying-row-meta">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_domainkey.${byo.subdomain}</code></div>
-              </div>
-              <span class="timestamp">${renderLabel(dkimState)}</span>
-            </div>
-            <div class="verifying-row">
-              <div class="verifying-icon" data-state="${rpState}">${renderIcon(rpState)}</div>
-              <div>
-                <div class="label">Return-Path</div>
-                <div class="verifying-row-meta">CNAME for <code style="font-family:var(--font-mono);font-size:11.5px;">pm-bounces.${byo.subdomain}</code></div>
-              </div>
-              <span class="timestamp">${renderLabel(rpState)}</span>
-            </div>
-            <div class="verifying-row">
-              <div class="verifying-icon" data-state="${dmarcState}">${renderIcon(dmarcState)}</div>
-              <div>
-                <div class="label">DMARC policy</div>
-                <div class="verifying-row-meta">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_dmarc.${byo.subdomain}</code></div>
-              </div>
-              <span class="timestamp">${renderLabel(dmarcState)}</span>
-            </div>
-          </div>
-          ${p < 3 ? `
-            <div style="padding: 14px 24px; background: var(--bg-subtle); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: var(--text-muted);">
-              <div class="spinner"></div>
-              <span>You can continue setting up Engage — we'll update when verification finishes.</span>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    </div>
-  `;
-}
 
 function smsStep() {
   const content = `
@@ -3010,7 +2609,7 @@ function resetPrototype() {
   state.brand.website = 'evanspetcare.com';
   state.business = { dba: "Evan's Pet Care", address1: '482 Maple Avenue', address2: 'Suite 12', city: 'Columbus', state: 'OH', zip: '43215', country: 'United States' };
   state.email = { prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', managedDomain: 'evans-pet-care.sent-mail.com', prefilledFromByo: false, managedTouched: false };
-  state.byo = { status: 'none', subStep: null, rootDomain: 'evanspetcare.com', subdomain: 'send', prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', paused: false, pausedAt: null, verifyProgress: 0 };
+  state.byo = { status: 'none', rootDomain: 'evanspetcare.com', subdomain: 'send', prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', verifyProgress: 0 };
   state.merge = { firstName: '', lastName: '' };
   state.automations = { welcome: true, birthday: true, thankyou: false };
   state.showEntriModal = false;
@@ -3052,12 +2651,8 @@ function render() {
   let content;
   if (state.step === 'brand') content = brandStep();
   else if (state.step === 'business') content = businessStep();
+  else if (state.step === 'byo') content = bringYourDomainStep();
   else if (state.step === 'senderDetails') content = senderDetailsStep();
-  else if (state.step === 'byo') {
-    // Sub-journey mode: full-pane swap with the BYO sub-step sidebar
-    const inSubJourney = state.byo.subStep || state.byo.status === 'verifying';
-    content = inSubJourney ? emailSubJourneyPage() : bringYourDomainStep();
-  }
   else if (state.step === 'sms') content = smsStep();
   else if (state.step === 'automations') content = automationsStep();
   else if (state.step === 'complete') content = completionScreen();
