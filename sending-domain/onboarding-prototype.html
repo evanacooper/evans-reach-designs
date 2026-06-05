@@ -2282,14 +2282,26 @@ function senderDetailsStep() {
 
   // Banner: BYO setup is paused mid-flow — offer to resume or carry on.
   const byoPaused = byo.paused;
+  // Did the user just come through the branded-domain flow? If so, this step
+  // is a quick review of an auto-created backup address, not fresh setup work.
+  const cameFromByo = (byo.status === 'verified' || byo.paused);
   // Note: managed values were auto-filled from the BYO setup the user finished.
   const showPrefillNote = state.email.prefilledFromByo && !byoPaused;
+
+  // Header copy adapts to the arrival state so a BYO user doesn't feel like
+  // they're being asked to re-enter what they just provided.
+  const headerTitle = cameFromByo
+    ? 'Review your backup sending address'
+    : 'Set up your sender details';
+  const headerCopy = cameFromByo
+    ? `Alongside your branded domain, every account keeps a ready-to-go address on a managed domain so you're never unable to send. We've already filled it in with the same details you just provided — give it a quick look and continue.`
+    : `This is who your customers see in their inbox. Configure how your emails appear, and you're ready to send.`;
 
   const content = `
     <div class="shell-main-narrow">
       <div class="step-header">
-        <h1>Set up your sender details</h1>
-        <p>This is the sender identity for your managed domain — set up for you and ready to send. ${byo.status === 'verified' || byo.paused ? 'We carried these over from your branded domain so you don\'t have to enter them twice.' : 'Configure how your emails appear in your customers\' inbox.'}</p>
+        <h1>${headerTitle}</h1>
+        <p>${headerCopy}</p>
       </div>
 
       ${byoPaused ? `
@@ -2297,7 +2309,7 @@ function senderDetailsStep() {
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l2.5 2.5"/></svg>
           <div class="resume-banner-body">
             <strong>Your branded domain setup is paused</strong>
-            <span>You started connecting <code>${byo.subdomain}.${byo.rootDomain}</code> but didn't finish. You can pick it back up, or continue with the managed domain for now and connect your own later.</span>
+            <span>You started connecting <code>${byo.subdomain}.${byo.rootDomain}</code> but didn't finish. You can pick it back up, or continue with this address for now and connect your own later.</span>
           </div>
           <button class="btn btn-secondary btn-sm" onclick="state.step='byo'; enterBYO();">Resume domain setup →</button>
         </div>
@@ -2306,7 +2318,7 @@ function senderDetailsStep() {
       ${showPrefillNote ? `
         <div class="prefill-note">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
-          <span>Pre-filled from your branded domain setup — these will be used for the managed domain too. Edit anything you'd like to be different.</span>
+          <span>Filled in from your branded domain setup. These details apply to your backup address too — edit anything you'd like to be different.</span>
         </div>
       ` : ''}
 
@@ -2430,7 +2442,7 @@ function bringYourDomainStep() {
           <ul class="entri-context-list">
             <li>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
-              <span><strong>We use Entri</strong> — a DNS automation partner trusted by Klaviyo, SMTP2GO, Customer.io, and others — to publish the records on your behalf. You sign in to your DNS provider through Entri and they add the right records automatically. No copy-paste, no manual errors.</span>
+              <span><strong>We use Entri</strong> — a DNS automation partner used by major email platforms — to publish the records on your behalf. You sign in to your DNS provider through Entri and they add the right records automatically. No copy-paste, no manual errors.</span>
             </li>
             <li>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
