@@ -2153,6 +2153,11 @@ function bringYourDomainStep() {
         <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes — or skip for now and do it later.</p>
       </div>
 
+      <!-- Skip available up front, not just at the end -->
+      <div style="margin-bottom: 24px;">
+        <button class="btn btn-secondary" onclick="skipByo()">Skip for now — I'll use a managed domain</button>
+      </div>
+
       <!-- What Entri is + how DNS setup works -->
       <section class="entri-context" aria-labelledby="entri-context-title">
         <div class="entri-context-header">
@@ -2238,16 +2243,6 @@ function bringYourDomainStep() {
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Records Entri will publish (transparency before the connect click) -->
-      <div style="margin-top: 24px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-subtle); padding: 12px 14px;">
-        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px;">Records Entri will publish</div>
-        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text); font-family: var(--font-mono);">
-          <li>DKIM key — proves mail is from you</li>
-          <li>Return-Path — handles bounces</li>
-          <li>DMARC policy — protects your reputation</li>
-        </ul>
       </div>
 
       <!-- Connect + skip -->
@@ -2359,8 +2354,11 @@ function byoSkippedContent() {
 function senderDetailsStep() {
   const byo = state.byo;
   const senderDomain = state.email.managedDomain;
-  const replyToPlaceholder = suggestedReplyTo(senderDomain);
-  const replyToWarn = replyToCrossDomain(state.email.replyTo, senderDomain);
+  // Reply-to for the managed domain should point at the business's OWN domain
+  // (they don't control the managed sending domain), so suggest an address on
+  // their real domain and don't run the cross-root deliverability warning here.
+  const businessRoot = (state.brand.website || 'yourdomain.com').replace(/^www\./, '');
+  const replyToPlaceholder = `hello@${businessRoot}`;
   const displayInitial = (state.email.displayName || 'E').charAt(0).toUpperCase();
   const displayName = state.email.displayName || 'Your business';
   const touch = "state.email.managedTouched=true; state.email.prefilledFromByo=false;";
@@ -2370,7 +2368,7 @@ function senderDetailsStep() {
   const showPrefillNote = state.email.prefilledFromByo;
 
   const headerCopy = hasBranded
-    ? `Every account also keeps a managed sending address that's always ready — so you can send right now, and you're covered if your own domain ever has an issue. We filled it in with the details you just provided. Give it a quick look and continue.`
+    ? `Your managed address is ready to use right now — handy for testing while your branded domain finishes verifying. You can send from it immediately, then switch to your branded domain once it's ready. We filled it in with the details you just provided; give it a quick look and continue.`
     : `This address is set up and ready — you can start sending as soon as you finish onboarding. Configure how your emails appear in your customers' inbox.`;
 
   const content = `
@@ -2407,15 +2405,9 @@ function senderDetailsStep() {
 
       <div class="form-group">
         <label>Reply-to email</label>
-        <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
+        <span class="helper">When customers reply, their response goes here — use an inbox you actually monitor, like <code>hello@${businessRoot}</code>. If left blank, replies go to a no-reply address.</span>
         <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.email.replyTo}" data-focus-key="email.replyTo"
           oninput="${touch} state.email.replyTo=this.value; render();" />
-        ${replyToWarn ? `
-          <span class="deliverability-chip">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1 14h14L8 2z"/><path d="M8 6v3M8 11h.01"/></svg>
-            Reply-to on a different root domain can hurt deliverability
-          </span>
-        ` : ''}
       </div>
 
       <div style="margin-top: 24px;">
@@ -2548,15 +2540,14 @@ function completionScreen() {
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16l6 6 14-14"/></svg>
           </div>
           <h1>You're all set</h1>
-          <p>Your Engage workspace is ready. You can start sending right away from your managed domain, or come back later to connect your own.</p>
+          <p>Your Engage workspace is ready. ${state.byo.status === 'verified' ? `Emails will send from your own domain, ${state.byo.subdomain}.${state.byo.rootDomain}.` : 'You can start sending right away from your managed domain, or connect your own anytime from settings.'}</p>
 
           <div class="summary">
-            <div class="summary-row"><span class="label">Sending from</span><span class="value">${state.email.prefix}@${state.byo.status === 'verified' ? state.byo.subdomain + '.' + state.byo.rootDomain : state.email.managedDomain}</span></div>
-            <div class="summary-row"><span class="label">Display name</span><span class="value">${state.email.displayName}</span></div>
-            <div class="summary-row"><span class="label">Reply-to</span><span class="value">${state.email.replyTo || 'no-reply'}</span></div>
+            <div class="summary-row"><span class="label">Sending from</span><span class="value">${state.byo.status === 'verified' ? state.byo.prefix + '@' + state.byo.subdomain + '.' + state.byo.rootDomain : state.email.prefix + '@' + state.email.managedDomain}</span></div>
+            <div class="summary-row"><span class="label">Display name</span><span class="value">${state.byo.status === 'verified' ? state.byo.displayName : state.email.displayName}</span></div>
+            <div class="summary-row"><span class="label">Reply-to</span><span class="value">${(state.byo.status === 'verified' ? state.byo.replyTo : state.email.replyTo) || 'no-reply'}</span></div>
             <div class="summary-row"><span class="label">SMS</span><span class="value">Awaiting approval</span></div>
             <div class="summary-row"><span class="label">Automations</span><span class="value">${automationCount} active</span></div>
-            <div class="summary-row"><span class="label">Branded domain</span><span class="value">${state.byo.status === 'verified' ? `${state.byo.subdomain}.${state.byo.rootDomain} (Verified)` : 'Not connected'}</span></div>
           </div>
 
           <div style="margin-top:32px; display:flex; gap:10px; justify-content:center;">
