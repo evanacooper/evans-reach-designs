@@ -1024,6 +1024,47 @@
     color: var(--text-muted);
   }
 
+  /* Combined sending-address control: prefix @ subdomain . root, all editable,
+     rendered as one bordered field with literal separators between segments. */
+  .address-row {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-elevated);
+  }
+  .address-row:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+  }
+  .address-row input {
+    border: 0;
+    border-radius: 0;
+    padding: 9px 12px;
+    font: inherit;
+    font-size: 14px;
+    background: transparent;
+    color: var(--text);
+    min-width: 0;
+  }
+  .address-row input:focus { outline: none; box-shadow: none; }
+  /* segment widths: prefix and subdomain are compact, root flexes to fill */
+  .address-row input.seg-prefix { flex: 0 0 22%; }
+  .address-row input.seg-subdomain { flex: 0 0 22%; }
+  .address-row input.seg-root { flex: 1 1 auto; font-family: var(--font-mono); }
+  .address-row .address-sep {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    background: var(--bg-subtle);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
   /* Inbox preview */
   .inbox-preview {
     background: var(--bg-subtle);
@@ -2309,32 +2350,19 @@ function bringYourDomainStep() {
         <button class="btn btn-secondary" style="flex-shrink:0; white-space:nowrap;" onclick="skipByo()">Skip for now</button>
       </div>
 
-      <!-- Domain fields -->
+      <!-- Combined sending address: prefix @ subdomain . root domain -->
       <div class="form-group" style="margin-top: 24px;">
-        <label>Your domain</label>
-        <span class="helper">The domain your customers know you by — usually your website. We pulled this from your business info.</span>
-        <input class="form-input" type="text" value="${byo.rootDomain}" data-focus-key="byo.rootDomain"
-          oninput="state.byo.rootDomain=this.value; render();" />
-      </div>
-
-      <div class="form-group">
-        <label>Sending subdomain</label>
-        <span class="helper">Where your emails send from. Common choices: <code>send</code>, <code>email</code>, <code>notifications</code>. Use one you're not already using elsewhere.</span>
-        <div class="subdomain-row">
-          <input class="form-input" type="text" value="${byo.subdomain}" data-focus-key="byo.subdomain"
-            oninput="state.byo.subdomain=this.value; render();" />
-          <span class="domain-suffix">.${byo.rootDomain}</span>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-top: 24px;">
-        <label>Sending email address</label>
-        <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code>.</span>
-        <div class="sender-prefix-row">
-          <input class="form-input" type="text" value="${byo.prefix}" data-focus-key="byo.prefix"
+        <label>Your sending address</label>
+        <span class="helper">The full address your emails send from — your team alias before the <code>@</code>, then your sending subdomain and your domain. We pulled your domain from your business info.</span>
+        <div class="address-row">
+          <input class="seg-prefix" type="text" value="${byo.prefix}" placeholder="hello" aria-label="Email alias" data-focus-key="byo.prefix"
             oninput="state.byo.prefix=this.value; render();" />
-          <span class="at-sign">@</span>
-          <span class="domain-suffix">${fullSendingDomain}</span>
+          <span class="address-sep">@</span>
+          <input class="seg-subdomain" type="text" value="${byo.subdomain}" placeholder="send" aria-label="Sending subdomain" data-focus-key="byo.subdomain"
+            oninput="state.byo.subdomain=this.value; render();" />
+          <span class="address-sep">.</span>
+          <input class="seg-root" type="text" value="${byo.rootDomain}" placeholder="yourdomain.com" aria-label="Your domain" data-focus-key="byo.rootDomain"
+            oninput="state.byo.rootDomain=this.value; render();" />
         </div>
       </div>
 
