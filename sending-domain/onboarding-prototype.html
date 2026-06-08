@@ -2559,20 +2559,6 @@ function domainChoiceScreen() {
       <!-- Slim comparison: managed (always provided) vs your own domain -->
       <section class="compare-panel" aria-label="Compare managed and your own sending domain">
         <div class="compare-panel-grid">
-          <div class="compare-panel-col" data-tone="managed">
-            <div class="compare-panel-col-header">
-              <h4>Managed domain</h4>
-              <span class="compare-panel-col-label">Ready now · included</span>
-            </div>
-            <div class="compare-panel-mini-inbox">
-              <div class="mini-avatar">${displayInitial}</div>
-              <div>
-                <div class="mini-from">${displayName}<span class="mini-via">via ${state.email.managedDomain}</span></div>
-                <div class="mini-subject">${state.email.prefix || 'hello'}@${state.email.managedDomain}</div>
-              </div>
-            </div>
-            <p class="compare-panel-col-note">No DNS setup. Sends from a shared, managed domain with a small "via" tag in the inbox.</p>
-          </div>
           <div class="compare-panel-col" data-tone="branded">
             <div class="compare-panel-col-header">
               <h4>Your own domain</h4>
@@ -2586,6 +2572,20 @@ function domainChoiceScreen() {
               </div>
             </div>
             <p class="compare-panel-col-note">No "via" tag, better deliverability on Gmail &amp; Outlook. Takes about 5 minutes — we'll walk you through it.</p>
+          </div>
+          <div class="compare-panel-col" data-tone="managed">
+            <div class="compare-panel-col-header">
+              <h4>Managed domain</h4>
+              <span class="compare-panel-col-label">Ready now · included</span>
+            </div>
+            <div class="compare-panel-mini-inbox">
+              <div class="mini-avatar">${displayInitial}</div>
+              <div>
+                <div class="mini-from">${displayName}<span class="mini-via">via ${state.email.managedDomain}</span></div>
+                <div class="mini-subject">${state.email.prefix || 'hello'}@${state.email.managedDomain}</div>
+              </div>
+            </div>
+            <p class="compare-panel-col-note">No DNS setup. Sends from a shared, managed domain with a small "via" tag in the inbox.</p>
           </div>
         </div>
       </section>
@@ -2687,7 +2687,7 @@ function byoDetailsStep() {
 
       <!-- Combined sending address: prefix @ subdomain . root domain -->
       <div class="form-group">
-        <label>Your new sending subdomain<span class="req-asterisk">*</span></label>
+        <label>Your sending subdomain<span class="req-asterisk">*</span></label>
         <div class="address-row" data-active="${byo.activeSeg || ''}">
           <input class="seg-prefix" type="text" value="${byo.prefix}" placeholder="hello" aria-label="Email alias" data-focus-key="byo.prefix"
             onfocus="state.byo.activeSeg='prefix'; render();"
