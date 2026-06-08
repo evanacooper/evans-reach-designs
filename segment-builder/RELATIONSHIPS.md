@@ -206,32 +206,45 @@ The richest example, chosen to exercise the hard cases. Target query in plain En
 | **Listing** | — | canonical offerings (Fruita Single Track, Moab Single Track, Vail Downhill MTB…) |
 
 The decisive feature: **Trip points at Contact twice** — once as `booker` (single) and once via
-`guests[]` (array). That is the spec's *critical asymmetry*: two inbound edges to the same schema.
+`guests[]` (array). That is the spec's *critical asymmetry*: two inbound back-links to the same
+schema. The builder models this as **one `Trips` relationship with two roles**, surfaced as an
+editable role chip (see Decisions below).
 
 ### Clause-by-clause mapping
 
 | Clause | Fork | Mechanic in the builder |
 |---|---|---|
-| 1. contact **is a guest** on ≥1 trip | **B — inbound named** (Trip→`guestIds`) | `child` edge `edge-trip-guest`, count `at least one`, `linkPhrase: "this contact is a guest"` rendered as a teal link-clause chip |
+| 1. contact **is a guest** on ≥1 trip | **B — inbound named** (Trip→`guestIds`) | `child` on `schema-trip`, count `at least one`, `roleId: 'guest'` → editable role chip "the contact is a guest ▾" (switchable to booker) |
 | 2. that trip's **listing is one of** {…} | **A — outbound single ref** from inside Trip (Trip→`listingId`→Listing) | nested `single_ref` hop into Listing, then `Name is any of {Fruita Single Track, Moab Single Track}` *(per the ratified "nested name condition" decision — not a flat ID picker)* |
-| 3. **no trip as guest in last 180 days** | **B**, count `= 0` | second `edge-trip-guest`, `inclusionMode: none`, nested `tripDate is after "180 days ago"` |
-| 4. **no upcoming trips** | **B**, count `= 0` | third `edge-trip-guest`, `inclusionMode: none`, nested `tripDate is after "today"` |
+| 3. **no trip as guest in last 180 days** | **B**, count `= 0` | second `child` on `schema-trip`, `roleId: 'guest'`, `inclusionMode: none`, nested `tripDate is after "180 days ago"` |
+| 4. **no upcoming trips** | **B**, count `= 0` | third `child` on `schema-trip`, `roleId: 'guest'`, `inclusionMode: none`, nested `tripDate is after "today"` |
 
 ### Decisions taken for this example
 
-- **Guest vs booker → two separate edges.** `CHILD_SCHEMAS` now models `Trips (as guest)`
-  (`guestIds`) and `Trips (as booker)` (`bookerId`) as distinct picks, each carrying a `linkPhrase`.
-  The booker edge is available in the picker but unused in the example. This is the spec's
-  per-source-field disambiguation, made concrete.
+- **Guest vs booker → one relationship with selectable roles.** `CHILD_SCHEMAS` models a single
+  `Trips` relationship carrying a `roles` array — `guest` (`guestIds`) and `booker` (`bookerId`).
+  The **number of roles drives the UI**, generalizing to any business:
+  - **1 role** (Transactions via `customerId`, Policies, Orders) → the link is implicit. Rendered as
+    **plain static text** ("this contact is the customer"); no control, no added friction. This is the
+    legacy B′ behavior, preserved.
+  - **2+ roles** (Trips: guest / booker; or e.g. a Shipment's sender / recipient / signedBy) → the
+    role is an **editable dropdown chip** in the sentence: "the contact has at least one Trip where
+    **[the contact is a guest ▾]** and …". Clicking it lists every back-link; switching is in-place
+    and **preserves the nested conditions**.
+  - The picker shows the relationship **once** ("Trips"), not once per role. Role is a property of
+    the condition, edited in the block — mirroring how the count quantifier ("at least one ▾") is
+    already an in-sentence chip.
 - **Listing match → nested name condition** (not a flat record picker). Ratified choice; the listing
   hop reads "that Trip's Listing … where Name is any of …".
-- **"As a guest" is shown in both surfaces:** the builder block (teal link-clause chip) and the
-  plain-English summary ("…has at least one Trip where this contact is a guest and…").
+- **The role is shown in both surfaces:** the builder block (teal role chip — editable when 2+ roles)
+  and the plain-English summary ("…has at least one Trip where the contact is a guest and…"). The
+  summary only spells out the role when there's a genuine choice (2+ roles), matching the UI.
 
 ### Engine implications to carry forward
 
-- The named-inbound edge (guest via `guestIds`, booker via `bookerId`) is **Fork B with an arbitrary
-  named foreign key** — the open question flagged in Part 1. This example assumes that's in scope.
-  Confirm the segment compiler's `foreignKeyPath` can target a named array/single back-ref, not only
-  the implicit userId (B′).
+- The named-inbound roles (guest via `guestIds`, booker via `bookerId`) are **Fork B with an
+  arbitrary named foreign key** — the open question flagged in Part 1. This example assumes that's in
+  scope. Confirm the segment compiler's `foreignKeyPath` can target a named array/single back-ref, not
+  only the implicit userId (B′). The role model means a single relationship can compile to *different*
+  `foreignKeyPath`s depending on the selected role.
 - Clause 2 keeps outbound-ref-with-nested-conditions (the unified-frame proposal from Part 2).

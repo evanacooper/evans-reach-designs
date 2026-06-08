@@ -145,7 +145,9 @@ function summarizeCondition(c, ctx) {
       ? `${quantPhrase(c)} ${c.countValue}`
       : quantPhrase(c);
     const word = quantIsPlural(c) ? noun.plural : noun.singular;
-    const linkClause = c.linkPhrase ? `<span class="summary-subject">${c.linkPhrase}</span>` : '';
+    const roles = c.linkShape === 'child' ? (CHILD_SCHEMAS.find(s => s.id === c.sourceId)?.roles ?? []) : [];
+    const role = roles.find(r => r.id === c.roleId) ?? roles[0];
+    const linkClause = (roles.length > 1 && role) ? `<span class="summary-subject">${role.phrase}</span>` : '';
     const body = c.conditions.length
       ? (linkClause ? `${linkClause} AND ${innerClause}` : innerClause)
       : (linkClause || innerClause);

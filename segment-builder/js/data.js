@@ -32,17 +32,25 @@ const SCHEMA_LINKED_REFS = {
   ],
 };
 
-/* Inbound edges: another schema points back at Contact. `id` is the edge id
-   (unique per back-link); `targetSchemaId` is the schema it resolves to. Two
-   edges can share a targetSchemaId — e.g. Trip points at Contact twice, once
-   via its guests[] array and once via its single booker. Each is shown as its
-   own pick and labeled by source field (the spec's inbound disambiguation). */
+/* Inbound relationships: another schema points back at Contact. ONE entry per
+   schema pair (so the picker shows "Trips" once, not once per back-link). The
+   `roles` array holds every distinct back-link between the two schemas — its
+   length is what drives the UI: 1 role → the link is implicit (plain text, no
+   control); 2+ roles → the user picks which role via an editable chip in the
+   block. This generalizes to any business: a Shipment with sender/recipient/
+   signedBy is just a 3-role relationship. Each role: { id, phrase, foreignKeyPath }. */
 const CHILD_SCHEMAS = [
-  { id: 'schema-transaction', name: 'Transactions', targetSchemaId: 'schema-transaction', foreignKeyPath: 'customerId', targetSchemaName: 'Transaction' },
-  { id: 'schema-policy', name: 'Policies', targetSchemaId: 'schema-policy', foreignKeyPath: 'customerId', targetSchemaName: 'Policy' },
-  { id: 'schema-order', name: 'Orders', targetSchemaId: 'schema-order', foreignKeyPath: 'customerId', targetSchemaName: 'Order' },
-  { id: 'edge-trip-guest', name: 'Trips (as guest)', targetSchemaId: 'schema-trip', foreignKeyPath: 'guestIds', linkPhrase: 'this contact is a guest', targetSchemaName: 'Trip' },
-  { id: 'edge-trip-booker', name: 'Trips (as booker)', targetSchemaId: 'schema-trip', foreignKeyPath: 'bookerId', linkPhrase: 'this contact is the booker', targetSchemaName: 'Trip' },
+  { id: 'schema-transaction', name: 'Transactions', targetSchemaId: 'schema-transaction', targetSchemaName: 'Transaction',
+    roles: [{ id: 'customer', phrase: 'this contact is the customer', foreignKeyPath: 'customerId' }] },
+  { id: 'schema-policy', name: 'Policies', targetSchemaId: 'schema-policy', targetSchemaName: 'Policy',
+    roles: [{ id: 'holder', phrase: 'this contact is the policyholder', foreignKeyPath: 'customerId' }] },
+  { id: 'schema-order', name: 'Orders', targetSchemaId: 'schema-order', targetSchemaName: 'Order',
+    roles: [{ id: 'customer', phrase: 'this contact is the customer', foreignKeyPath: 'customerId' }] },
+  { id: 'schema-trip', name: 'Trips', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
+    roles: [
+      { id: 'guest', phrase: 'the contact is a guest', foreignKeyPath: 'guestIds' },
+      { id: 'booker', phrase: 'the contact is the booker', foreignKeyPath: 'bookerId' },
+    ] },
 ];
 
 const TARGET_SCHEMA_FIELDS = {
@@ -237,9 +245,8 @@ const EXAMPLES = {
         conditions: [
           /* 1 + 2: has >=1 trip AS GUEST whose listing is one of {Fruita, Moab} */
           {
-            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'edge-trip-guest',
-            displayName: 'Trips (as guest)', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
-            linkPhrase: 'this contact is a guest',
+            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'schema-trip',
+            displayName: 'Trips', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip', roleId: 'guest',
             inclusionMode: 'has', countOperator: 'gte', countValue: 1,
             conditions: [{
               id: uid(), kind: 'related', linkShape: 'single_ref', sourceId: 'trip-ref-listing',
@@ -252,9 +259,8 @@ const EXAMPLES = {
           },
           /* 3: has NO trip as guest in the last 180 days (i.e. last trip is old) */
           {
-            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'edge-trip-guest',
-            displayName: 'Trips (as guest)', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
-            linkPhrase: 'this contact is a guest',
+            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'schema-trip',
+            displayName: 'Trips', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip', roleId: 'guest',
             inclusionMode: 'none', countOperator: 'eq', countValue: 0,
             conditions: [
               { id: uid(), kind: 'field', field: 'tripDate', fieldType: 'date', operator: 'greater_than', value: ['180 days ago'] },
@@ -262,9 +268,8 @@ const EXAMPLES = {
           },
           /* 4: has NO upcoming trips as guest */
           {
-            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'edge-trip-guest',
-            displayName: 'Trips (as guest)', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
-            linkPhrase: 'this contact is a guest',
+            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'schema-trip',
+            displayName: 'Trips', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip', roleId: 'guest',
             inclusionMode: 'none', countOperator: 'eq', countValue: 0,
             conditions: [
               { id: uid(), kind: 'field', field: 'tripDate', fieldType: 'date', operator: 'greater_than', value: ['today'] },

@@ -305,10 +305,12 @@ function renderRelatedSentence(c, list, index, ctx) {
   /* body — where rows */
   const body = el('div', 'rel-body');
   const rows = el('div', 'where-rows');
-  /* inbound link clause — names which back-link this edge uses (guest vs booker).
-     Structural, not a user filter, so it's a fixed chip with no remove button. */
-  if (c.linkPhrase) {
-    rows.appendChild(el('div', 'link-clause', `<span class="link-clause-pin">↳</span><span>${c.linkPhrase}</span>`));
+  /* role clause — which back-link between the two schemas this condition uses.
+     1 role → plain text (link implicit). 2+ roles → editable dropdown chip.
+     Structural, not a user filter, so no remove button. */
+  const roleClause = buildRoleClause(c);
+  if (roleClause) {
+    rows.appendChild(roleClause);
     if (c.conditions.length) rows.appendChild(connectorEl('AND'));
   }
   c.conditions.forEach((nc, ni) => {
@@ -319,6 +321,41 @@ function renderRelatedSentence(c, list, index, ctx) {
   body.appendChild(buildWhereAdd(c, childCtx));
   block.appendChild(body);
   return block;
+}
+
+/* Resolve the back-link roles available for a related condition (from the
+   schema definition it was built from). Returns [] for refs that have no roles
+   concept (single_ref / array_ref outbound). */
+function rolesForCondition(c) {
+  if (c.linkShape !== 'child') return [];
+  const schema = CHILD_SCHEMAS.find(s => s.id === c.sourceId);
+  return schema?.roles ?? [];
+}
+
+/* The role clause shown at the top of an inbound block.
+   0 roles → null (nothing). 1 role → static text. 2+ → editable dropdown chip. */
+function buildRoleClause(c) {
+  const roles = rolesForCondition(c);
+  if (!roles.length) return null;
+  const current = roles.find(r => r.id === c.roleId) ?? roles[0];
+
+  const wrap = el('div', 'role-clause');
+  wrap.appendChild(el('span', 'role-clause-pin', '↳'));
+
+  if (roles.length === 1) {
+    wrap.appendChild(el('span', null, current.phrase));
+    return wrap;
+  }
+
+  const btn = el('button', 'role-chip'); btn.type = 'button';
+  btn.innerHTML = `<span>${current.phrase}</span><span class="control-caret">▾</span>`;
+  btn.addEventListener('click', () => {
+    openMenu(btn, roles.map(r => ({ label: r.phrase, value: r.id, selected: r.id === current.id })), id => {
+      c.roleId = id; render();
+    });
+  });
+  wrap.appendChild(btn);
+  return wrap;
 }
 
 function buildWhereAdd(c, childCtx) {
@@ -504,7 +541,7 @@ function buildConditionFromPick(pick) {
     return {
       id: uid(), kind: 'related', linkShape: 'child', sourceId: s.id, displayName: s.name,
       targetSchemaId: s.targetSchemaId ?? s.id, targetSchemaName: s.targetSchemaName,
-      linkPhrase: s.linkPhrase, inclusionMode: 'has', countOperator: 'gte', countValue: 1, conditions: [],
+      roleId: s.roles?.[0]?.id, inclusionMode: 'has', countOperator: 'gte', countValue: 1, conditions: [],
     };
   }
   throw new Error('Unknown pick');
