@@ -1064,6 +1064,23 @@
     font-size: 14px;
     flex-shrink: 0;
   }
+  /* Tint whichever segment is currently focused so the helper text below it
+     clearly corresponds to the highlighted field. */
+  .address-row[data-active="prefix"] input.seg-prefix,
+  .address-row[data-active="subdomain"] input.seg-subdomain,
+  .address-row[data-active="root"] input.seg-root {
+    background: rgba(99, 102, 241, 0.08);
+  }
+  /* Dynamic helper line under the combined address row. */
+  .address-seg-helper {
+    transition: color 0.12s ease;
+  }
+  .address-seg-helper[data-active="prefix"],
+  .address-seg-helper[data-active="subdomain"],
+  .address-seg-helper[data-active="root"] {
+    color: var(--text-secondary);
+  }
+  .address-seg-helper strong { color: var(--text); font-weight: 600; }
 
   /* Inbox preview */
   .inbox-preview {
@@ -1955,7 +1972,7 @@ const state = {
   email: {
     prefix: 'hello',
     displayName: "Evan's Pet Care",
-    replyTo: '',
+    replyTo: 'hello@evanspetcare.com',
     // managed domain suffix (always provisioned)
     managedDomain: 'evans-pet-care.sent-mail.com',
     // True once the managed identity has been auto-populated from the BYO
@@ -1987,7 +2004,10 @@ const state = {
     // Branded-domain sender identity, collected on the sub-journey details step.
     prefix: 'hello',
     displayName: "Evan's Pet Care",
-    replyTo: '',
+    replyTo: 'hello@evanspetcare.com',
+    // Which segment of the combined address row is focused, so the helper text
+    // below it can explain that part: 'prefix' | 'subdomain' | 'root' | null.
+    activeSeg: null,
     // Verifying progress (0=all pending, 1=DKIM ok, 2=DKIM+RP ok, 3=all ok)
     verifyProgress: 0,
   },
@@ -2192,8 +2212,35 @@ function businessRequiredFilled() {
   return b.dba.trim() && b.address1.trim() && b.city.trim() && b.state.trim() && b.zip.trim() && b.country.trim();
 }
 
+/* Managed-domain config: prefix, display name, and reply-to are all required. */
 function emailRequiredFilled() {
-  return state.email.displayName.trim().length > 0;
+  const e = state.email;
+  return e.prefix.trim() && e.displayName.trim() && e.replyTo.trim();
+}
+
+/* BYO details: all five fields are required before connecting with Entri —
+   the three address segments plus display name and reply-to. */
+function byoRequiredFilled() {
+  const b = state.byo;
+  return b.prefix.trim() && b.subdomain.trim() && b.rootDomain.trim() && b.displayName.trim() && b.replyTo.trim();
+}
+
+/* Contextual helper for the combined address row. Returns a short sentence
+   describing whichever segment is currently focused; falls back to a summary
+   of the full address when nothing is focused. */
+function addressSegHelper() {
+  const b = state.byo;
+  const full = `${b.prefix || 'hello'}@${b.subdomain || 'send'}.${b.rootDomain || 'yourdomain.com'}`;
+  switch (b.activeSeg) {
+    case 'prefix':
+      return `<strong>Alias</strong> — the inbox name before the <code>@</code>. Common choices: <code>hello</code>, <code>marketing</code>, <code>news</code>.`;
+    case 'subdomain':
+      return `<strong>Subdomain</strong> — a brand-new prefix on your domain, used only for sending. Common choices: <code>send</code>, <code>email</code>, <code>mail</code>. Pick one you're not already using.`;
+    case 'root':
+      return `<strong>Your domain</strong> — the domain customers know you by, usually the same as your website. We pulled this from your business info.`;
+    default:
+      return `This is the full address it'll send from: <code>${full}</code>`;
+  }
 }
 
 /* Extract the root domain from a hostname (last two labels). */
@@ -2629,6 +2676,7 @@ function byoDetailsStep() {
   const fullSendingDomain = `${byo.subdomain}.${byo.rootDomain}`;
   const replyToPlaceholder = suggestedReplyTo(fullSendingDomain);
   const replyToWarn = replyToCrossDomain(byo.replyTo, fullSendingDomain);
+  const canConnect = byoRequiredFilled();
 
   return `
     <div class="shell-main-narrow">
@@ -2639,31 +2687,36 @@ function byoDetailsStep() {
 
       <!-- Combined sending address: prefix @ subdomain . root domain -->
       <div class="form-group">
-        <label>Your new sending subdomain</label>
-        <span class="helper">This is the full address it'll send from — your team alias before the <code>@</code>, then the new subdomain and your domain. We pulled your domain from your business info.</span>
-        <div class="address-row">
+        <label>Your new sending subdomain<span class="req-asterisk">*</span></label>
+        <div class="address-row" data-active="${byo.activeSeg || ''}">
           <input class="seg-prefix" type="text" value="${byo.prefix}" placeholder="hello" aria-label="Email alias" data-focus-key="byo.prefix"
-            oninput="state.byo.prefix=this.value; render();" />
+            onfocus="state.byo.activeSeg='prefix'; render();"
+            oninput="state.byo.activeSeg='prefix'; state.byo.prefix=this.value; render();" />
           <span class="address-sep">@</span>
           <input class="seg-subdomain" type="text" value="${byo.subdomain}" placeholder="send" aria-label="Sending subdomain" data-focus-key="byo.subdomain"
-            oninput="state.byo.subdomain=this.value; render();" />
+            onfocus="state.byo.activeSeg='subdomain'; render();"
+            oninput="state.byo.activeSeg='subdomain'; state.byo.subdomain=this.value; render();" />
           <span class="address-sep">.</span>
           <input class="seg-root" type="text" value="${byo.rootDomain}" placeholder="yourdomain.com" aria-label="Your domain" data-focus-key="byo.rootDomain"
-            oninput="state.byo.rootDomain=this.value; render();" />
+            onfocus="state.byo.activeSeg='root'; render();"
+            oninput="state.byo.activeSeg='root'; state.byo.rootDomain=this.value; render();" />
         </div>
+        <span class="helper address-seg-helper" data-active="${byo.activeSeg || ''}">${addressSegHelper()}</span>
       </div>
 
       <div class="form-group">
         <label>Display name<span class="req-asterisk">*</span></label>
         <span class="helper">What customers see in their inbox before the email opens.</span>
         <input class="form-input" type="text" value="${byo.displayName}" data-focus-key="byo.displayName"
+          onfocus="state.byo.activeSeg=null; render();"
           oninput="state.byo.displayName=this.value; render();" />
       </div>
 
       <div class="form-group">
-        <label>Reply-to email</label>
+        <label>Reply-to email<span class="req-asterisk">*</span></label>
         <span class="helper">For best deliverability, use an address on the same root domain as your sending domain.</span>
         <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${byo.replyTo}" data-focus-key="byo.replyTo"
+          onfocus="state.byo.activeSeg=null; render();"
           oninput="state.byo.replyTo=this.value; render();" />
         ${replyToWarn ? `
           <span class="deliverability-chip">
@@ -2689,8 +2742,9 @@ function byoDetailsStep() {
 
       <!-- Connect action lives in the body since it opens the Entri modal -->
       <div style="margin-top: 24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="openEntri()">Connect with Entri →</button>
+        <button class="btn btn-primary" ${canConnect ? '' : 'disabled'} onclick="openEntri()">Connect with Entri →</button>
         <button class="btn btn-secondary" onclick="exitByoToChoice()">Cancel</button>
+        ${canConnect ? '' : `<span style="font-size:12.5px; color:var(--text-muted);">Fill in all fields to continue.</span>`}
       </div>
       <p class="domain-choice-reassurance" style="text-align:left; margin-top:14px;">By selecting "Connect with Entri" you agree to Entri's <a href="https://www.entri.com/terms" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Terms of Service</a> and <a href="https://www.entri.com/privacy" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Privacy Policy</a>.</p>
     </div>
@@ -2775,6 +2829,7 @@ function managedDomainScreen() {
   // Did the user connect a branded domain? Changes the framing + shows the note.
   const hasBranded = (byo.status === 'verifying' || byo.status === 'verified');
   const showPrefillNote = state.email.prefilledFromByo;
+  const canContinue = emailRequiredFilled();
 
   const headerCopy = hasBranded
     ? `Your managed address is ready to use right now — handy for testing while your branded domain finishes verifying. You can send from it immediately, then switch to your branded domain once it's ready. We filled it in with the details you just provided; give it a quick look and continue.`
@@ -2795,7 +2850,7 @@ function managedDomainScreen() {
       ` : ''}
 
       <div class="form-group">
-        <label>Sending email address</label>
+        <label>Sending email address<span class="req-asterisk">*</span></label>
         <span class="helper">Edit the prefix to match your team — common choices: <code>marketing</code>, <code>hello</code>, <code>news</code></span>
         <div class="sender-prefix-row">
           <input class="form-input" type="text" value="${state.email.prefix}" data-focus-key="email.prefix"
@@ -2813,8 +2868,8 @@ function managedDomainScreen() {
       </div>
 
       <div class="form-group">
-        <label>Reply-to email</label>
-        <span class="helper">When customers reply, their response goes here — use an inbox you actually monitor, like <code>hello@${businessRoot}</code>. If left blank, replies go to a no-reply address.</span>
+        <label>Reply-to email<span class="req-asterisk">*</span></label>
+        <span class="helper">When customers reply, their response goes here — use an inbox you actually monitor, like <code>hello@${businessRoot}</code>.</span>
         <input class="form-input" type="email" placeholder="${replyToPlaceholder}" value="${state.email.replyTo}" data-focus-key="email.replyTo"
           oninput="${touch} state.email.replyTo=this.value; render();" />
       </div>
@@ -2834,13 +2889,15 @@ function managedDomainScreen() {
           </div>
         </div>
       </div>
+
+      ${!canContinue ? `<p style="font-size: 12.5px; color: var(--text-muted); margin-top: 16px;">Fill in all required fields to continue.</p>` : ''}
     </div>
   `;
 
   return shellWrap({
     content,
     footerOpts: {
-      canContinue: emailRequiredFilled(),
+      canContinue,
       onContinue: 'continueFromManaged()',
       onBack: 'backFromManaged()',
     },
@@ -3076,9 +3133,9 @@ function resetPrototype() {
   state.brand.name = "Evan's Pet Care";
   state.brand.website = 'evanspetcare.com';
   state.business = { dba: "Evan's Pet Care", address1: '482 Maple Avenue', address2: 'Suite 12', city: 'Columbus', state: 'OH', zip: '43215', country: 'United States' };
-  state.email = { prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', managedDomain: 'evans-pet-care.sent-mail.com', prefilledFromByo: false, managedTouched: false };
+  state.email = { prefix: 'hello', displayName: "Evan's Pet Care", replyTo: 'hello@evanspetcare.com', managedDomain: 'evans-pet-care.sent-mail.com', prefilledFromByo: false, managedTouched: false };
   state.domainView = 'choice';
-  state.byo = { status: 'none', subStep: null, rootDomain: 'evanspetcare.com', subdomain: 'send', prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', verifyProgress: 0 };
+  state.byo = { status: 'none', subStep: null, rootDomain: 'evanspetcare.com', subdomain: 'send', prefix: 'hello', displayName: "Evan's Pet Care", replyTo: 'hello@evanspetcare.com', activeSeg: null, verifyProgress: 0 };
   state.merge = { firstName: '', lastName: '' };
   state.automations = { welcome: true, birthday: true, thankyou: false };
   state.showEntriModal = false;
