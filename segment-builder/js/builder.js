@@ -471,12 +471,13 @@ function closeFieldPicker() { picker.hidden = true; pickerCallback = null; }
 function renderPickerBody(query) {
   const m = (s) => !query || s.toLowerCase().includes(query);
   const contactMatches = CONTACT_FIELDS.filter(f => m(f.label) || m(f.name));
-  const oneRefs = LINKED_REFS.filter(r => r.cardinality === 'one' && (m(r.name) || m(r.targetSchemaName)));
-  const manyRefs = LINKED_REFS.filter(r => r.cardinality === 'many' && (m(r.name) || m(r.targetSchemaName)));
-  const manyChild = CHILD_SCHEMAS.filter(s => m(s.name) || m(s.targetSchemaName));
+  // Direction, not cardinality: outbound = the contact owns the reference field;
+  // inbound = another record points back at the contact.
+  const outboundRefs = LINKED_REFS.filter(r => m(r.name) || m(r.targetSchemaName));
+  const inboundRefs = CHILD_SCHEMAS.filter(s => m(s.name) || m(s.targetSchemaName));
 
   pickerBody.innerHTML = '';
-  if (!contactMatches.length && !oneRefs.length && !manyRefs.length && !manyChild.length) {
+  if (!contactMatches.length && !outboundRefs.length && !inboundRefs.length) {
     pickerBody.innerHTML = `<div class="popover-empty">Nothing matches "${query}".</div>`;
     return;
   }
@@ -486,18 +487,17 @@ function renderPickerBody(query) {
       onClick: () => { closeFieldPicker(); pickerCallback({ kind: 'field', field: f }); },
     }))));
   }
-  if (oneRefs.length) {
-    pickerBody.appendChild(buildPickerGroup('One linked record', 'Each contact points to a single one of these', oneRefs.map(r => ({
-      label: r.name, arrow: r.targetSchemaName, tag: 'one', isRel: true, icon: iconForSchema(r.targetSchemaId, r.targetSchemaName),
+  if (outboundRefs.length) {
+    pickerBody.appendChild(buildPickerGroup('Records the contact points to', 'The contact holds a reference to these (outbound)', outboundRefs.map(r => ({
+      label: r.name, arrow: r.targetSchemaName, tag: 'outbound', isRel: true, icon: iconForSchema(r.targetSchemaId, r.targetSchemaName),
       onClick: () => { closeFieldPicker(); pickerCallback({ kind: 'linked-ref', ref: r }); },
     }))));
   }
-  const many = [
-    ...manyRefs.map(r => ({ label: r.name, arrow: r.targetSchemaName, tag: 'many', isRel: true, icon: iconForSchema(r.targetSchemaId, r.targetSchemaName), onClick: () => { closeFieldPicker(); pickerCallback({ kind: 'linked-ref', ref: r }); } })),
-    ...manyChild.map(s => ({ label: s.name, arrow: `many ${singularize(s.targetSchemaName)} records`, tag: 'many', isRel: true, icon: iconForSchema(s.id, s.targetSchemaName), onClick: () => { closeFieldPicker(); pickerCallback({ kind: 'child', schema: s }); } })),
-  ];
-  if (many.length) {
-    pickerBody.appendChild(buildPickerGroup('Many related records', 'A contact can have any number of these', many));
+  if (inboundRefs.length) {
+    pickerBody.appendChild(buildPickerGroup('Records that point to the contact', 'These reference the contact (inbound)', inboundRefs.map(s => ({
+      label: s.name, arrow: s.targetSchemaName, tag: 'inbound', isRel: true, icon: iconForSchema(s.targetSchemaId ?? s.id, s.targetSchemaName),
+      onClick: () => { closeFieldPicker(); pickerCallback({ kind: 'child', schema: s }); },
+    }))));
   }
 }
 
@@ -513,7 +513,7 @@ function buildPickerGroup(header, sub, items) {
     const btn = el('button', 'popover-option' + (it.isRel ? ' is-rel' : '')); btn.type = 'button';
     let meta = '';
     if (it.arrow) meta += `<span style="color:var(--text-muted)">→</span><span style="color:var(--accent-text);font-weight:500">${it.arrow}</span>`;
-    if (it.tag) meta += `<span class="opt-tag ${it.tag}">${it.tag === 'one' ? 'one' : 'many'}</span>`;
+    if (it.tag) meta += `<span class="opt-tag ${it.tag}">${it.tag}</span>`;
     btn.innerHTML = `
       <span class="opt-ico">${it.icon || ICONS.generic}</span>
       <span class="opt-main"><span class="opt-label">${it.label}</span>${it.desc ? `<span class="opt-desc">${it.desc}</span>` : ''}</span>
@@ -547,7 +547,7 @@ function renderWherePicker(query, fields, refs, parentSchemaId) {
   }
   if (refMatches.length) {
     pickerBody.appendChild(buildPickerGroup('Take one more hop', 'Filter on a record this one links to', refMatches.map(r => ({
-      label: r.name, arrow: r.targetSchemaName, tag: r.cardinality === 'one' ? 'one' : 'many', isRel: true, icon: iconForSchema(r.targetSchemaId, r.targetSchemaName),
+      label: r.name, arrow: r.targetSchemaName, tag: 'outbound', isRel: true, icon: iconForSchema(r.targetSchemaId, r.targetSchemaName),
       onClick: () => { closeFieldPicker(); pickerCallback({ kind: 'linked-ref', ref: r, parentSchemaId }); },
     }))));
   }
@@ -585,8 +585,11 @@ function buildConditionFromPick(pick) {
    MENUS + positioning
    ========================================================================== */
 let openedMenu = null;
+let openedMenuAnchor = null;
 function openMenu(anchor, options, onPick, keepOpen) {
+  const sameAnchor = openedMenuAnchor === anchor;
   closeMenu();
+  if (sameAnchor) return;   // clicking the same trigger again closes it
   const menu = el('div', 'popover menu');
   const body = el('div', 'popover-body');
   options.forEach(o => {
@@ -600,8 +603,9 @@ function openMenu(anchor, options, onPick, keepOpen) {
   document.body.appendChild(menu);
   positionPopover(menu, anchor);
   openedMenu = menu;
+  openedMenuAnchor = anchor;
 }
-function closeMenu() { if (openedMenu) { openedMenu.remove(); openedMenu = null; } }
+function closeMenu() { if (openedMenu) { openedMenu.remove(); openedMenu = null; openedMenuAnchor = null; } }
 function positionPopover(elm, anchor) {
   const rect = anchor.getBoundingClientRect();
   const w = elm.offsetWidth || 240;
@@ -611,7 +615,9 @@ function positionPopover(elm, anchor) {
 
 document.addEventListener('click', e => {
   if (!picker.hidden && !picker.contains(e.target) && !e.target.closest('[data-action="add-condition"]') && !e.target.closest('.add-btn')) closeFieldPicker();
-  if (openedMenu && !openedMenu.contains(e.target) && !e.target.closest('.control') && !e.target.closest('.quant')) closeMenu();
+  // Close the open menu on any click outside it, EXCEPT on its own trigger
+  // (the trigger's own handler toggles it). Works for any control class.
+  if (openedMenu && !openedMenu.contains(e.target) && !(openedMenuAnchor && openedMenuAnchor.contains(e.target))) closeMenu();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeFieldPicker(); closeMenu(); } });
 

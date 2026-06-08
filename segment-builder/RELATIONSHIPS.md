@@ -131,6 +131,13 @@ The mockup's data model (`js/data.js`) maps to the spec like so:
 | `CHILD_SCHEMAS` with 1 role | Transactions, Policies, Orders | **B′ — inbound, implicit single back-link** |
 | `CHILD_SCHEMAS` with 2+ roles | Trips (guest / booker) | **B — inbound named**, role chosen via inline role chip |
 
+**Picker grouping is by direction, not cardinality.** The field picker groups relationships as
+"Records the contact points to" (**outbound** — `LINKED_REFS`) vs "Records that point to the contact"
+(**inbound** — `CHILD_SCHEMAS`), tagged `outbound` (indigo) / `inbound` (teal). Cardinality (one vs
+many) is still a structural property — it sets `single_ref` vs `array_ref` link shape — but it is no
+longer the user-facing label, because direction is what determines how the condition behaves
+(flat identity match vs count + nested), whereas one-vs-many rarely changes the user's intent.
+
 ### Findings against the checklist
 
 1. **Fork (most important).** ✅ Fork A and Fork B now have **distinct control shapes**, resolving the
