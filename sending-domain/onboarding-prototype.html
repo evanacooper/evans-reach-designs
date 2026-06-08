@@ -1967,13 +1967,24 @@ const state = {
     managedTouched: false,
   },
 
-  // Bring Your Domain state (single page — no sub-journey)
+  // Sending Domain step. One nav item. The step opens on a choice/explainer
+  // screen, then either runs the short BYO sub-journey or drops straight to
+  // the managed-domain config.
+  //   domainView: 'choice'  — landing explainer + two options
+  //              | 'managed' — the always-provisioned managed-domain config
+  // The BYO sub-journey is tracked by byo.subStep below; while it's set, the
+  // sub-journey takes over the whole pane (sidebar swap + back button).
+  domainView: 'choice',
+
+  // Bring Your Domain state (short 2-step sub-journey: details → confirm)
   byo: {
     // 'none' | 'verifying' | 'verified' | 'skipped'
     status: 'none',
+    // Sub-journey position: null (not in sub-journey) | 'details' | 'confirm'
+    subStep: null,
     rootDomain: 'evanspetcare.com',
     subdomain: 'send',
-    // Branded-domain sender identity, collected inline on the BYO page.
+    // Branded-domain sender identity, collected on the sub-journey details step.
     prefix: 'hello',
     displayName: "Evan's Pet Care",
     replyTo: '',
@@ -2005,10 +2016,16 @@ const state = {
 const STEPS = [
   { key: 'brand', label: 'Brand' },
   { key: 'business', label: 'Business Info' },
-  { key: 'byo', label: 'Bring Your Domain' },
-  { key: 'senderDetails', label: 'Managed Domain' },
+  { key: 'domain', label: 'Sending Domain' },
   { key: 'sms', label: 'SMS' },
   { key: 'automations', label: 'Automations' },
+];
+
+/* Sub-journey steps for "Set up your own domain" — kept deliberately short:
+   one page to enter the domain + sender details, one to confirm. */
+const BYO_SUBSTEPS = [
+  { key: 'details', label: 'Domain details' },
+  { key: 'confirm', label: 'Confirm & connect' },
 ];
 
 /* =========================================================
@@ -2016,6 +2033,12 @@ const STEPS = [
    ========================================================= */
 function goToStep(key) {
   state.step = key;
+  // Returning to the Sending Domain step from the sidebar lands on the choice
+  // screen (not mid-sub-journey, not the managed sub-screen).
+  if (key === 'domain') {
+    state.byo.subStep = null;
+    state.domainView = 'choice';
+  }
   // Don't auto-complete; only mark complete on Continue
   render();
 }
@@ -2025,15 +2048,52 @@ function continueStep() {
   state.completed.add(state.step);
   const idx = STEPS.findIndex(s => s.key === state.step);
   const nextKey = idx === STEPS.length - 1 ? 'complete' : STEPS[idx + 1].key;
-
-  // Entering Managed Domain? If the user connected (or is verifying) a branded
-  // domain, carry that identity over so they don't re-enter the same details.
-  // Only copy if the managed fields haven't been hand-edited yet.
-  if (nextKey === 'senderDetails') {
-    maybePrefillManagedFromByo();
-  }
-
   state.step = nextKey;
+  render();
+}
+
+/* =========================================================
+   SENDING DOMAIN — choice + sub-journey + managed handoff
+   =========================================================
+   The Sending Domain step has two faces (state.domainView):
+     'choice'  — explainer + the two options (set up your own / use managed)
+     'managed' — the always-provisioned managed-domain config (final sub-screen
+                 of the step; Continue from here advances to SMS)
+   The BYO sub-journey (byo.subStep) overlays the choice view: details → confirm.
+   ========================================================= */
+
+/* User chose "Set up your own domain" — enter the short sub-journey. */
+function startByo() {
+  state.byo.status = 'in-progress';
+  state.byo.subStep = 'details';
+  render();
+}
+
+/* Leave the sub-journey and return to the choice screen (back button / cancel).
+   Doesn't discard what they typed, just steps out of the flow. */
+function exitByoToChoice() {
+  state.byo.subStep = null;
+  if (state.byo.status === 'in-progress') state.byo.status = 'none';
+  render();
+}
+
+/* User chose "Use the managed domain" (or finished BYO) — show the managed
+   config sub-screen. Pre-fill from BYO when one was set up. */
+function goToManaged() {
+  state.byo.subStep = null;
+  maybePrefillManagedFromByo();
+  state.domainView = 'managed';
+  render();
+}
+
+/* Continue out of the managed sub-screen → next top-level step (SMS). */
+function continueFromManaged() {
+  continueStep();
+}
+
+/* Back from the managed sub-screen → return to the Sending Domain choice. */
+function backFromManaged() {
+  state.domainView = 'choice';
   render();
 }
 
@@ -2053,6 +2113,13 @@ function maybePrefillManagedFromByo() {
 }
 
 function backStep() {
+  // Within the Sending Domain step, "Previous" has step-internal meaning:
+  //  - managed sub-screen → back to the choice screen
+  //  - choice screen → back to Business Info
+  if (state.step === 'domain' && state.domainView === 'managed') {
+    backFromManaged();
+    return;
+  }
   const idx = STEPS.findIndex(s => s.key === state.step);
   if (idx > 0) {
     state.step = STEPS[idx - 1].key;
@@ -2061,13 +2128,27 @@ function backStep() {
 }
 
 /* =========================================================
-   BRING YOUR DOMAIN — single page actions
+   BRING YOUR DOMAIN — sub-journey actions
    ========================================================= */
-/* Skip the branded domain — just move on to the next step. No interstitial
-   screen; the user can always connect a domain later from settings. */
+/* Skip the branded domain from the choice screen — go straight to the managed
+   config sub-screen. The user can always connect a domain later from settings. */
 function skipByo() {
   state.byo.status = 'skipped';
-  continueStep();
+  goToManaged();
+}
+
+/* Sub-journey footer: details → confirm is gated behind connecting Entri, so
+   the only "next" from details is the Entri modal. From confirm, Continue
+   hands off to the managed config. */
+function byoBack() {
+  if (state.byo.subStep === 'confirm') {
+    // Back from confirmation returns to the details form. (In production the
+    // records are already live; here we just let them review the inputs.)
+    state.byo.subStep = 'details';
+    render();
+  } else {
+    exitByoToChoice();
+  }
 }
 
 /* Open the Entri modal at the "how it works" intro phase. */
@@ -2084,11 +2165,12 @@ function launchEntriIframe() {
   render();
 }
 
-/* Entri (iframe) succeeded — close the modal and flip the page to the inline
-   verifying state, animating the three records propagating. */
+/* Entri (iframe) succeeded — close the modal, advance the sub-journey to the
+   confirmation step, and animate the three records propagating. */
 function entriSuccess() {
   state.showEntriModal = false;
   state.byo.status = 'verifying';
+  state.byo.subStep = 'confirm';
   state.byo.verifyProgress = 0;
   setTimeout(() => { state.byo.verifyProgress = 1; render(); }, 1800);
   setTimeout(() => { state.byo.verifyProgress = 2; render(); }, 3600);
@@ -2225,6 +2307,69 @@ function shellWrap({ content, footerOpts = {}, hideFooter = false }) {
 }
 
 /* =========================================================
+   SUB-JOURNEY SHELL  (Voice/Assist-style sidebar swap)
+   ---------------------------------------------------------
+   While the BYO sub-journey is active, the main step sidebar is
+   replaced with a "Sending Domain" back link + the sub-step list.
+   ========================================================= */
+function subJourneySidebar({ activeKey, completedKeys = [] }) {
+  return `
+    <aside class="shell-sidebar">
+      <div class="shell-sidebar-eyebrow">Set up your domain</div>
+      <button class="step-item" data-state="parent" onclick="exitByoToChoice()" style="font-weight: 600; color: var(--text);">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: var(--text-muted);">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
+        </span>
+        Sending Domain
+      </button>
+      <ul style="list-style: none; margin: 4px 0 0; padding: 0 0 0 22px; border-left: 1px dashed var(--border-strong); margin-left: 22px; display: flex; flex-direction: column; gap: 2px;">
+        ${BYO_SUBSTEPS.map((s) => {
+          const isActive = s.key === activeKey;
+          const isComplete = completedKeys.includes(s.key);
+          const stateAttr = isComplete ? 'complete' : (isActive ? 'active' : 'upcoming');
+          let markerInner = '';
+          let markerStyle = 'width: 16px; height: 16px; border-radius: 999px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; position: relative;';
+          if (stateAttr === 'active') {
+            markerStyle += ' background: var(--bg-elevated); border: 1.5px solid var(--text);';
+            markerInner = '<span style="width: 7px; height: 7px; border-radius: 999px; background: var(--text);"></span>';
+          } else if (stateAttr === 'complete') {
+            markerStyle += ' background: var(--success); border: 1.5px solid var(--success); color: white; font-size: 10px; font-weight: 700;';
+            markerInner = '✓';
+          } else {
+            markerStyle += ' background: var(--bg-elevated); border: 1.5px solid var(--border-strong);';
+          }
+          return `<li style="display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 13px;${
+            stateAttr === 'active' ? ' background: var(--bg-elevated); color: var(--text); font-weight: 500; box-shadow: var(--shadow-card);'
+            : stateAttr === 'complete' ? ' color: var(--text);'
+            : ' color: var(--text-muted);'
+          }">
+            <span style="${markerStyle}">${markerInner}</span>
+            ${s.label}
+          </li>`;
+        }).join('')}
+      </ul>
+    </aside>
+  `;
+}
+
+/* Shell wrapper for the BYO sub-journey: swaps the sidebar, keeps the topbar
+   and footer. */
+function shellWrapSubJourney({ content, activeKey, completedKeys = [], hideFooter = false, footerOpts = {} }) {
+  return `
+    <div class="shell">
+      ${shellHeader()}
+      <div class="shell-body">
+        ${subJourneySidebar({ activeKey, completedKeys })}
+        <main class="shell-main">
+          ${content}
+        </main>
+      </div>
+      ${hideFooter ? '' : shellFooter(footerOpts)}
+    </div>
+  `;
+}
+
+/* =========================================================
    STEP CONTENT
    ========================================================= */
 function brandStep() {
@@ -2323,49 +2468,179 @@ function businessStep() {
 }
 
 /* =========================================================
-   STEP: Sender Details  (now the SECOND of the two email steps)
+   STEP: Sending Domain  (one nav item, two faces + sub-journey)
    ---------------------------------------------------------
-   Configures the managed-domain sender identity. If the user just
-   went through BYO, these fields are pre-filled from that setup so
-   they don't enter the same details twice. The managed domain is
-   always configured during onboarding.
+   Dispatcher for the merged Sending Domain step:
+     - byo.subStep set        → the BYO sub-journey takes the pane
+     - domainView === 'managed' → the managed-domain config sub-screen
+     - otherwise              → the choice/explainer landing screen
    ========================================================= */
+function domainStep() {
+  // The BYO sub-journey overlays everything when active.
+  if (state.byo.subStep) {
+    return byoSubJourneyPage();
+  }
+  // The managed config is the final sub-screen of this step.
+  if (state.domainView === 'managed') {
+    return managedDomainScreen();
+  }
+  // Default: the landing/choice screen.
+  return domainChoiceScreen();
+}
+
 /* =========================================================
-   STEP: Bring Your Domain  (single page — no sub-journey)
+   Sending Domain — choice / explainer landing screen
    ---------------------------------------------------------
-   Explains the benefits + what Entri is, collects all the
-   branded-domain fields inline, and connects via Entri right
-   here. The user can skip; skipping swaps the page to a short
-   reassurance state. After Entri succeeds, the page flips to an
-   inline "connected — verifying" state with the records animation.
+   Lays out both options up front. Makes clear a managed domain is
+   provided no matter what, and offers to set up your own. Picking
+   "Set up your own domain" enters the short sub-journey; "Use the
+   managed domain" jumps straight to the managed config.
    ========================================================= */
-function bringYourDomainStep() {
+function domainChoiceScreen() {
+  const displayInitial = (state.email.displayName || 'E').charAt(0).toUpperCase();
+  const displayName = state.email.displayName || 'Your business';
+  const brandedRoot = (state.brand.website || 'yourdomain.com').replace(/^www\./, '');
+  const brandedExample = `${state.byo.subdomain || 'send'}.${brandedRoot}`;
+
+  const content = `
+    <div class="shell-main-narrow">
+      <div class="step-header">
+        <h1>Choose your sending domain</h1>
+        <p>We've set you up with a managed sending domain, so you can start sending right away — no setup required. For better inbox placement and to show your own brand, you can also send from your own domain. Either way, you'll confirm your sender details next, and you can change this anytime from settings.</p>
+      </div>
+
+      <!-- Slim comparison: managed (always provided) vs your own domain -->
+      <section class="compare-panel" aria-label="Compare managed and your own sending domain">
+        <div class="compare-panel-grid">
+          <div class="compare-panel-col" data-tone="managed">
+            <div class="compare-panel-col-header">
+              <h4>Managed domain</h4>
+              <span class="compare-panel-col-label">Ready now · included</span>
+            </div>
+            <div class="compare-panel-mini-inbox">
+              <div class="mini-avatar">${displayInitial}</div>
+              <div>
+                <div class="mini-from">${displayName}<span class="mini-via">via ${state.email.managedDomain}</span></div>
+                <div class="mini-subject">${state.email.prefix || 'hello'}@${state.email.managedDomain}</div>
+              </div>
+            </div>
+            <p class="compare-panel-col-note">No DNS setup. Sends from a shared, managed domain with a small "via" tag in the inbox.</p>
+          </div>
+          <div class="compare-panel-col" data-tone="branded">
+            <div class="compare-panel-col-header">
+              <h4>Your own domain</h4>
+              <span class="compare-panel-col-label" data-tone="recommended">Recommended</span>
+            </div>
+            <div class="compare-panel-mini-inbox">
+              <div class="mini-avatar">${displayInitial}</div>
+              <div>
+                <div class="mini-from">${displayName}</div>
+                <div class="mini-subject">${state.byo.prefix || 'hello'}@${brandedExample}</div>
+              </div>
+            </div>
+            <p class="compare-panel-col-note">No "via" tag, better deliverability on Gmail &amp; Outlook. Takes about 5 minutes — we'll walk you through it.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- How DNS setup works: trust signals for Entri before they commit -->
+      <section class="entri-context" aria-labelledby="entri-context-title">
+        <div class="entri-context-header">
+          <span class="entri-context-icon">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>
+          </span>
+          <h4 id="entri-context-title">How setup works if you bring your own domain</h4>
+        </div>
+        <ul class="entri-context-list">
+          <li>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+            <span><strong>We use Entri</strong> — a DNS automation partner used by major email platforms. You sign in to your DNS provider through Entri and they add the right records automatically. No copy-paste, no manual errors.</span>
+          </li>
+          <li>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+            <span><strong>DNS access only.</strong> Entri only touches the records we need to publish (DKIM, Return-Path, DMARC) — nothing else in your provider account.</span>
+          </li>
+          <li>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+            <span><strong>Don't have DNS access?</strong> You'll be able to forward the setup to your IT contact, or add the records manually.</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Two clear options -->
+      <div class="domain-choice-actions">
+        <button class="btn btn-primary" onclick="startByo()">Set up my own domain →</button>
+        <button class="btn btn-secondary" onclick="skipByo()">Use the managed domain</button>
+      </div>
+      <p class="domain-choice-reassurance">A managed domain is always provided. You can connect your own domain now or later from <strong style="color:var(--text);">Settings → Email Channel</strong>.</p>
+    </div>
+  `;
+
+  // The choice screen's actions live in the body, so the footer just carries
+  // Previous (back to Business Info) — no Continue (the body CTAs advance).
+  return shellWrap({
+    content,
+    footerOpts: { showContinue: false, continueHint: 'Choose an option above to continue' },
+  });
+}
+
+/* =========================================================
+   BYO SUB-JOURNEY  (details → confirm)
+   ---------------------------------------------------------
+   When byo.subStep is set, the whole right pane swaps to the
+   sub-journey, the sidebar swaps to the sub-step list with a
+   "Sending Domain" back link, and the footer maps to sub-journey nav.
+   ========================================================= */
+function byoSubJourneyPage() {
+  const byo = state.byo;
+  const order = BYO_SUBSTEPS.map(s => s.key);
+  const currentIdx = order.indexOf(byo.subStep);
+  const completedKeys = order.slice(0, currentIdx);
+
+  if (byo.subStep === 'confirm') {
+    const verifyDone = byo.verifyProgress >= 3;
+    return shellWrapSubJourney({
+      content: byoConfirmStep(),
+      activeKey: 'confirm',
+      completedKeys: ['details'],
+      footerOpts: {
+        onBack: 'byoBack()',
+        showBack: true,
+        continueLabel: verifyDone ? 'Continue →' : 'Continue while verifying →',
+        onContinue: 'goToManaged()',
+      },
+    });
+  }
+
+  // details — the only forward action is connecting via Entri, so the footer
+  // hides Continue and the body carries the Connect button.
+  return shellWrapSubJourney({
+    content: byoDetailsStep(),
+    activeKey: 'details',
+    completedKeys,
+    footerOpts: { onBack: 'byoBack()', showBack: true, showContinue: false, continueHint: 'Connect with Entri to continue' },
+  });
+}
+
+/* Sub-journey step 1: domain + sender details on one page (combined address
+   row), with Connect with Entri. */
+function byoDetailsStep() {
   const byo = state.byo;
   const fullSendingDomain = `${byo.subdomain}.${byo.rootDomain}`;
   const replyToPlaceholder = suggestedReplyTo(fullSendingDomain);
   const replyToWarn = replyToCrossDomain(byo.replyTo, fullSendingDomain);
 
-  // Verifying / verified — show the inline status instead of the form.
-  if (byo.status === 'verifying' || byo.status === 'verified') {
-    return shellWrap({ content: byoVerifyingContent(), footerOpts: { canContinue: true } });
-  }
-
-  // Default — the full single-page form. (A user who skipped and navigated
-  // back lands here too, so they can still connect.)
-  const content = `
+  return `
     <div class="shell-main-narrow">
-      <div class="step-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:24px;">
-        <div>
-          <h1>Send from your own domain</h1>
-          <p>Optional, but recommended. Sending from your own domain (like <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-subtle);padding:1px 6px;border-radius:4px;">${fullSendingDomain}</code>) lands you in more inboxes on Gmail and Outlook and shows your brand instead of a platform tag. It takes about 5 minutes.</p>
-        </div>
-        <button class="btn btn-secondary" style="flex-shrink:0; white-space:nowrap;" onclick="skipByo()">Skip for now</button>
+      <div class="step-header">
+        <h1>Set up your sending domain</h1>
+        <p>We'll create a brand-new subdomain just for sending email, then Entri publishes the records that authorize it. Fill in the details below and connect.</p>
       </div>
 
       <!-- Combined sending address: prefix @ subdomain . root domain -->
       <div class="form-group">
         <label>Your new sending subdomain</label>
-        <span class="helper">We'll set up a brand-new subdomain just for sending email. This is the full address it'll send from — your team alias before the <code>@</code>, then the new subdomain and your domain. We pulled your domain from your business info.</span>
+        <span class="helper">This is the full address it'll send from — your team alias before the <code>@</code>, then the new subdomain and your domain. We pulled your domain from your business info.</span>
         <div class="address-row">
           <input class="seg-prefix" type="text" value="${byo.prefix}" placeholder="hello" aria-label="Email alias" data-focus-key="byo.prefix"
             oninput="state.byo.prefix=this.value; render();" />
@@ -2412,26 +2687,18 @@ function bringYourDomainStep() {
         </div>
       </div>
 
-      <p class="domain-choice-reassurance" style="text-align:left; margin-top:20px;">By selecting "Connect with Entri" you agree to Entri's <a href="https://www.entri.com/terms" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Terms of Service</a> and <a href="https://www.entri.com/privacy" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Privacy Policy</a>.</p>
+      <!-- Connect action lives in the body since it opens the Entri modal -->
+      <div style="margin-top: 24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="openEntri()">Connect with Entri →</button>
+        <button class="btn btn-secondary" onclick="exitByoToChoice()">Cancel</button>
+      </div>
+      <p class="domain-choice-reassurance" style="text-align:left; margin-top:14px;">By selecting "Connect with Entri" you agree to Entri's <a href="https://www.entri.com/terms" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Terms of Service</a> and <a href="https://www.entri.com/privacy" style="color:var(--text-muted); text-decoration:underline;" target="_blank">Privacy Policy</a>.</p>
     </div>
   `;
-
-  // Footer carries both actions: white "Skip for now" + black "Connect with
-  // Entri". Both move the user forward.
-  return shellWrap({
-    content,
-    footerOpts: {
-      continueLabel: 'Connect with Entri',
-      onContinue: 'openEntri()',
-      secondaryLabel: 'Skip for now',
-      onSecondary: 'skipByo()',
-    },
-  });
 }
 
-/* Inline verifying / verified state shown on the Bring Your Domain page
-   after Entri succeeds. */
-function byoVerifyingContent() {
+/* Sub-journey step 2: confirmation — the verifying / verified animation. */
+function byoConfirmStep() {
   const byo = state.byo;
   const p = byo.verifyProgress;
   const dkimState = p >= 1 ? 'ok' : (p === 0 ? 'working' : 'pending');
@@ -2487,13 +2754,13 @@ function byoVerifyingContent() {
 }
 
 /* =========================================================
-   STEP: Managed Domain  (was Sender Details)
+   Sending Domain — managed config sub-screen  (was Sender Details)
    ---------------------------------------------------------
-   The always-on sending address. Framed as ready-to-send now, and
-   the address that keeps mail flowing if a branded domain ever has
-   an issue. Pre-filled from the branded-domain setup when present.
+   The always-on sending address. Framed as ready-to-send now.
+   Pre-filled from the branded-domain setup when present. Continue
+   from here advances to the next top-level step (SMS).
    ========================================================= */
-function senderDetailsStep() {
+function managedDomainScreen() {
   const byo = state.byo;
   const senderDomain = state.email.managedDomain;
   // Reply-to for the managed domain should point at the business's OWN domain
@@ -2570,7 +2837,14 @@ function senderDetailsStep() {
     </div>
   `;
 
-  return shellWrap({ content, footerOpts: { canContinue: emailRequiredFilled() } });
+  return shellWrap({
+    content,
+    footerOpts: {
+      canContinue: emailRequiredFilled(),
+      onContinue: 'continueFromManaged()',
+      onBack: 'backFromManaged()',
+    },
+  });
 }
 
 
@@ -2803,7 +3077,8 @@ function resetPrototype() {
   state.brand.website = 'evanspetcare.com';
   state.business = { dba: "Evan's Pet Care", address1: '482 Maple Avenue', address2: 'Suite 12', city: 'Columbus', state: 'OH', zip: '43215', country: 'United States' };
   state.email = { prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', managedDomain: 'evans-pet-care.sent-mail.com', prefilledFromByo: false, managedTouched: false };
-  state.byo = { status: 'none', rootDomain: 'evanspetcare.com', subdomain: 'send', prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', verifyProgress: 0 };
+  state.domainView = 'choice';
+  state.byo = { status: 'none', subStep: null, rootDomain: 'evanspetcare.com', subdomain: 'send', prefix: 'hello', displayName: "Evan's Pet Care", replyTo: '', verifyProgress: 0 };
   state.merge = { firstName: '', lastName: '' };
   state.automations = { welcome: true, birthday: true, thankyou: false };
   state.showEntriModal = false;
@@ -2846,8 +3121,7 @@ function render() {
   let content;
   if (state.step === 'brand') content = brandStep();
   else if (state.step === 'business') content = businessStep();
-  else if (state.step === 'byo') content = bringYourDomainStep();
-  else if (state.step === 'senderDetails') content = senderDetailsStep();
+  else if (state.step === 'domain') content = domainStep();
   else if (state.step === 'sms') content = smsStep();
   else if (state.step === 'automations') content = automationsStep();
   else if (state.step === 'complete') content = completionScreen();
