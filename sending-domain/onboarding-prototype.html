@@ -647,18 +647,23 @@
     line-height: 1.5;
   }
 
-  /* Clickable compare cards (managed / your own) on the hub. */
+  /* Clickable compare cards (managed / your own) on the hub. The bottom
+     buttons are the primary CTAs; the cards are a quieter secondary
+     affordance — no default button chrome, just a subtle hover. */
   .compare-panel-card {
     appearance: none;
+    border: 0;
+    border-right: 1px solid var(--border);
+    border-radius: 0;
     width: 100%;
     text-align: left;
     background: var(--bg-elevated);
     cursor: pointer;
     font: inherit;
     color: inherit;
-    transition: background 0.12s ease, box-shadow 0.12s ease;
-    position: relative;
+    transition: background 0.12s ease;
   }
+  .compare-panel-grid .compare-panel-card:last-child { border-right: 0; }
   .compare-panel-card:hover {
     background: var(--bg-subtle);
   }
@@ -666,20 +671,11 @@
     outline: 2px solid var(--border-focus);
     outline-offset: -2px;
   }
-  .compare-panel-card .compare-panel-card-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--info);
-  }
   .compare-panel-card[data-tone="branded"][data-status="verifying"],
   .compare-panel-card[data-tone="branded"][data-status="verified"] {
-    background: var(--info-bg, #eef2ff);
+    background: var(--success-bg, #f0fdf4);
   }
-  /* "Verifying" pill in a card header. */
+  /* "Verifying" / "Connected" pill in a card header. */
   .card-status {
     display: inline-flex;
     align-items: center;
@@ -693,6 +689,42 @@
     color: var(--info);
     background: var(--info-bg, #eef2ff);
     border: 1px solid var(--info-border, #c7d2fe);
+  }
+  /* Green success banner shown on the hub after the user connects their own
+     domain — calls out that they succeeded and what to do next. */
+  .byo-success {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    border-radius: var(--radius);
+    background: var(--success-bg, #f0fdf4);
+    border: 1px solid var(--success-border, #bbf7d0);
+  }
+  .byo-success-icon {
+    width: 26px; height: 26px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: var(--success, #16a34a);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .byo-success-body { flex: 1; }
+  .byo-success-body strong {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--success-text, #15803d);
+    margin-bottom: 2px;
+  }
+  .byo-success-body p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
   }
   /* Back-to-hub link at the top of the full-page BYO details form. */
   .back-to-hub {
@@ -2545,25 +2577,34 @@ function domainChoiceScreen() {
   // managed step and the Continue button enables.
   const canContinue = byoConnected;
 
-  // The your-own card's label/note/affordance changes with status.
-  let brandedLabel, brandedNote, brandedClickHint;
+  // The your-own card's status label + note change with status.
+  let brandedLabel, brandedNote;
   if (byoConnected) {
     brandedLabel = `<span class="card-status card-status-verifying"><span class="spinner" style="width:11px;height:11px;border-top-color:var(--info);"></span> Verifying</span>`;
     brandedNote = `Connecting <code style="font-family:var(--font-mono);font-size:11.5px;">${brandedExample}</code> — DNS records are propagating. This usually takes 1–5 minutes. Click to view the details you entered.`;
-    brandedClickHint = 'View details';
-  } else if (byoStarted) {
-    brandedLabel = `<span class="compare-panel-col-label" data-tone="recommended">Recommended</span>`;
-    brandedNote = `You started setting this up. Click to pick up where you left off and connect.`;
-    brandedClickHint = 'Resume setup';
   } else {
     brandedLabel = `<span class="compare-panel-col-label" data-tone="recommended">Recommended</span>`;
-    brandedNote = `No "via" tag, better deliverability on Gmail &amp; Outlook. Takes about 5 minutes — we'll walk you through it.`;
-    brandedClickHint = 'Set up →';
+    brandedNote = byoStarted
+      ? `You started setting this up. Click to pick up where you left off and connect.`
+      : `No "via" tag, better deliverability on Gmail &amp; Outlook. Takes about 5 minutes — we'll walk you through it.`;
   }
 
   const headerCopy = byoConnected
-    ? `Your own domain is connecting — you don't have to wait. Continue to set up your managed sending address, which is ready to send right now.`
-    : `We've set you up with a managed sending domain, so you can start sending right away — no setup required. For better inbox placement and to show your own brand, you can also send from your own domain. Pick a card to continue; you can change this anytime from settings.`;
+    ? `Your own domain is connecting in the background — you don't have to wait for it. Finish setting up your managed sending address, which is ready to send right now.`
+    : `We've set you up with a managed sending domain, so you can start sending right away — no setup required. For better inbox placement and to show your own brand, you can also send from your own domain. You can change this anytime from settings.`;
+
+  // Bottom CTAs. The primary action changes once a domain is connected:
+  // before → "Set up my own domain"; after → "Continue to managed domain".
+  const actions = byoConnected
+    ? `
+      <div class="domain-choice-actions">
+        <button class="btn btn-primary" onclick="goToManaged()">Continue to managed domain →</button>
+      </div>`
+    : `
+      <div class="domain-choice-actions">
+        <button class="btn btn-primary" onclick="openByoDetails()">${byoStarted ? 'Resume setting up my domain →' : 'Set up my own domain →'}</button>
+        <button class="btn btn-secondary" onclick="goToManaged()">Use the managed domain</button>
+      </div>`;
 
   const content = `
     <div class="shell-main-narrow">
@@ -2572,8 +2613,22 @@ function domainChoiceScreen() {
         <p>${headerCopy}</p>
       </div>
 
-      <!-- Two clickable cards: managed (left, always provided) / your own (right) -->
-      <section class="compare-panel" aria-label="Choose managed or your own sending domain">
+      ${byoConnected ? `
+        <!-- Success banner: BYO connected, here's what to do next -->
+        <div class="byo-success" role="status">
+          <span class="byo-success-icon">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3L13 4.5"/></svg>
+          </span>
+          <div class="byo-success-body">
+            <strong>Your domain is connected</strong>
+            <p><code style="font-family:var(--font-mono);font-size:11.5px;">${brandedExample}</code> is set up and now verifying in the background — no need to wait. Next, finish your managed sending address with <strong style="color:var(--success-text,#15803d);">Continue to managed domain</strong> below.</p>
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Two clickable comparison cards: managed (left) / your own (right).
+           The bottom buttons are the primary CTAs; cards are a quieter way in. -->
+      <section class="compare-panel" aria-label="Compare managed and your own sending domain">
         <div class="compare-panel-grid">
           <button type="button" class="compare-panel-col compare-panel-card" data-tone="managed" onclick="goToManaged()" aria-label="Use the managed domain">
             <div class="compare-panel-col-header">
@@ -2588,9 +2643,8 @@ function domainChoiceScreen() {
               </div>
             </div>
             <p class="compare-panel-col-note">No DNS setup. Sends from a shared, managed domain with a small "via" tag in the inbox.</p>
-            <span class="compare-panel-card-cta">Use this →</span>
           </button>
-          <button type="button" class="compare-panel-col compare-panel-card" data-tone="branded" data-status="${byo.status}" onclick="openByoDetails()" aria-label="Set up your own domain">
+          <button type="button" class="compare-panel-col compare-panel-card" data-tone="branded" data-status="${byo.status}" onclick="openByoDetails()" aria-label="${byoConnected ? 'View your own domain details' : 'Set up your own domain'}">
             <div class="compare-panel-col-header">
               <h4>Your own domain</h4>
               ${brandedLabel}
@@ -2603,13 +2657,15 @@ function domainChoiceScreen() {
               </div>
             </div>
             <p class="compare-panel-col-note">${brandedNote}</p>
-            <span class="compare-panel-card-cta">${brandedClickHint}</span>
           </button>
         </div>
       </section>
 
+      <!-- Bottom CTAs — the primary calls to action -->
+      ${actions}
+
       <!-- How DNS setup works: trust signals for Entri before they commit -->
-      <section class="entri-context" aria-labelledby="entri-context-title">
+      <section class="entri-context" aria-labelledby="entri-context-title" style="margin-top:24px;">
         <div class="entri-context-header">
           <span class="entri-context-icon">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>
@@ -2636,8 +2692,8 @@ function domainChoiceScreen() {
     </div>
   `;
 
-  // Footer carries a real Continue (grayed out until a path is chosen).
-  // Continue → managed config.
+  // Footer carries a real Continue (grayed out until a domain is connected),
+  // mirroring the bottom CTA. Continue → managed config.
   return shellWrap({
     content,
     footerOpts: {
