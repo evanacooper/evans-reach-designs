@@ -2602,8 +2602,8 @@ function domainChoiceScreen() {
       </div>`
     : `
       <div class="domain-choice-actions">
-        <button class="btn btn-primary" onclick="openByoDetails()">${byoStarted ? 'Resume setting up my domain →' : 'Set up my own domain →'}</button>
         <button class="btn btn-secondary" onclick="goToManaged()">Use the managed domain</button>
+        <button class="btn btn-primary" onclick="openByoDetails()">${byoStarted ? 'Resume setting up my domain →' : 'Set up my own domain →'}</button>
       </div>`;
 
   const content = `
