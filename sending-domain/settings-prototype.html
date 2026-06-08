@@ -281,6 +281,23 @@
   }
   .shell-main-narrow { max-width: 640px; }
   .req-asterisk { color: var(--danger, #dc2626); margin-left: 2px; }
+  /* Back link at the top of the full-page "Add a domain" form. */
+  .back-to-hub {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0 0 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .back-to-hub:hover { color: var(--text); }
 
   /* Combined sending-address row: prefix @ subdomain . root (ported from
      onboarding so settings' Add-domain / inline DNS forms match). */
@@ -2130,29 +2147,6 @@ function settingsSidebar() {
   `;
 }
 
-function byoSidebar() {
-  const verifying = state.byo.isVerifying;
-  return `
-    <aside class="shell-sidebar">
-      <div class="shell-sidebar-eyebrow">Add a domain</div>
-      <button class="shell-sidebar-parent" onclick="cancelAddDomain()">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
-        Email Channel
-      </button>
-      <ul class="shell-sidebar-substeps">
-        <li data-state="${verifying ? 'complete' : 'active'}">
-          <span class="shell-sidebar-substep-marker">${verifying ? '' : '1'}</span>
-          Domain details
-        </li>
-        <li data-state="${verifying ? 'active' : 'upcoming'}">
-          <span class="shell-sidebar-substep-marker">2</span>
-          Verifying
-        </li>
-      </ul>
-    </aside>
-  `;
-}
-
 /* =========================================================
    PAGES
    ========================================================= */
@@ -2692,6 +2686,10 @@ function byoDetailsPage() {
   return `
     <main class="shell-main">
       <div class="shell-main-narrow">
+        <button type="button" class="back-to-hub" onclick="cancelAddDomain()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L4 7l5 4"/></svg>
+          Email Channel
+        </button>
         <div class="step-header">
           <h2>Set up your sending domain</h2>
           <p>We'll create a brand-new subdomain just for sending email, then Entri publishes the records that authorize it. Fill in the details below and connect.</p>
@@ -2758,70 +2756,6 @@ function byoDetailsPage() {
           ${canConnect ? '' : `<span style="font-size:12.5px; color:var(--text-muted);">Fill in all fields to continue.</span>`}
         </div>
         <p style="text-align:left; margin-top:14px; font-size:12.5px; color:var(--text-muted);">By selecting "Connect with Entri" you agree to Entri's Terms of Service and Privacy Policy.</p>
-      </div>
-    </main>
-  `;
-}
-
-function byoVerifyingScreen() {
-  const p = state.byo.verifyProgress;
-  const dkimState = p >= 1 ? 'ok' : (p === 0 ? 'working' : 'pending');
-  const rpState = p >= 2 ? 'ok' : (p === 1 ? 'working' : 'pending');
-  const dmarcState = p >= 3 ? 'ok' : (p === 2 ? 'working' : 'pending');
-
-  const renderIcon = (st) => {
-    if (st === 'ok') return `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.5 2.5L10 3.5"/></svg>`;
-    if (st === 'working') return `<div class="spinner" style="border-top-color: var(--info);"></div>`;
-    return '';
-  };
-  const renderLabel = (st) => st === 'ok' ? 'verified just now' : (st === 'working' ? 'checking…' : 'pending');
-
-  return `
-    <main class="shell-main">
-      <div class="step-header">
-        <h2>Verifying your domain</h2>
-        <p>Entri is publishing your DNS records. We'll be notified the moment each one propagates worldwide. This usually takes 1–5 minutes.</p>
-      </div>
-      <div style="max-width: 640px;">
-        <div class="verifying-card">
-          <div class="verifying-header">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><path d="M12 2v6m0 8v6M2 12h6m8 0h6M5 5l4 4m6 6l4 4M5 19l4-4m6-6l4-4"/></svg>
-            <span class="domain-name">${state.byo.subdomain}.${state.byo.rootDomain}</span>
-            <span class="status-pill status-pending" style="margin-left:auto;">Verifying</span>
-          </div>
-          <div class="verifying-list">
-            <div class="verifying-row">
-              <div class="verifying-icon" data-state="${dkimState}">${renderIcon(dkimState)}</div>
-              <div>
-                <div class="label">DKIM signing key</div>
-                <div class="desc">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_domainkey.${state.byo.subdomain}</code></div>
-              </div>
-              <span class="timestamp">${renderLabel(dkimState)}</span>
-            </div>
-            <div class="verifying-row">
-              <div class="verifying-icon" data-state="${rpState}">${renderIcon(rpState)}</div>
-              <div>
-                <div class="label">Return-Path</div>
-                <div class="desc">CNAME for <code style="font-family:var(--font-mono);font-size:11.5px;">pm-bounces.${state.byo.subdomain}</code></div>
-              </div>
-              <span class="timestamp">${renderLabel(rpState)}</span>
-            </div>
-            <div class="verifying-row">
-              <div class="verifying-icon" data-state="${dmarcState}">${renderIcon(dmarcState)}</div>
-              <div>
-                <div class="label">DMARC policy</div>
-                <div class="desc">TXT record for <code style="font-family:var(--font-mono);font-size:11.5px;">_dmarc.${state.byo.subdomain}</code></div>
-              </div>
-              <span class="timestamp">${renderLabel(dmarcState)}</span>
-            </div>
-          </div>
-          <div class="verifying-foot">
-            ${p < 3 ? `<div class="spinner"></div><span>You can leave this page — we'll update once verification finishes.</span>` : `<span style="color:var(--success); font-weight:500;">All records verified.</span>`}
-          </div>
-        </div>
-      </div>
-      <div style="margin-top: 32px; display: flex; justify-content: flex-end; gap: 16px; padding-top: 24px; border-top: 1px solid var(--border);">
-        <button class="btn btn-secondary" onclick="state.byo.isVerifying=false; state.byo.subStep=null; render();">Continue verifying in background</button>
       </div>
     </main>
   `;
@@ -3002,12 +2936,12 @@ function render() {
   let body;
   // The inline DNS wizard (existing-domain reconnect / detail-page setup) renders
   // inside that domain's detail page, so it falls through to the normal page
-  // routing below. Only the full-page "Add a domain" flow swaps the shell here.
+  // routing below. The full-page "Add a domain" form is just another page in the
+  // main pane with the normal settings sidebar + a back link — no stepper swap
+  // (mirrors onboarding, which dropped the sub-journey sidebar).
   const fullPageAddDomain = state.byo.subStep && !state.byo.inlineForDomainId;
-  if (state.byo.isVerifying && !state.byo.inlineForDomainId) {
-    body = `<div class="shell-body" data-mode="byo">${byoSidebar()}${byoVerifyingScreen()}</div>`;
-  } else if (fullPageAddDomain) {
-    body = `<div class="shell-body" data-mode="byo">${byoSidebar()}${byoDetailsPage()}</div>`;
+  if (fullPageAddDomain) {
+    body = `<div class="shell-body">${settingsSidebar()}${byoDetailsPage()}</div>`;
   } else {
     let pageContent;
     if (state.tab === 'email-channel') {
