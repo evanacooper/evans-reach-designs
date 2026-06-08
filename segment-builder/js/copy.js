@@ -145,7 +145,11 @@ function summarizeCondition(c, ctx) {
       ? `${quantPhrase(c)} ${c.countValue}`
       : quantPhrase(c);
     const word = quantIsPlural(c) ? noun.plural : noun.singular;
-    return `${subj} has ${phrase} <span class="summary-pill">${word}</span> where ${innerClause}`;
+    const linkClause = c.linkPhrase ? `<span class="summary-subject">${c.linkPhrase}</span>` : '';
+    const body = c.conditions.length
+      ? (linkClause ? `${linkClause} AND ${innerClause}` : innerClause)
+      : (linkClause || innerClause);
+    return `${subj} has ${phrase} <span class="summary-pill">${word}</span> where ${body}`;
   }
   return '';
 }

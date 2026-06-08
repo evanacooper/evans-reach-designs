@@ -32,11 +32,17 @@ const SCHEMA_LINKED_REFS = {
   ],
 };
 
+/* Inbound edges: another schema points back at Contact. `id` is the edge id
+   (unique per back-link); `targetSchemaId` is the schema it resolves to. Two
+   edges can share a targetSchemaId — e.g. Trip points at Contact twice, once
+   via its guests[] array and once via its single booker. Each is shown as its
+   own pick and labeled by source field (the spec's inbound disambiguation). */
 const CHILD_SCHEMAS = [
-  { id: 'schema-transaction', name: 'Transactions', foreignKeyPath: 'customerId', targetSchemaName: 'Transaction' },
-  { id: 'schema-policy', name: 'Policies', foreignKeyPath: 'customerId', targetSchemaName: 'Policy' },
-  { id: 'schema-order', name: 'Orders', foreignKeyPath: 'customerId', targetSchemaName: 'Order' },
-  { id: 'schema-trip', name: 'Trips', foreignKeyPath: 'customerIds', targetSchemaName: 'Trip' },
+  { id: 'schema-transaction', name: 'Transactions', targetSchemaId: 'schema-transaction', foreignKeyPath: 'customerId', targetSchemaName: 'Transaction' },
+  { id: 'schema-policy', name: 'Policies', targetSchemaId: 'schema-policy', foreignKeyPath: 'customerId', targetSchemaName: 'Policy' },
+  { id: 'schema-order', name: 'Orders', targetSchemaId: 'schema-order', foreignKeyPath: 'customerId', targetSchemaName: 'Order' },
+  { id: 'edge-trip-guest', name: 'Trips (as guest)', targetSchemaId: 'schema-trip', foreignKeyPath: 'guestIds', linkPhrase: 'this contact is a guest', targetSchemaName: 'Trip' },
+  { id: 'edge-trip-booker', name: 'Trips (as booker)', targetSchemaId: 'schema-trip', foreignKeyPath: 'bookerId', linkPhrase: 'this contact is the booker', targetSchemaName: 'Trip' },
 ];
 
 const TARGET_SCHEMA_FIELDS = {
@@ -81,7 +87,8 @@ const TARGET_SCHEMA_FIELDS = {
     { name: 'status', label: 'Status', type: 'string', enum: ['booked', 'completed', 'cancelled'] },
   ],
   'schema-listing': [
-    { name: 'name', label: 'Name', type: 'string' },
+    { name: 'name', label: 'Name', type: 'string', enum: ['Fruita Single Track', 'Moab Single Track', 'Vail Downhill MTB', 'Moab Slickrock'] },
+    { name: 'type', label: 'Type', type: 'string', enum: ['MTB', 'Downhill', 'Gravel', 'Road'] },
     { name: 'difficulty', label: 'Difficulty', type: 'string', enum: ['easy', 'moderate', 'hard', 'expert'] },
     { name: 'region', label: 'Region', type: 'string' },
   ],
@@ -227,19 +234,43 @@ const EXAMPLES = {
     return {
       groups: [{
         id: uid(), logic: 'and',
-        conditions: [{
-          id: uid(), kind: 'related', linkShape: 'child', sourceId: 'schema-trip',
-          displayName: 'Trips', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
-          inclusionMode: 'has', countOperator: 'gte', countValue: 1,
-          conditions: [{
-            id: uid(), kind: 'related', linkShape: 'single_ref', sourceId: 'trip-ref-listing',
-            displayName: 'Listing', targetSchemaId: 'schema-listing', targetSchemaName: 'Listing',
-            inclusionMode: 'has', countOperator: 'gte', countValue: 1, parentSchemaId: 'schema-trip',
+        conditions: [
+          /* 1 + 2: has >=1 trip AS GUEST whose listing is one of {Fruita, Moab} */
+          {
+            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'edge-trip-guest',
+            displayName: 'Trips (as guest)', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
+            linkPhrase: 'this contact is a guest',
+            inclusionMode: 'has', countOperator: 'gte', countValue: 1,
+            conditions: [{
+              id: uid(), kind: 'related', linkShape: 'single_ref', sourceId: 'trip-ref-listing',
+              displayName: 'Listing', targetSchemaId: 'schema-listing', targetSchemaName: 'Listing',
+              inclusionMode: 'has', countOperator: 'gte', countValue: 1, parentSchemaId: 'schema-trip',
+              conditions: [
+                { id: uid(), kind: 'field', field: 'name', fieldType: 'string', operator: 'in', value: ['Fruita Single Track', 'Moab Single Track'] },
+              ],
+            }],
+          },
+          /* 3: has NO trip as guest in the last 180 days (i.e. last trip is old) */
+          {
+            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'edge-trip-guest',
+            displayName: 'Trips (as guest)', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
+            linkPhrase: 'this contact is a guest',
+            inclusionMode: 'none', countOperator: 'eq', countValue: 0,
             conditions: [
-              { id: uid(), kind: 'field', field: 'name', fieldType: 'string', operator: 'in', value: ['Fruita Singletrack', 'Fruita Downhill'] },
+              { id: uid(), kind: 'field', field: 'tripDate', fieldType: 'date', operator: 'greater_than', value: ['180 days ago'] },
             ],
-          }],
-        }],
+          },
+          /* 4: has NO upcoming trips as guest */
+          {
+            id: uid(), kind: 'related', linkShape: 'child', sourceId: 'edge-trip-guest',
+            displayName: 'Trips (as guest)', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
+            linkPhrase: 'this contact is a guest',
+            inclusionMode: 'none', countOperator: 'eq', countValue: 0,
+            conditions: [
+              { id: uid(), kind: 'field', field: 'tripDate', fieldType: 'date', operator: 'greater_than', value: ['today'] },
+            ],
+          },
+        ],
       }],
     };
   },

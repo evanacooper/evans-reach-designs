@@ -185,3 +185,53 @@ Implications to carry into the wireframe session:
 
 No behavioral code changed. The unified-frame behavior was ratified as the intended proposal; this
 doc is the declaration the spec's checklist (items #1 and #5) requires.
+
+---
+
+## Part 3 — Worked example: Fruita trail riders (the `anycreek` example)
+
+The richest example, chosen to exercise the hard cases. Target query in plain English:
+
+> Contacts where the contact has at least one trip **where the contact is a guest** on that trip and
+> that trip's **listing is one of** {Fruita Single Track, Moab Single Track}, and the contact **has
+> not been on a trip in 180 days or more**, and **has no upcoming trips**.
+
+### The travel data model
+
+| Schema | Points at | How |
+|---|---|---|
+| **Customer** (the Contact) | — | rooted schema; own fields (name, email, total trips…) |
+| **Transaction** | User, Trip, Listing | by ID; price, dates |
+| **Trip** | **booker** (single User), **guests** (User array), Listing (by ID) | name, type, dates |
+| **Listing** | — | canonical offerings (Fruita Single Track, Moab Single Track, Vail Downhill MTB…) |
+
+The decisive feature: **Trip points at Contact twice** — once as `booker` (single) and once via
+`guests[]` (array). That is the spec's *critical asymmetry*: two inbound edges to the same schema.
+
+### Clause-by-clause mapping
+
+| Clause | Fork | Mechanic in the builder |
+|---|---|---|
+| 1. contact **is a guest** on ≥1 trip | **B — inbound named** (Trip→`guestIds`) | `child` edge `edge-trip-guest`, count `at least one`, `linkPhrase: "this contact is a guest"` rendered as a teal link-clause chip |
+| 2. that trip's **listing is one of** {…} | **A — outbound single ref** from inside Trip (Trip→`listingId`→Listing) | nested `single_ref` hop into Listing, then `Name is any of {Fruita Single Track, Moab Single Track}` *(per the ratified "nested name condition" decision — not a flat ID picker)* |
+| 3. **no trip as guest in last 180 days** | **B**, count `= 0` | second `edge-trip-guest`, `inclusionMode: none`, nested `tripDate is after "180 days ago"` |
+| 4. **no upcoming trips** | **B**, count `= 0` | third `edge-trip-guest`, `inclusionMode: none`, nested `tripDate is after "today"` |
+
+### Decisions taken for this example
+
+- **Guest vs booker → two separate edges.** `CHILD_SCHEMAS` now models `Trips (as guest)`
+  (`guestIds`) and `Trips (as booker)` (`bookerId`) as distinct picks, each carrying a `linkPhrase`.
+  The booker edge is available in the picker but unused in the example. This is the spec's
+  per-source-field disambiguation, made concrete.
+- **Listing match → nested name condition** (not a flat record picker). Ratified choice; the listing
+  hop reads "that Trip's Listing … where Name is any of …".
+- **"As a guest" is shown in both surfaces:** the builder block (teal link-clause chip) and the
+  plain-English summary ("…has at least one Trip where this contact is a guest and…").
+
+### Engine implications to carry forward
+
+- The named-inbound edge (guest via `guestIds`, booker via `bookerId`) is **Fork B with an arbitrary
+  named foreign key** — the open question flagged in Part 1. This example assumes that's in scope.
+  Confirm the segment compiler's `foreignKeyPath` can target a named array/single back-ref, not only
+  the implicit userId (B′).
+- Clause 2 keeps outbound-ref-with-nested-conditions (the unified-frame proposal from Part 2).

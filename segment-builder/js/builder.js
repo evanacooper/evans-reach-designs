@@ -305,6 +305,12 @@ function renderRelatedSentence(c, list, index, ctx) {
   /* body — where rows */
   const body = el('div', 'rel-body');
   const rows = el('div', 'where-rows');
+  /* inbound link clause — names which back-link this edge uses (guest vs booker).
+     Structural, not a user filter, so it's a fixed chip with no remove button. */
+  if (c.linkPhrase) {
+    rows.appendChild(el('div', 'link-clause', `<span class="link-clause-pin">↳</span><span>${c.linkPhrase}</span>`));
+    if (c.conditions.length) rows.appendChild(connectorEl('AND'));
+  }
   c.conditions.forEach((nc, ni) => {
     if (ni > 0) rows.appendChild(connectorEl('AND'));
     rows.appendChild(renderCondition(nc, c.conditions, ni, childCtx));
@@ -497,8 +503,8 @@ function buildConditionFromPick(pick) {
     const s = pick.schema;
     return {
       id: uid(), kind: 'related', linkShape: 'child', sourceId: s.id, displayName: s.name,
-      targetSchemaId: s.id, targetSchemaName: s.targetSchemaName,
-      inclusionMode: 'has', countOperator: 'gte', countValue: 1, conditions: [],
+      targetSchemaId: s.targetSchemaId ?? s.id, targetSchemaName: s.targetSchemaName,
+      linkPhrase: s.linkPhrase, inclusionMode: 'has', countOperator: 'gte', countValue: 1, conditions: [],
     };
   }
   throw new Error('Unknown pick');
