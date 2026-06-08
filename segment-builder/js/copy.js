@@ -132,12 +132,18 @@ function summarizeCondition(c, ctx) {
       : '<em>(no conditions yet)</em>';
 
     if (c.linkShape === 'single_ref') {
-      const verb = singleRefToggle(c);
-      const overlap = namesOverlap(c.displayName, c.targetSchemaName);
-      const head = overlap
-        ? `${subj}'s <span class="summary-pill">${noun.singular}</span> ${verb} one`
-        : `${subj}'s <span class="summary-pill">${noun.singular}</span> ${verb} ${indefinite(c.targetSchemaName)} <strong>${c.targetSchemaName}</strong>`;
-      return hasRel ? `${head} where ${innerClause}` : `${head} where ${innerClause}`;
+      const op = (typeof REF_OPERATORS !== 'undefined' ? REF_OPERATORS : []).find(o => o.value === c.refOperator) ?? { value: 'is', label: 'is', shape: 'identity' };
+      const head = `${subj}'s <span class="summary-pill">${noun.singular}</span>`;
+      if (op.shape === 'identity') {
+        const vals = (c.refValues ?? []);
+        const list = vals.length ? vals.map(v => `"${v}"`).join(', ') : '<em>(nothing chosen)</em>';
+        return `${head} ${op.label} ${list}`;
+      }
+      if (op.shape === 'existence') {
+        return `${head} ${op.label}`;   // "…'s Listing has" / "does not have"
+      }
+      // attribute: matches / does not match → nested where
+      return `${head} ${op.label} ${indefinite(c.targetSchemaName)} <strong>${c.targetSchemaName}</strong> where ${innerClause}`;
     }
 
     // many (child / array_ref)

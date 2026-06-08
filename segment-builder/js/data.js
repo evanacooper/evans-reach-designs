@@ -41,15 +41,15 @@ const SCHEMA_LINKED_REFS = {
    signedBy is just a 3-role relationship. Each role: { id, phrase, foreignKeyPath }. */
 const CHILD_SCHEMAS = [
   { id: 'schema-transaction', name: 'Transactions', targetSchemaId: 'schema-transaction', targetSchemaName: 'Transaction',
-    roles: [{ id: 'customer', phrase: 'this contact is the customer', foreignKeyPath: 'customerId' }] },
+    roles: [{ id: 'customer', label: 'the customer', phrase: 'this contact is the customer', foreignKeyPath: 'customerId' }] },
   { id: 'schema-policy', name: 'Policies', targetSchemaId: 'schema-policy', targetSchemaName: 'Policy',
-    roles: [{ id: 'holder', phrase: 'this contact is the policyholder', foreignKeyPath: 'customerId' }] },
+    roles: [{ id: 'holder', label: 'the policyholder', phrase: 'this contact is the policyholder', foreignKeyPath: 'customerId' }] },
   { id: 'schema-order', name: 'Orders', targetSchemaId: 'schema-order', targetSchemaName: 'Order',
-    roles: [{ id: 'customer', phrase: 'this contact is the customer', foreignKeyPath: 'customerId' }] },
+    roles: [{ id: 'customer', label: 'the customer', phrase: 'this contact is the customer', foreignKeyPath: 'customerId' }] },
   { id: 'schema-trip', name: 'Trips', targetSchemaId: 'schema-trip', targetSchemaName: 'Trip',
     roles: [
-      { id: 'guest', phrase: 'the contact is a guest', foreignKeyPath: 'guestIds' },
-      { id: 'booker', phrase: 'the contact is the booker', foreignKeyPath: 'bookerId' },
+      { id: 'guest', label: 'a guest', phrase: 'the contact is a guest', foreignKeyPath: 'guestIds' },
+      { id: 'booker', label: 'the booker', phrase: 'the contact is the booker', foreignKeyPath: 'bookerId' },
     ] },
 ];
 
@@ -101,6 +101,39 @@ const TARGET_SCHEMA_FIELDS = {
     { name: 'region', label: 'Region', type: 'string' },
   ],
 };
+
+/* Canonical record instances for schemas a user can match a reference against
+   by identity (Fork A "is / is one of"). Each is { id, name } — name is the
+   resolved display name shown in the picker (never the raw id). */
+const SCHEMA_RECORDS = {
+  'schema-listing': [
+    { id: 'lst-fruita-st', name: 'Fruita Single Track' },
+    { id: 'lst-moab-st', name: 'Moab Single Track' },
+    { id: 'lst-vail-dh', name: 'Vail Downhill MTB' },
+    { id: 'lst-moab-slick', name: 'Moab Slickrock' },
+  ],
+  'schema-location': [
+    { id: 'loc-bk', name: 'Brooklyn Flagship' },
+    { id: 'loc-soho', name: 'SoHo' },
+    { id: 'loc-la', name: 'LA Downtown' },
+  ],
+};
+
+/* Operators for an outbound reference (single_ref / array_ref). They split into
+   three control shapes — see field-condition rendering:
+     identity  → pick target record(s)        (is / is not / is one of / is not one of)
+     existence → no value                      (has / does not have)
+     attribute → nested where-conditions       (matches / does not match) */
+const REF_OPERATORS = [
+  { value: 'is', label: 'is', shape: 'identity', multi: false },
+  { value: 'is_not', label: 'is not', shape: 'identity', multi: false },
+  { value: 'is_one_of', label: 'is one of', shape: 'identity', multi: true },
+  { value: 'is_not_one_of', label: 'is not one of', shape: 'identity', multi: true },
+  { value: 'has', label: 'has', shape: 'existence' },
+  { value: 'not_has', label: 'does not have', shape: 'existence' },
+  { value: 'matches', label: 'matches', shape: 'attribute' },
+  { value: 'not_matches', label: 'does not match', shape: 'attribute' },
+];
 
 const OPERATORS = {
   string: [
@@ -227,7 +260,7 @@ const EXAMPLES = {
           {
             id: uid(), kind: 'related', linkShape: 'single_ref', sourceId: 'ref-primary-location',
             displayName: 'Primary location', targetSchemaId: 'schema-location', targetSchemaName: 'Location',
-            inclusionMode: 'has', countOperator: 'gte', countValue: 1,
+            refOperator: 'matches',
             conditions: [
               { id: uid(), kind: 'field', field: 'region', fieldType: 'string', operator: 'equals', value: ['NY'] },
               { id: uid(), kind: 'field', field: 'tier', fieldType: 'string', operator: 'equals', value: ['flagship'] },
@@ -251,10 +284,9 @@ const EXAMPLES = {
             conditions: [{
               id: uid(), kind: 'related', linkShape: 'single_ref', sourceId: 'trip-ref-listing',
               displayName: 'Listing', targetSchemaId: 'schema-listing', targetSchemaName: 'Listing',
-              inclusionMode: 'has', countOperator: 'gte', countValue: 1, parentSchemaId: 'schema-trip',
-              conditions: [
-                { id: uid(), kind: 'field', field: 'name', fieldType: 'string', operator: 'in', value: ['Fruita Single Track', 'Moab Single Track'] },
-              ],
+              parentSchemaId: 'schema-trip',
+              refOperator: 'is_one_of', refValues: ['Fruita Single Track', 'Moab Single Track'],
+              conditions: [],
             }],
           },
           /* 3: has NO trip as guest in the last 180 days (i.e. last trip is old) */

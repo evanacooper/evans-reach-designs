@@ -128,63 +128,42 @@ The mockup's data model (`js/data.js`) maps to the spec like so:
 | `LINKED_REFS` cardinality `one` | `primaryLocation`, `accountManager` | **A — outbound named, single** |
 | `LINKED_REFS` cardinality `many` | `events` ("Events attended") | **A — outbound named, array** |
 | `SCHEMA_LINKED_REFS` (nested) | Transaction → `eventIds` | **A — outbound named, from a nested context** |
-| `CHILD_SCHEMAS` (`foreignKeyPath`) | Transactions, Policies, Orders, Trips | **B′ — inbound unnamed** (back-link `customerId` assumed) |
+| `CHILD_SCHEMAS` with 1 role | Transactions, Policies, Orders | **B′ — inbound, implicit single back-link** |
+| `CHILD_SCHEMAS` with 2+ roles | Trips (guest / booker) | **B — inbound named**, role chosen via inline role chip |
 
 ### Findings against the checklist
 
-1. **Fork (most important).** ⚠️ The mockup renders **all** related picks — outbound `linked-ref`
-   (single + array) *and* inbound `child` — through the same `renderRelatedSentence` block with an
-   inline count/inclusion quantifier and nested `where…` conditions. That gives outbound refs (Fork A)
-   the **Fork B control shape**. Per the spec this is the proposed-extension case ("nested conditions
-   on the target in Fork A") — legitimate to show, but it must be *declared as proposed*, not silently
-   blended with B. **This mockup intentionally proposes the unified nested frame for both forks.** See
-   the decision note below.
+1. **Fork (most important).** ✅ Fork A and Fork B now have **distinct control shapes**, resolving the
+   earlier ambiguity. Outbound `single_ref` is operator-routed (see #2): its default is a flat
+   identity match (`is` / `is one of` → record picker), with nesting available *only* behind an
+   explicit `matches` verb. Inbound `child` keeps the count + nested block. The two no longer blend.
 
-2. **Cardinality.** ⚠️ Single (`single_ref`) and array (`array_ref`) outbound refs differ only in the
-   quantifier phrasing, not in operator vocabulary. The spec wants "is / is any of" for single and
-   "contains / contains any of" for array. The mockup does not surface those operator labels on
-   outbound refs (it skips straight to nested conditions).
+2. **Cardinality / operators.** ✅ Outbound single refs carry a `refOperator` with the full verb set —
+   **is / is not / is one of / is not one of** (identity record picker), **has / does not have**
+   (existence), **matches / does not match** (nested attribute conditions). "is one of" is the array
+   analogue of "is". Operator label now matches intent instead of skipping to nested conditions.
 
-3. **Mode (B vs B′).** ✅/⚠️ The mockup only models **B′** (inbound unnamed — `CHILD_SCHEMAS` with an
-   implicit `customerId` back-link, rendered "…where…" with no "via" clause). It does **not** model
-   **B** (named inbound `$ref` with a "via host" selector). Consistent with "B′ only," but the mockup
-   doesn't make the absence explicit.
+3. **Mode (B vs B′).** ✅ The mockup now models **B (named inbound)** via the per-relationship `roles`
+   array — each role is a named back-link (`guestIds`, `bookerId`). B′ (single implicit back-link) is
+   the degenerate 1-role case. The named link is surfaced as the inline role chip.
 
-4. **Inbound disambiguation.** N/A in the current data — each child schema has a single
-   `foreignKeyPath`, so there's no two-inbound-edges-to-same-schema case to disambiguate. If B (named
-   inbound) is ever added, the per-source-field labeling rule applies.
+4. **Inbound disambiguation.** ✅ Trip has two back-links to Contact (guest / booker). They are
+   disambiguated by an **inline role dropdown** ("Trip as a guest ▾"), keyed by role — the spec's
+   per-source-field rule, generalized to N roles for any schema pair.
 
-5. **Current vs proposed.** ⚠️ The mockup does not visually distinguish supported-today (Fork A flat
-   match, Fork B′ counts) from proposed (unified nested frame for Fork A). This doc is the declaration.
+5. **Current vs proposed.** The flat identity match (A) and counts (B′) are supported today. Still
+   **proposed / needs engine confirmation:** (a) `matches` — nested conditions on an outbound ref
+   target; (b) named inbound foreign keys (guest via `guestIds`, booker via `bookerId`) where the
+   compiler's `foreignKeyPath` must accept a named back-ref, and may differ per selected role.
 
-6. **Display names.** ✅ Target records are referenced by display name (`displayName`,
-   `targetSchemaName`), never raw ID.
-
-### Decision (ratified)
-
-**Keep the unified nested frame for both forks, declared as a proposed extension.**
-
-Outbound refs (Fork A — e.g. "Primary location", "Events attended") intentionally use the same rich
-`renderRelatedSentence` block as inbound related records (Fork B′), including the inline quantifier
-and nested `where…` conditions on the target's own fields. This goes beyond today's engine, where
-outbound is identity/existence only.
-
-Rationale: a single, consistent "related records" frame is easier to learn than two structurally
-different controls, and the nested-on-outbound capability (e.g. "Events attended where type = Fair")
-is a deliberate target for the redesign — not an accident. This document is the required declaration
-that finding #1 is **proposed**, not a silent ambiguity.
-
-Implications to carry into the wireframe session:
-- When this ships, the engine must support nested conditions on an outbound `$ref` target (Fork A
-  gains Fork-B mechanics), OR the builder must gate outbound refs to flat match. That is an
-  engine-scope question, flagged here, not resolved by the mockup.
-- Fork B (named inbound `$ref` with a "via host" selector) remains **out of scope** — the mockup
-  models B′ (implicit userId/foreign-key back-link) only.
+6. **Display names.** ✅ Identity picks resolve target **records** by display name (`SCHEMA_RECORDS`),
+   never raw ID.
 
 ### What the audit changed in code
 
-No behavioral code changed. The unified-frame behavior was ratified as the intended proposal; this
-doc is the declaration the spec's checklist (items #1 and #5) requires.
+The forks were **split**, not unified: outbound refs default to a flat identity match and only nest
+behind an explicit `matches` verb; inbound relationships model named roles surfaced as an inline
+chip. See the worked example (Part 3) for the concrete mapping.
 
 ---
 
@@ -214,10 +193,10 @@ editable role chip (see Decisions below).
 
 | Clause | Fork | Mechanic in the builder |
 |---|---|---|
-| 1. contact **is a guest** on ≥1 trip | **B — inbound named** (Trip→`guestIds`) | `child` on `schema-trip`, count `at least one`, `roleId: 'guest'` → editable role chip "the contact is a guest ▾" (switchable to booker) |
-| 2. that trip's **listing is one of** {…} | **A — outbound single ref** from inside Trip (Trip→`listingId`→Listing) | nested `single_ref` hop into Listing, then `Name is any of {Fruita Single Track, Moab Single Track}` *(per the ratified "nested name condition" decision — not a flat ID picker)* |
-| 3. **no trip as guest in last 180 days** | **B**, count `= 0` | second `child` on `schema-trip`, `roleId: 'guest'`, `inclusionMode: none`, nested `tripDate is after "180 days ago"` |
-| 4. **no upcoming trips** | **B**, count `= 0` | third `child` on `schema-trip`, `roleId: 'guest'`, `inclusionMode: none`, nested `tripDate is after "today"` |
+| 1. contact **is a guest** on ≥1 trip | **B — inbound named** (Trip→`guestIds`) | `child` on `schema-trip`, count `at least one`, inline role "Trip **as a guest ▾**" (switchable to booker, folded into the noun phrase) |
+| 2. that trip's **listing is one of** {…} | **A — outbound single ref**, identity match (Trip→`listingId`→Listing) | `single_ref` with `refOperator: 'is_one_of'`, `refValues: [Fruita Single Track, Moab Single Track]` — a flat **record picker**, no nested block *(superseded the earlier nested-name approach)* |
+| 3. **no trip as guest in last 180 days** | **B**, count `= 0` | second `child` on `schema-trip`, role `guest`, `inclusionMode: none`, nested `tripDate is after "180 days ago"` |
+| 4. **no upcoming trips** | **B**, count `= 0` | third `child` on `schema-trip`, role `guest`, `inclusionMode: none`, nested `tripDate is after "today"` |
 
 ### Decisions taken for this example
 
@@ -228,17 +207,23 @@ editable role chip (see Decisions below).
     **plain static text** ("this contact is the customer"); no control, no added friction. This is the
     legacy B′ behavior, preserved.
   - **2+ roles** (Trips: guest / booker; or e.g. a Shipment's sender / recipient / signedBy) → the
-    role is an **editable dropdown chip** in the sentence: "the contact has at least one Trip where
-    **[the contact is a guest ▾]** and …". Clicking it lists every back-link; switching is in-place
-    and **preserves the nested conditions**.
+    role is an **inline dropdown folded into the relationship phrase**: "the contact has at least one
+    **Trip as a guest ▾** where …". The role sits with the noun it modifies (not floating in the
+    body); clicking it lists every back-link; switching is in-place and **preserves nested conditions**.
   - The picker shows the relationship **once** ("Trips"), not once per role. Role is a property of
-    the condition, edited in the block — mirroring how the count quantifier ("at least one ▾") is
-    already an in-sentence chip.
-- **Listing match → nested name condition** (not a flat record picker). Ratified choice; the listing
-  hop reads "that Trip's Listing … where Name is any of …".
-- **The role is shown in both surfaces:** the builder block (teal role chip — editable when 2+ roles)
-  and the plain-English summary ("…has at least one Trip where the contact is a guest and…"). The
-  summary only spells out the role when there's a genuine choice (2+ roles), matching the UI.
+    the condition, edited inline — mirroring how the count quantifier ("at least one ▾") is a chip.
+- **Outbound ref match → operator-routed.** `single_ref` (and array_ref) carry a `refOperator` that
+  splits into three control shapes:
+  - **identity** — `is` / `is not` / `is one of` / `is not one of` → a **record picker** of target
+    display names (`SCHEMA_RECORDS`). No nested block. *This is the default and what the Listing clause
+    uses.*
+  - **existence** — `has` / `does not have` → no value.
+  - **attribute** — `matches` / `does not match` → the nested "where {conditions on the target's
+    fields}" block (e.g. `Listing matches a Listing where Difficulty is hard`).
+  Switching shape resets the value so a stale record list can't linger behind a `matches` verb.
+- **The role is shown in both surfaces:** the builder block (inline teal role chip — editable when 2+
+  roles) and the plain-English summary. The summary spells out the role only when there's a genuine
+  choice (2+ roles), matching the UI.
 
 ### Engine implications to carry forward
 
@@ -247,4 +232,5 @@ editable role chip (see Decisions below).
   scope. Confirm the segment compiler's `foreignKeyPath` can target a named array/single back-ref, not
   only the implicit userId (B′). The role model means a single relationship can compile to *different*
   `foreignKeyPath`s depending on the selected role.
-- Clause 2 keeps outbound-ref-with-nested-conditions (the unified-frame proposal from Part 2).
+- Clause 2 is now a flat **identity** match (`Listing is one of {…}`), the default for outbound refs.
+  The nested-attribute path still exists behind the `matches` verb but is not used here.

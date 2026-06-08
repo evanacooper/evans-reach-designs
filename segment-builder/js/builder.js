@@ -231,13 +231,49 @@ function quantControlMany(c) {
   }
   return wrap;
 }
-function quantControlSingle(c) {
+/* Operator control for an outbound single ref (is / is one of / has / matches…).
+   Switching to a different shape resets the value so a stale record list doesn't
+   linger behind a "matches" verb (or vice-versa). */
+function refOperatorControl(c) {
+  const current = REF_OPERATORS.find(o => o.value === c.refOperator) ?? REF_OPERATORS[0];
   const btn = el('button', 'quant'); btn.type = 'button';
-  btn.innerHTML = `<span>${singleRefToggle(c)}</span><span class="control-caret">▾</span>`;
+  btn.innerHTML = `<span>${current.label}</span><span class="control-caret">▾</span>`;
   btn.addEventListener('click', () => {
-    openMenu(btn, singleRefMenu(c).map(o => ({ label: o.label, value: o.key, selected: (c.inclusionMode || 'has') === o.key })), key => {
-      c.inclusionMode = key; render();
+    openMenu(btn, REF_OPERATORS.map(o => ({ label: o.label, value: o.value, selected: o.value === current.value })), val => {
+      const next = REF_OPERATORS.find(o => o.value === val);
+      const prev = REF_OPERATORS.find(o => o.value === c.refOperator) ?? REF_OPERATORS[0];
+      c.refOperator = val;
+      if (next.shape !== prev.shape) {
+        c.refValues = [];          // identity record picks
+        c.conditions = [];         // attribute nested conditions
+      } else if (!next.multi && (c.refValues?.length > 1)) {
+        c.refValues = c.refValues.slice(0, 1); // multi→single: keep first
+      }
+      render();
     });
+  });
+  return btn;
+}
+
+/* Value control for identity operators — pick target record(s) by display name.
+   single (is / is not) → one record; multi (is one of …) → many. */
+function refRecordControl(c, refOp) {
+  const records = SCHEMA_RECORDS[c.targetSchemaId] ?? [];
+  const picked = c.refValues ?? [];
+  const btn = el('button', 'control control-multi'); btn.type = 'button';
+  const label = picked.length === 0
+    ? `<span style="color:var(--text-muted)">${refOp.multi ? 'Choose one or more…' : 'Choose…'}</span>`
+    : picked.map(name => `<span class="control-tag">${name}</span>`).join('');
+  btn.innerHTML = `${label}<span class="control-caret">▾</span>`;
+  btn.addEventListener('click', () => {
+    openMenu(btn, records.map(r => ({ label: r.name, value: r.name, selected: picked.includes(r.name) })), name => {
+      if (refOp.multi) {
+        c.refValues = picked.includes(name) ? picked.filter(x => x !== name) : [...picked, name];
+      } else {
+        c.refValues = [name];
+      }
+      render();
+    }, refOp.multi);
   });
   return btn;
 }
@@ -272,24 +308,28 @@ function renderRelatedSentence(c, list, index, ctx) {
   const sentence = el('span', 'rel-sentence');
   const subjCls = subj.subject ? 'subject-noun' : '';
 
+  const refOp = isSingle ? (REF_OPERATORS.find(o => o.value === c.refOperator) ?? REF_OPERATORS[0]) : null;
+
   if (isSingle) {
-    const overlap = namesOverlap(c.displayName, c.targetSchemaName);
+    /* outbound single ref: <subject>'s <noun> <op ▾> [value depends on op shape] */
     sentence.appendChild(el('span', subjCls, subj.text + "'s"));
     sentence.appendChild(el('span', 'noun', noun.singular));
-    sentence.appendChild(quantControlSingle(c));
-    if (!overlap) {
-      sentence.appendChild(document.createTextNode(indefinite(c.targetSchemaName)));
-      sentence.appendChild(el('span', 'noun', c.targetSchemaName));
-      sentence.appendChild(document.createTextNode('where…'));
-    } else {
-      sentence.appendChild(document.createTextNode('one where…'));
+    sentence.appendChild(refOperatorControl(c));
+    if (refOp.shape === 'identity') {
+      sentence.appendChild(refRecordControl(c, refOp));
+    } else if (refOp.shape === 'attribute') {
+      sentence.appendChild(document.createTextNode(`${indefinite(c.targetSchemaName)} ${c.targetSchemaName} where…`));
     }
+    /* existence shape: nothing further — "…'s Listing has" reads complete */
   } else {
     sentence.appendChild(el('span', subjCls, subj.text));
     sentence.appendChild(document.createTextNode('has'));
     sentence.appendChild(quantControlMany(c));
     const word = quantIsPlural(c) ? noun.plural : noun.singular;
     sentence.appendChild(el('span', 'noun', word));
+    /* inline role: "Trip as a guest ▾" — only when the relationship has 2+ roles */
+    const roleCtrl = inlineRoleControl(c);
+    if (roleCtrl) sentence.appendChild(roleCtrl);
     sentence.appendChild(document.createTextNode('where…'));
   }
 
@@ -302,17 +342,15 @@ function renderRelatedSentence(c, list, index, ctx) {
   header.append(icon, sentence, actions);
   block.appendChild(header);
 
+  /* Identity / existence single-refs have no nested body — the sentence is the
+     whole condition. Only the "many" (child/array) blocks and the attribute
+     ("matches") single-ref show nested where-rows. */
+  const showsBody = !isSingle || refOp.shape === 'attribute';
+  if (!showsBody) return block;
+
   /* body — where rows */
   const body = el('div', 'rel-body');
   const rows = el('div', 'where-rows');
-  /* role clause — which back-link between the two schemas this condition uses.
-     1 role → plain text (link implicit). 2+ roles → editable dropdown chip.
-     Structural, not a user filter, so no remove button. */
-  const roleClause = buildRoleClause(c);
-  if (roleClause) {
-    rows.appendChild(roleClause);
-    if (c.conditions.length) rows.appendChild(connectorEl('AND'));
-  }
   c.conditions.forEach((nc, ni) => {
     if (ni > 0) rows.appendChild(connectorEl('AND'));
     rows.appendChild(renderCondition(nc, c.conditions, ni, childCtx));
@@ -332,25 +370,20 @@ function rolesForCondition(c) {
   return schema?.roles ?? [];
 }
 
-/* The role clause shown at the top of an inbound block.
-   0 roles → null (nothing). 1 role → static text. 2+ → editable dropdown chip. */
-function buildRoleClause(c) {
+/* Inline role control, rendered right after the noun: "Trip as a guest ▾".
+   0–1 roles → null (single-role links are implicit, nothing shown). 2+ → an
+   editable dropdown folded into the relationship phrase. */
+function inlineRoleControl(c) {
   const roles = rolesForCondition(c);
-  if (!roles.length) return null;
+  if (roles.length < 2) return null;
   const current = roles.find(r => r.id === c.roleId) ?? roles[0];
 
-  const wrap = el('div', 'role-clause');
-  wrap.appendChild(el('span', 'role-clause-pin', '↳'));
-
-  if (roles.length === 1) {
-    wrap.appendChild(el('span', null, current.phrase));
-    return wrap;
-  }
-
+  const wrap = el('span', 'role-inline');
+  wrap.appendChild(document.createTextNode('as'));
   const btn = el('button', 'role-chip'); btn.type = 'button';
-  btn.innerHTML = `<span>${current.phrase}</span><span class="control-caret">▾</span>`;
+  btn.innerHTML = `<span>${current.label}</span><span class="control-caret">▾</span>`;
   btn.addEventListener('click', () => {
-    openMenu(btn, roles.map(r => ({ label: r.phrase, value: r.id, selected: r.id === current.id })), id => {
+    openMenu(btn, roles.map(r => ({ label: 'as ' + r.label, value: r.id, selected: r.id === current.id })), id => {
       c.roleId = id; render();
     });
   });
@@ -528,10 +561,11 @@ function buildConditionFromPick(pick) {
   }
   if (pick.kind === 'linked-ref') {
     const r = pick.ref;
+    const single = r.cardinality === 'one';
     return {
-      id: uid(), kind: 'related', linkShape: r.cardinality === 'one' ? 'single_ref' : 'array_ref',
+      id: uid(), kind: 'related', linkShape: single ? 'single_ref' : 'array_ref',
       sourceId: r.id, displayName: r.name, targetSchemaId: r.targetSchemaId, targetSchemaName: r.targetSchemaName,
-      inclusionMode: 'has', countOperator: 'gte', countValue: 1,
+      ...(single ? { refOperator: 'is', refValues: [] } : { inclusionMode: 'has', countOperator: 'gte', countValue: 1 }),
       ...(pick.parentSchemaId ? { parentSchemaId: pick.parentSchemaId } : {}),
       conditions: [],
     };

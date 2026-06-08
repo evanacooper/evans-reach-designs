@@ -328,20 +328,13 @@ body {
 .where-label strong { color: var(--text-primary); font-weight: 600; }
 .where-rows { display: flex; flex-direction: column; gap: 6px; }
 
-/* inbound role clause — which back-link this condition uses (guest / booker / …) */
-.role-clause {
-  display: inline-flex; align-items: center; gap: 7px; align-self: flex-start;
-  padding: 4px 11px 4px 9px; border-radius: 999px;
-  background: var(--subject-soft); border: 1px solid var(--subject-border);
-  font: 500 12.5px/1.2 "Inter", sans-serif; color: var(--subject);
-}
-.role-clause-pin { font-size: 13px; opacity: 0.7; }
-/* editable variant: the phrase is a dropdown button (2+ roles) */
+/* inline role — folded into the relationship phrase: "Trip as a guest ▾" */
+.role-inline { display: inline-flex; align-items: center; gap: 5px; }
 .role-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  background: var(--bg-surface); border: 1px solid var(--subject-border);
-  color: var(--subject); font: 600 12.5px/1 "Inter", sans-serif;
-  padding: 3px 8px; border-radius: 999px; cursor: pointer;
+  background: var(--subject-soft); border: 1px solid var(--subject-border);
+  color: var(--subject); font: 600 13px/1 "Inter", sans-serif;
+  padding: 3px 9px; border-radius: 999px; cursor: pointer;
 }
 .role-chip:hover { border-color: var(--subject); }
 .role-chip .control-caret { font-size: 9px; opacity: 0.7; }
