@@ -2261,19 +2261,27 @@ function launchEntriIframe() {
   render();
 }
 
-/* Entri (iframe) succeeded — close the modal, mark the branded domain as
-   verifying, and return to the hub. The "your own domain" card now shows a
-   verifying spinner. DNS propagation is genuinely pending in production, so we
-   don't auto-flip to verified here. */
+/* Entri (iframe) signed in & published — advance the modal to its "done"
+   confirmation phase (instead of auto-closing). The branded domain is now
+   verifying behind the scenes; DNS propagation is genuinely pending in
+   production, so we don't auto-flip to verified. */
 function entriSuccess() {
-  state.showEntriModal = false;
   state.byo.status = 'verifying';
   state.byo.verifyProgress = 0;
+  state.entriPhase = 'done';
+  render();
+}
+
+/* From the "done" phase, the user closes the modal → land back on the hub,
+   where the "your own domain" card shows the verifying state. */
+function entriFinish() {
+  state.showEntriModal = false;
+  state.entriPhase = 'intro';
   state.domainView = 'choice';
   render();
 }
 
-/* User closed the Entri modal without completing it — just dismiss the modal
+/* User closed the Entri modal before completing it — just dismiss the modal
    and leave them on the details form to try again or back out. */
 function entriClose() {
   state.showEntriModal = false;
@@ -2621,7 +2629,7 @@ function domainChoiceScreen() {
           </span>
           <div class="byo-success-body">
             <strong>Your domain is connected</strong>
-            <p><code style="font-family:var(--font-mono);font-size:11.5px;">${brandedExample}</code> is set up and now verifying in the background — no need to wait. Next, finish your managed sending address with <strong style="color:var(--success-text,#15803d);">Continue to managed domain</strong> below.</p>
+            <p>${brandedExample} is set up and now verifying in the background — no need to wait. Next, finish your managed sending address using the button below.</p>
           </div>
         </div>
       ` : ''}
@@ -3058,6 +3066,7 @@ function completionScreen() {
 
 function entriModalHTML() {
   const fullDomain = `${state.byo.subdomain}.${state.byo.rootDomain}`;
+  if (state.entriPhase === 'done') return entriDoneModal(fullDomain);
   if (state.entriPhase === 'iframe') return entriIframeModal(fullDomain);
   return entriIntroModal(fullDomain);
 }
@@ -3129,6 +3138,38 @@ function entriIframeModal(fullDomain) {
         <div class="entri-iframe-footer">
           <span class="demo-note" style="margin:0;">Simulated Entri iframe — not the real thing.</span>
           <button class="btn-link" style="background:none; border:0; color:var(--text-muted); cursor:pointer; font-size:12px;" onclick="entriClose()">Simulate close</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* Phase 3: Entri's "done" confirmation, shown inside the iframe chrome after
+   the user signs in & publishes. Placeholder text + a Close button that hands
+   control back to our app (lands on the hub with the verifying card). In
+   production this is Entri's own success screen / postMessage callback. */
+function entriDoneModal(fullDomain) {
+  return `
+    <div class="entri-overlay">
+      <div class="entri-iframe">
+        <div class="entri-iframe-bar">
+          <div class="entri-iframe-brand"><span class="entri-iframe-dot">E</span> Entri</div>
+          <div class="entri-iframe-url">secure.goentri.com</div>
+          <button class="entri-modal-close" onclick="entriFinish()" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+        <div class="entri-iframe-body" style="text-align:center; padding:36px 28px;">
+          <div style="width:48px; height:48px; margin:0 auto 16px; border-radius:999px; background:var(--success, #16a34a); color:#fff; display:flex; align-items:center; justify-content:center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+          </div>
+          <div style="font-weight:600; font-size:16px; margin-bottom:6px;">Records published</div>
+          <p style="font-size:13px; color:var(--text-muted); line-height:1.55; max-width:380px; margin:0 auto 4px;">Entri added the DNS records for <code style="font-family:var(--font-mono); font-size:12px;">${fullDomain}</code> to your provider. They'll propagate over the next few minutes — you can close this and keep setting up.</p>
+          <p class="demo-note" style="margin:14px 0 20px;">Placeholder — in production this is Entri's confirmation, returned to us via callback.</p>
+          <button class="btn btn-primary" onclick="entriFinish()">Close</button>
+        </div>
+        <div class="entri-iframe-footer">
+          <span class="demo-note" style="margin:0;">Simulated Entri iframe — not the real thing.</span>
         </div>
       </div>
     </div>
