@@ -466,7 +466,10 @@ function openFieldPicker(anchor, callback) {
   renderPickerBody('');
   pickerSearch.focus();
 }
-function closeFieldPicker() { picker.hidden = true; pickerCallback = null; }
+/* NOTE: do not null pickerCallback here — option onClicks call closeFieldPicker()
+   *before* invoking the callback, so nulling it would drop the pick. The callback
+   is replaced on the next openFieldPicker() anyway. */
+function closeFieldPicker() { picker.hidden = true; }
 
 function renderPickerBody(query) {
   const m = (s) => !query || s.toLowerCase().includes(query);
