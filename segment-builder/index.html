@@ -218,7 +218,14 @@
     overflow: hidden;
     z-index: 50;
     font-family: "Inter", system-ui, sans-serif;
+    /* Never intercept clicks meant for the app underneath — only the dock's
+       own buttons are interactive. Prevents the fixed dock from blocking the
+       "Add another group" / footer controls it may visually overlap. */
+    pointer-events: none;
   }
+  .demo-dock-head, .demo-dock-body { pointer-events: auto; }
+  /* Give the scroll area room to clear the fixed dock at the bottom. */
+  .pd-content { padding-bottom: 120px; }
   .demo-dock-head {
     display: flex;
     align-items: center;
