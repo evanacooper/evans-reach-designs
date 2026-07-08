@@ -559,6 +559,137 @@ tr:hover .row-actions { opacity: 1; }
 /* ─── Scrollable table wrapper ─── */
 .table-wrap { overflow-x: auto; }
 .table-section { background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+
+/* ─── Filter button + popover ─── */
+.filter-btn { position: relative; }
+.filter-btn:hover { border-color: #a5b4fc; color: #4338ca; }
+.filter-btn.active { background: #eef2ff; border-color: #a5b4fc; color: #4338ca; }
+.filter-btn-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 15px; height: 15px; padding: 0 4px;
+  background: #6366f1; color: white; font-size: 9px; font-weight: 700;
+  border-radius: 8px; line-height: 1;
+}
+.filter-anchor { position: relative; }
+
+.filter-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 320px;
+  max-height: 460px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.02);
+  z-index: 50;
+  display: none;
+  flex-direction: column;
+}
+.filter-popover.open { display: flex; }
+.filter-pop-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid #f3f4f6;
+  position: sticky; top: 0; background: white; z-index: 1;
+}
+.filter-pop-title { font-size: 12px; font-weight: 700; color: #111827; }
+.filter-pop-clear { font-size: 11px; color: #6366f1; cursor: pointer; font-weight: 600; background: none; border: none; padding: 0; }
+.filter-pop-clear:hover { text-decoration: underline; }
+
+.filter-quick { padding: 12px 14px 4px; }
+.filter-quick-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 9px 11px; border-radius: 7px;
+  border: 1px solid #fde68a; background: #fffbeb; color: #92400e;
+  font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;
+}
+.filter-quick-btn:hover { background: #fef3c7; }
+.filter-quick-btn.active { background: #92400e; border-color: #92400e; color: white; }
+.filter-quick-btn .fq-icon { font-size: 13px; }
+.filter-quick-btn .fq-sub { font-size: 10px; font-weight: 500; opacity: 0.8; margin-left: auto; }
+
+.filter-group { padding: 10px 14px; border-top: 1px solid #f9fafb; }
+.filter-group:first-of-type { border-top: none; }
+.filter-group-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: #9ca3af; margin-bottom: 8px;
+}
+.filter-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500; color: #6b7280;
+  padding: 4px 9px; border-radius: 14px;
+  border: 1px solid #e5e7eb; background: white; cursor: pointer;
+  transition: all 0.1s;
+}
+.filter-chip:hover { border-color: #a5b4fc; color: #4338ca; }
+.filter-chip.active { background: #eef2ff; border-color: #a5b4fc; color: #4338ca; font-weight: 600; }
+.filter-chip .fc-check { font-size: 9px; opacity: 0; }
+.filter-chip.active .fc-check { opacity: 1; }
+
+.filter-pop-footer {
+  padding: 10px 14px; border-top: 1px solid #f3f4f6;
+  display: flex; gap: 8px; position: sticky; bottom: 0; background: white;
+}
+.filter-apply-btn {
+  flex: 1; padding: 8px; border-radius: 6px; border: none;
+  background: #111827; color: white; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.filter-apply-btn:hover { background: #1f2937; }
+
+/* Empty-state row when filters match nothing */
+.filter-empty-row td { text-align: center; color: #9ca3af; font-size: 12px; padding: 28px 10px; }
+
+/* ─── Stage badge (canonical funnel position — distinct from Quality) ─── */
+.lead-stage { display: flex; flex-direction: column; gap: 2px; min-width: 96px; }
+.stage-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px;
+  width: fit-content; border: 1px solid transparent;
+}
+.stage-badge.lead        { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.stage-badge.qualified   { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+.stage-badge.converted   { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+.stage-badge.disqualified{ background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
+.stage-badge.lost        { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+.stage-substage { font-size: 10px; color: #9ca3af; font-weight: 500; }
+
+/* Last activity cell — staleness is the follow-up driver, surfaced prominently */
+.last-activity { display: flex; flex-direction: column; gap: 1px; }
+.la-age { font-size: 12px; font-weight: 600; color: #374151; }
+.la-age.stale { color: #b45309; }
+.la-date { font-size: 10px; color: #9ca3af; }
+.la-flag {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9px; font-weight: 700; color: #b45309;
+  background: #fffbeb; border: 1px solid #fde68a;
+  padding: 1px 5px; border-radius: 8px; width: fit-content; margin-top: 1px;
+}
+
+/* Hero KPI row (4 cards) + lighter secondary row (Leads/New Customers §3) */
+.metrics-row.hero { grid-template-columns: repeat(4, 1fr); }
+.metrics-row.secondary { grid-template-columns: repeat(5, 1fr); }
+.metrics-row.secondary .metric-card { background: #fbfbfc; box-shadow: none; }
+.metrics-row.secondary .metric-value { font-size: 18px; }
+.metrics-row.secondary .metric-title { font-size: 10px; }
+.metric-card.clickable { cursor: pointer; }
+.metric-card.clickable:hover { border-color: #a5b4fc; box-shadow: 0 2px 8px rgba(99,102,241,0.12); }
+.metric-clickhint { font-size: 10px; color: #6366f1; font-weight: 600; margin-top: 2px; opacity: 0; transition: opacity 0.12s; }
+.metric-card.clickable:hover .metric-clickhint { opacity: 1; }
+
+/* Leads-tab funnel card gets a little more height as the hero chart */
+.leads-funnel-card { min-height: 240px; }
+.funnel-degrade-note { font-size: 10px; color: #9ca3af; padding-top: 8px; border-top: 1px solid #f3f4f6; margin-top: 4px; }
+
+/* Days-to-convert distribution (New Customers hero) */
+.dtc-dist { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding-top: 8px; }
+.dtc-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
+.dtc-bar { width: 100%; max-width: 40px; background: #c7d2fe; border-radius: 4px 4px 0 0; transition: filter 0.12s; cursor: default; }
+.dtc-col:hover .dtc-bar { filter: brightness(0.94); }
+.dtc-bar.peak { background: #6366f1; }
+.dtc-count { font-size: 11px; font-weight: 700; color: #4338ca; }
+.dtc-label { font-size: 9px; color: #9ca3af; text-align: center; line-height: 1.2; }
 </style>
 </head>
 <body>
@@ -727,9 +858,91 @@ tr:hover .row-actions { opacity: 1; }
               Feb 1 – Feb 28, 2026
               <svg width="9" height="9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </div>
-            <div class="filter-btn">
-              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-              Filter
+            <div class="filter-anchor">
+              <div class="filter-btn" id="filter-btn" onclick="toggleFilterPopover(event)">
+                <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                Filter
+                <span class="filter-btn-count" id="filter-count" style="display:none">0</span>
+              </div>
+
+              <!-- ── Filter popover (Leads tab) ── -->
+              <div class="filter-popover" id="filter-popover" onclick="event.stopPropagation()">
+                <div class="filter-pop-header">
+                  <span class="filter-pop-title">Filter leads</span>
+                  <button class="filter-pop-clear" onclick="clearAllFilters()">Reset all</button>
+                </div>
+
+                <!-- Quick filter: needs follow-up (open + aging + no recent activity) -->
+                <div class="filter-quick">
+                  <button class="filter-quick-btn" data-quick="follow-up" onclick="toggleQuickFilter(this)">
+                    <span class="fq-icon">⚡</span>
+                    Needs follow-up
+                    <span class="fq-sub">open · aging · no recent activity</span>
+                  </button>
+                </div>
+
+                <!-- Stage (canonical funnel position — data-driven per business) -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Stage</div>
+                  <div class="filter-chips" data-facet="stage">
+                    <button class="filter-chip" data-value="lead" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Lead</button>
+                    <button class="filter-chip" data-value="qualified" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Qualified Lead</button>
+                    <button class="filter-chip" data-value="converted" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Converted</button>
+                    <button class="filter-chip" data-value="disqualified" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Disqualified</button>
+                    <button class="filter-chip" data-value="lost" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Lost</button>
+                  </div>
+                </div>
+
+                <!-- Quality (EmbedReach intent signal — separate axis from Stage) -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Quality signal</div>
+                  <div class="filter-chips" data-facet="quality">
+                    <button class="filter-chip" data-value="qualified" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Qualified</button>
+                    <button class="filter-chip" data-value="likely" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Likely</button>
+                    <button class="filter-chip" data-value="unqualified" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Unqualified</button>
+                    <button class="filter-chip" data-value="pending" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Pending</button>
+                  </div>
+                </div>
+
+                <!-- Channel / Ad platform -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Channel</div>
+                  <div class="filter-chips" data-facet="channel">
+                    <button class="filter-chip" data-value="google-ads" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Google Ads</button>
+                    <button class="filter-chip" data-value="meta-ads" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Meta Ads</button>
+                    <button class="filter-chip" data-value="google-organic" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Google Organic</button>
+                    <button class="filter-chip" data-value="referral" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Referral</button>
+                    <button class="filter-chip" data-value="direct" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Direct</button>
+                    <button class="filter-chip" data-value="voice-ai" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Voice AI</button>
+                  </div>
+                </div>
+
+                <!-- Capture type (how they came in) -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Capture type</div>
+                  <div class="filter-chips" data-facet="capture">
+                    <button class="filter-chip" data-value="call" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>📞 Call</button>
+                    <button class="filter-chip" data-value="form" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>📋 Form</button>
+                    <button class="filter-chip" data-value="voice" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>🎙 Voice</button>
+                    <button class="filter-chip" data-value="import" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>⬆ Import</button>
+                  </div>
+                </div>
+
+                <!-- Campaign -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Campaign</div>
+                  <div class="filter-chips" data-facet="campaign">
+                    <button class="filter-chip" data-value="emergency-hvac" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Emergency HVAC</button>
+                    <button class="filter-chip" data-value="hvac-local-map" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>HVAC Local Map</button>
+                    <button class="filter-chip" data-value="home-comfort" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Home Comfort</button>
+                    <button class="filter-chip" data-value="none" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>No campaign</button>
+                  </div>
+                </div>
+
+                <div class="filter-pop-footer">
+                  <button class="filter-apply-btn" onclick="closeFilterPopover()">Done</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1266,9 +1479,9 @@ tr:hover .row-actions { opacity: 1; }
             </div>
           </div>
 
-          <!-- Row 1: volume + cost metrics -->
-          <div class="metrics-row">
-            <!-- Total Leads: green -->
+          <!-- Hero row: 4 cards — both jobs legible (attribution + follow-up) -->
+          <div class="metrics-row hero">
+            <!-- Total Leads -->
             <div class="metric-card">
               <div class="metric-title">Total Leads
                 <div style="display:flex;align-items:center;gap:6px">
@@ -1287,40 +1500,6 @@ tr:hover .row-actions { opacity: 1; }
               <div class="metric-value">418</div>
               <div class="metric-trend neutral" style="color:#9ca3af">66% of total leads</div>
             </div>
-            <!-- Cost per Lead: green (improving) -->
-            <div class="metric-card">
-              <div class="metric-title">Cost per Lead
-                <div style="display:flex;align-items:center;gap:6px">
-                  <div class="metric-signal green" title="CPL improving — $21.9 last week"></div>
-                  <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
-                </div>
-              </div>
-              <div class="metric-value">$22.5</div>
-              <div class="metric-trend up">↓ 8% from prior period</div>
-            </div>
-            <!-- Open Leads -->
-            <div class="metric-card">
-              <div class="metric-title">Open Leads
-                <div style="display:flex;align-items:center;gap:6px">
-                  <div class="metric-signal amber" title="14 leads stale — no activity in 7+ days"></div>
-                  <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
-                </div>
-              </div>
-              <div class="metric-value">89</div>
-              <div class="metric-trend down" style="color:#d97706">14 stale · needs follow-up</div>
-            </div>
-            <!-- Converted Leads -->
-            <div class="metric-card">
-              <div class="metric-title">Converted Leads
-                <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
-              </div>
-              <div class="metric-value">47</div>
-              <div class="metric-trend up">↑ 12% from prior period</div>
-            </div>
-          </div>
-
-          <!-- Row 2: value metrics -->
-          <div class="metrics-row">
             <!-- Lead → Customer Rate -->
             <div class="metric-card">
               <div class="metric-title">Lead → Customer Rate
@@ -1332,36 +1511,120 @@ tr:hover .row-actions { opacity: 1; }
               <div class="metric-value">7.4%</div>
               <div class="metric-trend up">↑ from 6.1% prior period</div>
             </div>
-            <!-- Value of Open Leads -->
-            <div class="metric-card">
-              <div class="metric-title">Value of Open Leads
-                <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
+            <!-- Open Leads — the action card. Click filters the table to follow-up. -->
+            <div class="metric-card clickable" onclick="filterToFollowUp()" title="Filter table to leads needing follow-up">
+              <div class="metric-title">Open Leads
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div class="metric-signal amber" title="14 leads stale — no activity in 7+ days"></div>
+                  <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
+                </div>
               </div>
+              <div class="metric-value">89</div>
+              <div class="metric-trend down" style="color:#d97706">14 stale · needs follow-up</div>
+              <div class="metric-clickhint">Click to filter →</div>
+            </div>
+          </div>
+
+          <!-- Hero chart: canonical funnel (Leads tab hosts the FILTERABLE funnel) -->
+          <div class="chart-card leads-funnel-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div class="chart-title">Lead funnel — Impression → Conversion</div>
+              <div style="font-size:10px;color:#9ca3af">Feb 2026 · reflects your active filters</div>
+            </div>
+
+            <div class="vfunnel-wrap">
+              <div class="vfunnel-chart">
+                <!-- Impressions — display-only aggregate (ad-platform data) -->
+                <div class="vfc-col">
+                  <div class="vfc-bar" style="height:155px;background:#eef2ff;border:1px dashed #c7d2fe;">
+                    <div class="vfc-num" style="color:#818cf8">142K</div>
+                  </div>
+                </div>
+                <div class="vfc-connector">
+                  <div class="vfc-rate good">3.4% CTR</div>
+                  <div class="vfc-line" style="height:120px"></div>
+                </div>
+                <!-- Clicks — display-only aggregate (site visits) -->
+                <div class="vfc-col">
+                  <div class="vfc-bar" style="height:120px;background:#e0e7ff;border:1px dashed #c7d2fe;">
+                    <div class="vfc-num" style="color:#818cf8">4,847</div>
+                  </div>
+                </div>
+                <div class="vfc-connector">
+                  <div class="vfc-rate warn">13.1% leads</div>
+                  <div class="vfc-line" style="height:88px"></div>
+                </div>
+                <!-- Leads — person-backed (solid fill) -->
+                <div class="vfc-col">
+                  <div class="vfc-bar" style="height:88px;background:#c7d2fe;">
+                    <div class="vfc-num">633</div>
+                  </div>
+                </div>
+                <div class="vfc-connector">
+                  <div class="vfc-rate good">34% qual.</div>
+                  <div class="vfc-line" style="height:62px"></div>
+                </div>
+                <!-- Qualified Leads — now configured for this business -->
+                <div class="vfc-col">
+                  <div class="vfc-bar" style="height:62px;background:#a5b4fc;">
+                    <div class="vfc-num" style="color:white">215</div>
+                  </div>
+                </div>
+                <div class="vfc-connector">
+                  <div class="vfc-rate good">21.9% close</div>
+                  <div class="vfc-line" style="height:36px"></div>
+                </div>
+                <!-- Conversion — person-backed endpoint -->
+                <div class="vfc-col customers">
+                  <div class="vfc-bar" style="height:36px;background:#6366f1;">
+                    <div class="vfc-num" style="font-size:16px">47</div>
+                  </div>
+                </div>
+              </div><!-- /vfunnel-chart -->
+
+              <div class="vfunnel-labels">
+                <div class="vfl-col"><div class="vfl-icon">👁</div><div class="vfl-name">Impr.</div></div>
+                <div class="vfl-gap"></div>
+                <div class="vfl-col"><div class="vfl-icon">🖱</div><div class="vfl-name">Clicks</div></div>
+                <div class="vfl-gap"></div>
+                <div class="vfl-col"><div class="vfl-icon">📞</div><div class="vfl-name">Leads</div></div>
+                <div class="vfl-gap"></div>
+                <div class="vfl-col"><div class="vfl-icon">⭐</div><div class="vfl-name">Qual.<br>Leads</div></div>
+                <div class="vfl-gap"></div>
+                <div class="vfl-col customers"><div class="vfl-icon">🏆</div><div class="vfl-name">Conversion</div></div>
+              </div>
+
+              <div class="funnel-degrade-note">
+                Dashed bars (Impressions, Clicks) are aggregate ad-platform counts, not individual people. Stages render from what's configured for this business — the funnel fills in as more stages roll out.
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary row: value + timing metrics (visually lighter) -->
+          <div class="metrics-row secondary">
+            <div class="metric-card">
+              <div class="metric-title">Cost per Lead</div>
+              <div class="metric-value">$22.5</div>
+              <div class="metric-trend up">↓ 8% from prior period</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">Value of Open Leads</div>
               <div class="metric-value">$173K</div>
-              <div class="metric-trend neutral" style="color:#9ca3af">At avg transaction value</div>
+              <div class="metric-trend neutral" style="color:#9ca3af">Pipeline · at avg value</div>
             </div>
-            <!-- Value of Converted Leads -->
             <div class="metric-card">
-              <div class="metric-title">Converted Lead Value
-                <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
-              </div>
+              <div class="metric-title">Converted Lead Value</div>
               <div class="metric-value">$91.4K</div>
-              <div class="metric-trend up">↑ 8% from prior period</div>
+              <div class="metric-trend up">Realized · ↑ 8%</div>
             </div>
-            <!-- Avg Lead Value -->
             <div class="metric-card">
-              <div class="metric-title">Avg Lead Value
-                <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
-              </div>
+              <div class="metric-title">Avg Lead Value</div>
               <div class="metric-value">$1,944</div>
               <div class="metric-trend neutral" style="color:#9ca3af">First transaction only</div>
             </div>
-            <!-- Avg Days to Convert -->
             <div class="metric-card">
-              <div class="metric-title">Avg Days to Convert
-                <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
-              </div>
-              <div class="metric-value">11<span style="font-size:14px;font-weight:500;color:#6b7280">d</span></div>
+              <div class="metric-title">Avg Days to Convert</div>
+              <div class="metric-value">11<span style="font-size:12px;font-weight:500;color:#6b7280">d</span></div>
               <div class="metric-trend neutral" style="color:#9ca3af">Median, first touch to close</div>
             </div>
           </div>
@@ -1388,23 +1651,29 @@ tr:hover .row-actions { opacity: 1; }
                 <thead>
                   <tr>
                     <th>Contact</th>
-                    <th>Source Type</th>
+                    <th>Stage</th>
+                    <th>Capture</th>
                     <th>Quality</th>
                     <th>Channel</th>
                     <th>Campaign</th>
-                    <th>Lead Created</th>
-                    <th class="r">LTV</th>
-                    <th class="r">Transactions</th>
-                    <th>Status</th>
+                    <th>Last Activity</th>
+                    <th class="r">Value</th>
+                    <th class="r">Txns</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   <!-- Sarah M. — call, AI Qualified, high confidence -->
-                  <tr data-quality="qualified">
+                  <tr data-quality="qualified" data-stage="converted" data-channel="google-ads" data-capture="call" data-campaign="emergency-hvac" data-followup="no">
                     <td>
                       <a class="lead-link">Sarah M.</a>
                       <div style="font-size:11px;color:#9ca3af">sarah@example.com</div>
+                    </td>
+                    <td>
+                      <div class="lead-stage">
+                        <span class="stage-badge converted">Converted</span>
+                        <span class="stage-substage">Job won</span>
+                      </div>
                     </td>
                     <td><span class="lead-source-badge call">📞 Call</span></td>
                     <td>
@@ -1416,17 +1685,27 @@ tr:hover .row-actions { opacity: 1; }
                     </td>
                     <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">Emergency HVAC</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 27, 2026</td>
+                    <td>
+                      <div class="last-activity">
+                        <span class="la-age">2d ago</span>
+                        <span class="la-date">Feb 27, 2026</span>
+                      </div>
+                    </td>
                     <td class="r font-semibold">$1,840</td>
                     <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">3 →</td>
-                    <td><span class="lead-status-badge converted">Converted</span></td>
                     <td><div class="row-actions"><button class="disqualify-btn">✕ Exclude</button></div></td>
                   </tr>
                   <!-- James R. — form, partner CRM signal -->
-                  <tr data-quality="qualified">
+                  <tr data-quality="qualified" data-stage="qualified" data-channel="google-organic" data-capture="form" data-campaign="none" data-followup="yes">
                     <td>
                       <a class="lead-link">James R.</a>
                       <div style="font-size:11px;color:#9ca3af">james@example.com</div>
+                    </td>
+                    <td>
+                      <div class="lead-stage">
+                        <span class="stage-badge qualified">Qualified Lead</span>
+                        <span class="stage-substage">Estimate sent</span>
+                      </div>
                     </td>
                     <td><span class="lead-source-badge form">📋 Form</span></td>
                     <td>
@@ -1438,17 +1717,28 @@ tr:hover .row-actions { opacity: 1; }
                     </td>
                     <td style="font-size:11px;color:#10b981;font-weight:600">Google Organic</td>
                     <td style="font-size:11px;color:#9ca3af">—</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 26, 2026</td>
-                    <td class="r text-muted">—</td>
+                    <td>
+                      <div class="last-activity">
+                        <span class="la-age stale">9d ago</span>
+                        <span class="la-date">Feb 26, 2026</span>
+                        <span class="la-flag">⚠ Stale</span>
+                      </div>
+                    </td>
+                    <td class="r text-muted">$2,400 <span style="font-size:9px;color:#9ca3af;font-weight:500">est.</span></td>
                     <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">1 →</td>
-                    <td><span class="lead-status-badge open">Open</span></td>
                     <td><div class="row-actions"><button class="disqualify-btn">✕ Exclude</button></div></td>
                   </tr>
                   <!-- Karen L. — call, AI Likely, lower confidence -->
-                  <tr data-quality="likely">
+                  <tr data-quality="likely" data-stage="converted" data-channel="meta-ads" data-capture="call" data-campaign="home-comfort" data-followup="no">
                     <td>
                       <a class="lead-link">Karen L.</a>
                       <div style="font-size:11px;color:#9ca3af">(555) 248-1190</div>
+                    </td>
+                    <td>
+                      <div class="lead-stage">
+                        <span class="stage-badge converted">Converted</span>
+                        <span class="stage-substage">Job won</span>
+                      </div>
                     </td>
                     <td><span class="lead-source-badge call">📞 Call</span></td>
                     <td>
@@ -1460,17 +1750,27 @@ tr:hover .row-actions { opacity: 1; }
                     </td>
                     <td style="font-size:11px;color:#818cf8;font-weight:600">Meta Ads</td>
                     <td style="font-size:11px;color:#6b7280">Home Comfort</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 25, 2026</td>
+                    <td>
+                      <div class="last-activity">
+                        <span class="la-age">4d ago</span>
+                        <span class="la-date">Feb 25, 2026</span>
+                      </div>
+                    </td>
                     <td class="r font-semibold">$2,200</td>
                     <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">2 →</td>
-                    <td><span class="lead-status-badge converted">Converted</span></td>
                     <td><div class="row-actions"><button class="disqualify-btn">✕ Exclude</button></div></td>
                   </tr>
                   <!-- Tom B. — call, AI Unqualified -->
-                  <tr data-quality="unqualified">
+                  <tr data-quality="unqualified" data-stage="disqualified" data-channel="google-ads" data-capture="call" data-campaign="hvac-local-map" data-followup="no">
                     <td>
                       <a class="lead-link">Tom B.</a>
                       <div style="font-size:11px;color:#9ca3af">tom@example.com</div>
+                    </td>
+                    <td>
+                      <div class="lead-stage">
+                        <span class="stage-badge disqualified">Disqualified</span>
+                        <span class="stage-substage">Existing customer</span>
+                      </div>
                     </td>
                     <td><span class="lead-source-badge call">📞 Call</span></td>
                     <td>
@@ -1482,17 +1782,27 @@ tr:hover .row-actions { opacity: 1; }
                     </td>
                     <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">HVAC Local Map</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 18, 2026</td>
+                    <td>
+                      <div class="last-activity">
+                        <span class="la-age">17d ago</span>
+                        <span class="la-date">Feb 18, 2026</span>
+                      </div>
+                    </td>
                     <td class="r text-muted">—</td>
                     <td class="r text-muted">—</td>
-                    <td><span class="lead-status-badge stale">Stale</span></td>
                     <td><div class="row-actions"><button class="disqualify-btn">✕ Exclude</button></div></td>
                   </tr>
                   <!-- Priya N. — form, no signal yet -->
-                  <tr data-quality="pending">
+                  <tr data-quality="pending" data-stage="lead" data-channel="meta-ads" data-capture="form" data-campaign="home-comfort" data-followup="yes">
                     <td>
                       <a class="lead-link">Priya N.</a>
                       <div style="font-size:11px;color:#9ca3af">priya@example.com</div>
+                    </td>
+                    <td>
+                      <div class="lead-stage">
+                        <span class="stage-badge lead">Lead</span>
+                        <span class="stage-substage">New inquiry</span>
+                      </div>
                     </td>
                     <td><span class="lead-source-badge form">📋 Form</span></td>
                     <td>
@@ -1503,17 +1813,28 @@ tr:hover .row-actions { opacity: 1; }
                     </td>
                     <td style="font-size:11px;color:#818cf8;font-weight:600">Meta Ads</td>
                     <td style="font-size:11px;color:#6b7280">Home Comfort</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 15, 2026</td>
+                    <td>
+                      <div class="last-activity">
+                        <span class="la-age stale">20d ago</span>
+                        <span class="la-date">Feb 15, 2026</span>
+                        <span class="la-flag">⚠ Stale</span>
+                      </div>
+                    </td>
+                    <td class="r text-muted">$1,900 <span style="font-size:9px;color:#9ca3af;font-weight:500">est.</span></td>
                     <td class="r text-muted">—</td>
-                    <td class="r text-muted">—</td>
-                    <td><span class="lead-status-badge stale">Stale</span></td>
                     <td><div class="row-actions"><button class="disqualify-btn">✕ Exclude</button></div></td>
                   </tr>
                   <!-- Mike H. — call+form, AI + partner both signal Qualified -->
-                  <tr data-quality="qualified">
+                  <tr data-quality="qualified" data-stage="converted" data-channel="google-organic" data-capture="form" data-campaign="none" data-followup="no">
                     <td>
                       <a class="lead-link">Mike H.</a>
                       <div style="font-size:11px;color:#9ca3af">(555) 190-3341</div>
+                    </td>
+                    <td>
+                      <div class="lead-stage">
+                        <span class="stage-badge converted">Converted</span>
+                        <span class="stage-substage">Job won</span>
+                      </div>
                     </td>
                     <td><span class="lead-source-badge form">📋 Form</span></td>
                     <td>
@@ -1525,18 +1846,26 @@ tr:hover .row-actions { opacity: 1; }
                     </td>
                     <td style="font-size:11px;color:#10b981;font-weight:600">Google Organic</td>
                     <td style="font-size:11px;color:#9ca3af">—</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 14, 2026</td>
+                    <td>
+                      <div class="last-activity">
+                        <span class="la-age">6d ago</span>
+                        <span class="la-date">Feb 14, 2026</span>
+                      </div>
+                    </td>
                     <td class="r font-semibold">$3,100</td>
                     <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">4 →</td>
-                    <td><span class="lead-status-badge converted">Converted</span></td>
                     <td><div class="row-actions"><button class="disqualify-btn">✕ Exclude</button></div></td>
+                  </tr>
+                  <!-- Empty state (shown only when filters match nothing) -->
+                  <tr class="filter-empty-row" id="leads-empty-row" style="display:none">
+                    <td colspan="10">No leads match these filters. <a class="lead-link" onclick="clearAllFilters()">Reset filters</a></td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
           <div class="section-note">
-            Leads shown for the selected date range. <a>Download CSV</a> · <a>Configure lead sources</a>
+            Sorted by last activity — stalest open leads first. Stage column reflects the stages configured for this business. <a>Download CSV</a> · <a>Configure lead sources</a>
           </div>
         </div><!-- /leads panel -->
 
@@ -1727,6 +2056,42 @@ tr:hover .row-actions { opacity: 1; }
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Days-to-convert distribution (replaces funnel — this is the endpoint) -->
+          <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div class="nc-section-title" style="margin-bottom:0">Days from first touch to conversion</div>
+              <div style="font-size:10px;color:#9ca3af">47 new customers · median 11 days</div>
+            </div>
+            <div class="dtc-dist">
+              <div class="dtc-col">
+                <div class="dtc-count">6</div>
+                <div class="dtc-bar" style="height:38%"></div>
+                <div class="dtc-label">0–3<br>days</div>
+              </div>
+              <div class="dtc-col">
+                <div class="dtc-count">14</div>
+                <div class="dtc-bar peak" style="height:88%"></div>
+                <div class="dtc-label">4–7<br>days</div>
+              </div>
+              <div class="dtc-col">
+                <div class="dtc-count">12</div>
+                <div class="dtc-bar" style="height:75%"></div>
+                <div class="dtc-label">8–14<br>days</div>
+              </div>
+              <div class="dtc-col">
+                <div class="dtc-count">9</div>
+                <div class="dtc-bar" style="height:56%"></div>
+                <div class="dtc-label">15–30<br>days</div>
+              </div>
+              <div class="dtc-col">
+                <div class="dtc-count">6</div>
+                <div class="dtc-bar" style="height:38%"></div>
+                <div class="dtc-label">30+<br>days</div>
+              </div>
+            </div>
+            <div class="multi-touch-note">Most customers convert within a week of first contact — front-load follow-up in the first 7 days.</div>
           </div>
 
           <!-- Customer list table -->
@@ -2345,19 +2710,153 @@ function clearDrill(tab) {
   document.getElementById(tab + '-attr-strip').classList.remove('visible');
 }
 
+// ── Leads filtering ────────────────────────────────────────────
+// Single source of truth. Each facet holds a set of selected values;
+// an empty set means "no constraint on this facet". A row is shown
+// only if it matches every constrained facet (AND across facets,
+// OR within a facet). The Quality pill row and the Filter popover
+// both write into this same state so they never disagree.
+var leadFilters = {
+  stage: new Set(),
+  quality: new Set(),
+  channel: new Set(),
+  capture: new Set(),
+  campaign: new Set(),
+  followUp: false
+};
+
+function rowMatchesFilters(row) {
+  function ok(facet, attr) {
+    if (leadFilters[facet].size === 0) return true;
+    return leadFilters[facet].has(row.getAttribute(attr));
+  }
+  if (!ok('stage', 'data-stage')) return false;
+  if (!ok('quality', 'data-quality')) return false;
+  if (!ok('channel', 'data-channel')) return false;
+  if (!ok('capture', 'data-capture')) return false;
+  if (!ok('campaign', 'data-campaign')) return false;
+  if (leadFilters.followUp && row.getAttribute('data-followup') !== 'yes') return false;
+  return true;
+}
+
+function applyLeadFilters() {
+  var rows = document.querySelectorAll('#leads-table tbody tr:not(.filter-empty-row)');
+  var visible = 0;
+  rows.forEach(function(row) {
+    if (rowMatchesFilters(row)) { row.style.display = ''; visible++; }
+    else { row.style.display = 'none'; }
+  });
+
+  // Empty state
+  var empty = document.getElementById('leads-empty-row');
+  if (empty) empty.style.display = visible === 0 ? '' : 'none';
+
+  // Count badge on the Filter button
+  var active = leadFilters.stage.size + leadFilters.quality.size +
+               leadFilters.channel.size + leadFilters.capture.size +
+               leadFilters.campaign.size + (leadFilters.followUp ? 1 : 0);
+  var badge = document.getElementById('filter-count');
+  var btn = document.getElementById('filter-btn');
+  if (active > 0) {
+    badge.textContent = active; badge.style.display = '';
+    btn.classList.add('active');
+  } else {
+    badge.style.display = 'none';
+    btn.classList.remove('active');
+  }
+
+  // Keep the Quality pill row in sync (single-select mirror of the quality facet)
+  syncQualityPills();
+}
+
+// ── Filter popover open/close ──────────────────────────────────
+function toggleFilterPopover(e) {
+  e.stopPropagation();
+  // The filter popover drives the Leads report table. If the user opens it
+  // from another tab, jump to Leads first so the controls act on something.
+  var onLeads = document.getElementById('panel-leads').classList.contains('active');
+  var pop = document.getElementById('filter-popover');
+  if (!onLeads) { switchTabById('leads'); pop.classList.add('open'); return; }
+  pop.classList.toggle('open');
+}
+function closeFilterPopover() {
+  document.getElementById('filter-popover').classList.remove('open');
+}
+// Close on outside click
+document.addEventListener('click', function(e) {
+  var pop = document.getElementById('filter-popover');
+  if (!pop || !pop.classList.contains('open')) return;
+  if (!e.target.closest('.filter-anchor')) closeFilterPopover();
+});
+
+// ── Popover chip toggling ──────────────────────────────────────
+function toggleFilterChip(btn) {
+  var facet = btn.parentElement.getAttribute('data-facet');
+  var value = btn.getAttribute('data-value');
+  btn.classList.toggle('active');
+  if (btn.classList.contains('active')) leadFilters[facet].add(value);
+  else leadFilters[facet].delete(value);
+  applyLeadFilters();
+}
+
+function toggleQuickFilter(btn) {
+  btn.classList.toggle('active');
+  leadFilters.followUp = btn.classList.contains('active');
+  applyLeadFilters();
+}
+
+// Open Leads hero card → filter table to "needs follow-up"
+function filterToFollowUp() {
+  leadFilters.followUp = true;
+  var quick = document.querySelector('#filter-popover .filter-quick-btn[data-quick="follow-up"]');
+  if (quick) quick.classList.add('active');
+  applyLeadFilters();
+  // scroll the table into view so the effect is visible
+  var tbl = document.getElementById('leads-table');
+  if (tbl) tbl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearAllFilters() {
+  leadFilters.stage.clear();
+  leadFilters.quality.clear();
+  leadFilters.channel.clear();
+  leadFilters.capture.clear();
+  leadFilters.campaign.clear();
+  leadFilters.followUp = false;
+  document.querySelectorAll('#filter-popover .filter-chip.active').forEach(function(c) { c.classList.remove('active'); });
+  document.querySelectorAll('#filter-popover .filter-quick-btn.active').forEach(function(c) { c.classList.remove('active'); });
+  applyLeadFilters();
+}
+
+// ── Quality pill row (above table) — mirrors the quality facet ──
 function filterQuality(btn, value) {
-  // Update active pill
   var pills = btn.parentElement.querySelectorAll('.qf-pill');
   pills.forEach(function(p) { p.classList.remove('active'); });
   btn.classList.add('active');
-  // Filter rows
-  var rows = document.querySelectorAll('#leads-table tbody tr');
-  rows.forEach(function(row) {
-    if (value === 'all' || row.getAttribute('data-quality') === value) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
+
+  leadFilters.quality.clear();
+  if (value !== 'all') leadFilters.quality.add(value);
+
+  // Mirror into the popover chips so both controls agree
+  document.querySelectorAll('#filter-popover .filter-chips[data-facet="quality"] .filter-chip').forEach(function(c) {
+    if (leadFilters.quality.has(c.getAttribute('data-value'))) c.classList.add('active');
+    else c.classList.remove('active');
+  });
+  applyLeadFilters();
+}
+
+// Reflect the quality facet back onto the pill row after popover edits
+function syncQualityPills() {
+  var pills = document.querySelectorAll('.quality-filter .qf-pill');
+  if (!pills.length) return;
+  var q = leadFilters.quality;
+  var singleValue = q.size === 1 ? Array.from(q)[0] : null;
+  pills.forEach(function(p) {
+    var onclick = p.getAttribute('onclick') || '';
+    var isAll = onclick.indexOf("'all'") !== -1;
+    var matches = singleValue && onclick.indexOf("'" + singleValue + "'") !== -1;
+    // "All" is active only when no single quality value is selected
+    p.classList.toggle('active', (q.size === 0 && isAll) || matches);
   });
 }
 </script>
