@@ -680,8 +680,45 @@ tr:hover .row-actions { opacity: 1; }
 
 /* Leads-tab funnel card gets a little more height as the hero chart */
 .leads-funnel-card { min-height: 240px; }
-/* Chart row: tab-specific hero chart (funnel / days-to-convert) + shared Sources panel */
+/* Chart row: tab-specific hero chart + shared Sources panel */
 .chart-row { display: grid; grid-template-columns: 1.35fr 1fr; gap: 12px; flex-shrink: 0; }
+
+/* Compact value strip — demoted value/timing metrics on one line (replaces the 2nd card row) */
+.value-strip {
+  display: flex; align-items: stretch; flex-wrap: wrap;
+  background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 10px 4px; flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.vs-item { flex: 1; min-width: 120px; padding: 2px 16px; border-right: 1px solid #f3f4f6; display: flex; flex-direction: column; gap: 2px; }
+.vs-item:last-child { border-right: none; }
+.vs-label { font-size: 10.5px; color: #9ca3af; font-weight: 500; white-space: nowrap; }
+.vs-value { font-size: 16px; font-weight: 700; color: #111827; line-height: 1.1; }
+.vs-value .unit { font-size: 11px; font-weight: 500; color: #6b7280; }
+.vs-sub { font-size: 10px; }
+.vs-sub.up { color: #16a34a; }
+.vs-sub.muted { color: #9ca3af; }
+
+/* Search terms panel — ranked bar list of the queries that drove leads (Google Ads + Organic) */
+.terms-list { display: flex; flex-direction: column; gap: 9px; }
+.term-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+.term-head { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.term-query { font-size: 12.5px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.term-tag { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.03em; }
+.term-tag.paid { background: #eef2ff; color: #4338ca; }
+.term-tag.organic { background: #ecfdf5; color: #047857; }
+.term-bar-wrap { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+.term-track { flex: 1; height: 6px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+.term-fill { height: 100%; border-radius: 4px; }
+.term-fill.paid { background: #6366f1; }
+.term-fill.organic { background: #10b981; }
+.term-count { font-size: 11px; font-weight: 700; color: #111827; min-width: 22px; text-align: right; }
+.terms-foot { font-size: 10px; color: #9ca3af; padding-top: 8px; border-top: 1px solid #f3f4f6; margin-top: 2px; }
+.terms-foot a { color: #6366f1; cursor: pointer; }
+
+/* Capture cell — badge + the specific form name / phone number that captured the lead */
+.capture-cell { display: flex; flex-direction: column; gap: 3px; }
+.capture-detail { font-size: 10px; color: #9ca3af; white-space: nowrap; }
 .funnel-degrade-note { font-size: 10px; color: #9ca3af; padding-top: 8px; border-top: 1px solid #f3f4f6; margin-top: 4px; }
 
 /* ─── Shared "where from" Sources panel (both tabs) ─── */
@@ -957,6 +994,71 @@ tr:hover .row-actions { opacity: 1; }
                     <button class="filter-chip" data-value="hvac-local-map" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>HVAC Local Map</button>
                     <button class="filter-chip" data-value="home-comfort" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>Home Comfort</button>
                     <button class="filter-chip" data-value="none" onclick="toggleFilterChip(this)"><span class="fc-check">✓</span>No campaign</button>
+                  </div>
+                </div>
+
+                <div class="filter-pop-footer">
+                  <button class="filter-apply-btn" onclick="closeFilterPopover()">Done</button>
+                </div>
+              </div>
+
+              <!-- ── Filter popover (New Customers tab) — customer-relevant facets ── -->
+              <div class="filter-popover" id="filter-popover-customers" onclick="event.stopPropagation()">
+                <div class="filter-pop-header">
+                  <span class="filter-pop-title">Filter new customers</span>
+                  <button class="filter-pop-clear" onclick="clearCustomerFilters()">Reset all</button>
+                </div>
+
+                <!-- Quick cut: paid vs organic -->
+                <div class="filter-quick" style="display:flex;gap:6px">
+                  <button class="filter-quick-btn" style="border-color:#c7d2fe;background:#eef2ff;color:#4338ca" data-cquick="paid" onclick="toggleCustomerQuick(this,'paid')">
+                    <span class="fq-icon">💳</span> From paid ads
+                  </button>
+                  <button class="filter-quick-btn" style="border-color:#bbf7d0;background:#f0fdf4;color:#166534" data-cquick="organic" onclick="toggleCustomerQuick(this,'organic')">
+                    <span class="fq-icon">🌿</span> From organic
+                  </button>
+                </div>
+
+                <!-- Channel -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Channel</div>
+                  <div class="filter-chips" data-cfacet="channel">
+                    <button class="filter-chip" data-value="google-ads" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Google Ads</button>
+                    <button class="filter-chip" data-value="meta-ads" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Meta Ads</button>
+                    <button class="filter-chip" data-value="google-organic" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Google Organic</button>
+                    <button class="filter-chip" data-value="referral" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Referral</button>
+                    <button class="filter-chip" data-value="direct" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Direct</button>
+                  </div>
+                </div>
+
+                <!-- Capture type -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Capture type</div>
+                  <div class="filter-chips" data-cfacet="capture">
+                    <button class="filter-chip" data-value="call" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>📞 Call</button>
+                    <button class="filter-chip" data-value="form" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>📋 Form</button>
+                    <button class="filter-chip" data-value="voice" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>🎙 Voice</button>
+                  </div>
+                </div>
+
+                <!-- Campaign -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Campaign</div>
+                  <div class="filter-chips" data-cfacet="campaign">
+                    <button class="filter-chip" data-value="emergency-hvac" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Emergency HVAC</button>
+                    <button class="filter-chip" data-value="hvac-local-map" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>HVAC Local Map</button>
+                    <button class="filter-chip" data-value="home-comfort" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Home Comfort</button>
+                    <button class="filter-chip" data-value="none" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>No campaign</button>
+                  </div>
+                </div>
+
+                <!-- Days to convert -->
+                <div class="filter-group">
+                  <div class="filter-group-label">Days to convert</div>
+                  <div class="filter-chips" data-cfacet="dtc">
+                    <button class="filter-chip" data-value="fast" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Under 7 days</button>
+                    <button class="filter-chip" data-value="mid" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>7–14 days</button>
+                    <button class="filter-chip" data-value="slow" onclick="toggleCustomerChip(this)"><span class="fc-check">✓</span>Over 14 days</button>
                   </div>
                 </div>
 
@@ -1548,78 +1650,48 @@ tr:hover .row-actions { opacity: 1; }
 
           <!-- Chart row: funnel (Leads-specific) + shared Sources panel -->
           <div class="chart-row">
-          <!-- Hero chart: canonical funnel (Leads tab hosts the FILTERABLE funnel) -->
+          <!-- Hero chart: top search terms driving leads (Google Ads + Organic) -->
           <div class="chart-card leads-funnel-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div class="chart-title">Lead funnel — Impression → Conversion</div>
-              <div style="font-size:10px;color:#9ca3af">Feb 2026 · reflects your active filters</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div class="chart-title">Top search terms driving leads</div>
+              <div style="font-size:10px;color:#9ca3af">Google Ads + Organic · Feb 2026</div>
             </div>
 
-            <div class="vfunnel-wrap">
-              <div class="vfunnel-chart">
-                <!-- Impressions — display-only aggregate (ad-platform data) -->
-                <div class="vfc-col">
-                  <div class="vfc-bar" style="height:155px;background:#eef2ff;border:1px dashed #c7d2fe;">
-                    <div class="vfc-num" style="color:#818cf8">142K</div>
-                  </div>
-                </div>
-                <div class="vfc-connector">
-                  <div class="vfc-rate good">3.4% CTR</div>
-                  <div class="vfc-line" style="height:120px"></div>
-                </div>
-                <!-- Clicks — display-only aggregate (site visits) -->
-                <div class="vfc-col">
-                  <div class="vfc-bar" style="height:120px;background:#e0e7ff;border:1px dashed #c7d2fe;">
-                    <div class="vfc-num" style="color:#818cf8">4,847</div>
-                  </div>
-                </div>
-                <div class="vfc-connector">
-                  <div class="vfc-rate warn">13.1% leads</div>
-                  <div class="vfc-line" style="height:88px"></div>
-                </div>
-                <!-- Leads — person-backed (solid fill) -->
-                <div class="vfc-col">
-                  <div class="vfc-bar" style="height:88px;background:#c7d2fe;">
-                    <div class="vfc-num">633</div>
-                  </div>
-                </div>
-                <div class="vfc-connector">
-                  <div class="vfc-rate good">34% qual.</div>
-                  <div class="vfc-line" style="height:62px"></div>
-                </div>
-                <!-- Qualified Leads — now configured for this business -->
-                <div class="vfc-col">
-                  <div class="vfc-bar" style="height:62px;background:#a5b4fc;">
-                    <div class="vfc-num" style="color:white">215</div>
-                  </div>
-                </div>
-                <div class="vfc-connector">
-                  <div class="vfc-rate good">21.9% close</div>
-                  <div class="vfc-line" style="height:36px"></div>
-                </div>
-                <!-- Conversion — person-backed endpoint -->
-                <div class="vfc-col customers">
-                  <div class="vfc-bar" style="height:36px;background:#6366f1;">
-                    <div class="vfc-num" style="font-size:16px">47</div>
-                  </div>
-                </div>
-              </div><!-- /vfunnel-chart -->
-
-              <div class="vfunnel-labels">
-                <div class="vfl-col"><div class="vfl-icon">👁</div><div class="vfl-name">Impr.</div></div>
-                <div class="vfl-gap"></div>
-                <div class="vfl-col"><div class="vfl-icon">🖱</div><div class="vfl-name">Clicks</div></div>
-                <div class="vfl-gap"></div>
-                <div class="vfl-col"><div class="vfl-icon">📞</div><div class="vfl-name">Leads</div></div>
-                <div class="vfl-gap"></div>
-                <div class="vfl-col"><div class="vfl-icon">⭐</div><div class="vfl-name">Qual.<br>Leads</div></div>
-                <div class="vfl-gap"></div>
-                <div class="vfl-col customers"><div class="vfl-icon">🏆</div><div class="vfl-name">Conversion</div></div>
+            <div class="terms-list">
+              <div class="term-row">
+                <div class="term-head"><span class="term-query">ac repair near me</span><span class="term-tag paid">Paid</span></div>
+                <span class="term-count">64</span>
+                <div class="term-bar-wrap"><div class="term-track"><div class="term-fill paid" style="width:100%"></div></div></div>
               </div>
-
-              <div class="funnel-degrade-note">
-                Dashed bars (Impressions, Clicks) are aggregate ad-platform counts, not individual people. Stages render from what's configured for this business — the funnel fills in as more stages roll out.
+              <div class="term-row">
+                <div class="term-head"><span class="term-query">emergency hvac service</span><span class="term-tag paid">Paid</span></div>
+                <span class="term-count">51</span>
+                <div class="term-bar-wrap"><div class="term-track"><div class="term-fill paid" style="width:80%"></div></div></div>
               </div>
+              <div class="term-row">
+                <div class="term-head"><span class="term-query">furnace not turning on</span><span class="term-tag organic">Organic</span></div>
+                <span class="term-count">43</span>
+                <div class="term-bar-wrap"><div class="term-track"><div class="term-fill organic" style="width:67%"></div></div></div>
+              </div>
+              <div class="term-row">
+                <div class="term-head"><span class="term-query">hvac companies [city]</span><span class="term-tag organic">Organic</span></div>
+                <span class="term-count">38</span>
+                <div class="term-bar-wrap"><div class="term-track"><div class="term-fill organic" style="width:59%"></div></div></div>
+              </div>
+              <div class="term-row">
+                <div class="term-head"><span class="term-query">air conditioner replacement cost</span><span class="term-tag paid">Paid</span></div>
+                <span class="term-count">29</span>
+                <div class="term-bar-wrap"><div class="term-track"><div class="term-fill paid" style="width:45%"></div></div></div>
+              </div>
+              <div class="term-row">
+                <div class="term-head"><span class="term-query">24 hour ac repair</span><span class="term-tag paid">Paid</span></div>
+                <span class="term-count">22</span>
+                <div class="term-bar-wrap"><div class="term-track"><div class="term-fill paid" style="width:34%"></div></div></div>
+              </div>
+            </div>
+
+            <div class="terms-foot">
+              Aggregated across ad + organic search. Terms for an individual lead appear in their detail view. <a>View full search-term report →</a>
             </div>
           </div>
 
@@ -1696,49 +1768,33 @@ tr:hover .row-actions { opacity: 1; }
           </div>
           </div><!-- /chart-row -->
 
-          <!-- Secondary row: value + timing metrics (visually lighter) -->
-          <div class="metrics-row secondary">
-            <div class="metric-card">
-              <div class="metric-title">Cost per Lead</div>
-              <div class="metric-value">$22.5</div>
-              <div class="metric-trend up">↓ 8% from prior period</div>
+          <!-- Compact value strip: demoted value/timing metrics on one line -->
+          <div class="value-strip">
+            <div class="vs-item">
+              <span class="vs-label">Cost per Lead</span>
+              <span class="vs-value">$22.5</span>
+              <span class="vs-sub up">↓ 8% vs prior</span>
             </div>
-            <div class="metric-card">
-              <div class="metric-title">Value of Open Leads</div>
-              <div class="metric-value">$173K</div>
-              <div class="metric-trend neutral" style="color:#9ca3af">Pipeline · at avg value</div>
+            <div class="vs-item">
+              <span class="vs-label">Value of Open Leads</span>
+              <span class="vs-value">$173K</span>
+              <span class="vs-sub muted">Pipeline · at avg value</span>
             </div>
-            <div class="metric-card">
-              <div class="metric-title">Converted Lead Value</div>
-              <div class="metric-value">$91.4K</div>
-              <div class="metric-trend up">Realized · ↑ 8%</div>
+            <div class="vs-item">
+              <span class="vs-label">Converted Lead Value</span>
+              <span class="vs-value">$91.4K</span>
+              <span class="vs-sub up">Realized · ↑ 8%</span>
             </div>
-            <div class="metric-card">
-              <div class="metric-title">Avg Lead Value</div>
-              <div class="metric-value">$1,944</div>
-              <div class="metric-trend neutral" style="color:#9ca3af">First transaction only</div>
+            <div class="vs-item">
+              <span class="vs-label">Avg Lead Value</span>
+              <span class="vs-value">$1,944</span>
+              <span class="vs-sub muted">First transaction only</span>
             </div>
-            <div class="metric-card">
-              <div class="metric-title">Avg Days to Convert</div>
-              <div class="metric-value">11<span style="font-size:12px;font-weight:500;color:#6b7280">d</span></div>
-              <div class="metric-trend neutral" style="color:#9ca3af">Median, first touch to close</div>
+            <div class="vs-item">
+              <span class="vs-label">Avg Days to Convert</span>
+              <span class="vs-value">11<span class="unit">d</span></span>
+              <span class="vs-sub muted">Median, first touch to close</span>
             </div>
-          </div>
-
-          <!-- Quality filter row -->
-          <div class="quality-filter">
-            <span class="quality-filter-label">Quality:</span>
-            <button class="qf-pill active" onclick="filterQuality(this,'all')">All</button>
-            <button class="qf-pill" onclick="filterQuality(this,'qualified')">✓ Qualified</button>
-            <button class="qf-pill" onclick="filterQuality(this,'likely')">~ Likely</button>
-            <button class="qf-pill" onclick="filterQuality(this,'unqualified')">✕ Unqualified</button>
-            <button class="qf-pill" onclick="filterQuality(this,'pending')">⏳ Pending</button>
-            <span class="qf-spacer"></span>
-            <span class="qf-legend">
-              <span class="qf-legend-item"><span class="qf-legend-dot" style="background:#16a34a"></span>AI analysis</span>
-              <span class="qf-legend-item"><span class="qf-legend-dot" style="background:#6366f1"></span>Partner signal</span>
-              <span class="qf-legend-item"><span class="qf-legend-dot" style="background:#d1d5db"></span>Pending</span>
-            </span>
           </div>
 
           <div class="table-section">
@@ -1771,7 +1827,7 @@ tr:hover .row-actions { opacity: 1; }
                         <span class="stage-substage">Job won</span>
                       </div>
                     </td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4415</span></div></td>
                     <td>
                       <div class="lead-quality">
                         <span class="lq-badge qualified">✓ Qualified</span>
@@ -1803,7 +1859,7 @@ tr:hover .row-actions { opacity: 1; }
                         <span class="stage-substage">Estimate sent</span>
                       </div>
                     </td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Request a quote"</span></div></td>
                     <td>
                       <div class="lead-quality">
                         <span class="lq-badge qualified">✓ Qualified</span>
@@ -1836,7 +1892,7 @@ tr:hover .row-actions { opacity: 1; }
                         <span class="stage-substage">Job won</span>
                       </div>
                     </td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4419</span></div></td>
                     <td>
                       <div class="lead-quality">
                         <span class="lq-badge likely">~ Likely</span>
@@ -1868,7 +1924,7 @@ tr:hover .row-actions { opacity: 1; }
                         <span class="stage-substage">Existing customer</span>
                       </div>
                     </td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4415</span></div></td>
                     <td>
                       <div class="lead-quality">
                         <span class="lq-badge unqualified">✕ Unqualified</span>
@@ -1900,7 +1956,7 @@ tr:hover .row-actions { opacity: 1; }
                         <span class="stage-substage">New inquiry</span>
                       </div>
                     </td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Free estimate"</span></div></td>
                     <td>
                       <div class="lead-quality">
                         <span class="lq-badge pending">⏳ Pending</span>
@@ -1932,7 +1988,7 @@ tr:hover .row-actions { opacity: 1; }
                         <span class="stage-substage">Job won</span>
                       </div>
                     </td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Book a consult"</span></div></td>
                     <td>
                       <div class="lead-quality">
                         <span class="lq-badge qualified">✓ Qualified</span>
@@ -2236,7 +2292,7 @@ tr:hover .row-actions { opacity: 1; }
               <div style="font-size:11px;color:#9ca3af">47 customers · Feb 2026 <a style="color:#6366f1;cursor:pointer;margin-left:8px">Download CSV</a></div>
             </div>
             <div class="table-wrap">
-              <table class="data-table">
+              <table class="data-table" id="customers-table">
                 <thead>
                   <tr>
                     <th>Contact</th>
@@ -2250,75 +2306,78 @@ tr:hover .row-actions { opacity: 1; }
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <tr data-channel="meta-ads" data-capture="form" data-campaign="home-comfort" data-paid="paid" data-dtc="slow">
                     <td><a class="lead-link">Karen L.</a><div style="font-size:11px;color:#9ca3af">karen@example.com</div></td>
                     <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Free estimate"</span></div></td>
                     <td style="font-size:11px;color:#818cf8;font-weight:600">Meta Ads</td>
                     <td style="font-size:11px;color:#6b7280">Home Comfort</td>
                     <td style="font-size:11px;color:#9ca3af">Feb 25</td>
                     <td style="font-weight:600">21 days</td>
                     <td class="r font-semibold">$2,400</td>
                   </tr>
-                  <tr>
+                  <tr data-channel="google-ads" data-capture="call" data-campaign="emergency-hvac" data-paid="paid" data-dtc="mid">
                     <td><a class="lead-link">Robert P.</a><div style="font-size:11px;color:#9ca3af">robert@example.com</div></td>
                     <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4415</span></div></td>
                     <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">Emergency HVAC</td>
                     <td style="font-size:11px;color:#9ca3af">Feb 15</td>
                     <td style="font-weight:600">8 days</td>
                     <td class="r font-semibold">$1,850</td>
                   </tr>
-                  <tr>
+                  <tr data-channel="google-organic" data-capture="form" data-campaign="none" data-paid="organic" data-dtc="fast">
                     <td><a class="lead-link">Mike H.</a><div style="font-size:11px;color:#9ca3af">(555) 190-3341</div></td>
                     <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Book a consult"</span></div></td>
                     <td style="font-size:11px;color:#10b981;font-weight:600">Google Organic</td>
                     <td style="font-size:11px;color:#9ca3af">—</td>
                     <td style="font-size:11px;color:#9ca3af">Feb 16</td>
                     <td style="font-weight:600">6 days</td>
                     <td class="r font-semibold">$3,100</td>
                   </tr>
-                  <tr>
+                  <tr data-channel="google-ads" data-capture="form" data-campaign="hvac-local-map" data-paid="paid" data-dtc="mid">
                     <td><a class="lead-link">Lisa W.</a><div style="font-size:11px;color:#9ca3af">lisa@example.com</div></td>
                     <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Request a quote"</span></div></td>
                     <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">HVAC Local Map</td>
                     <td style="font-size:11px;color:#9ca3af">Feb 25</td>
                     <td style="font-weight:600">12 days</td>
                     <td class="r font-semibold">$1,200</td>
                   </tr>
-                  <tr>
+                  <tr data-channel="meta-ads" data-capture="call" data-campaign="home-comfort" data-paid="paid" data-dtc="fast">
                     <td><a class="lead-link">Chen X.</a><div style="font-size:11px;color:#9ca3af">chen@example.com</div></td>
                     <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4419</span></div></td>
                     <td style="font-size:11px;color:#818cf8;font-weight:600">Meta Ads</td>
                     <td style="font-size:11px;color:#6b7280">Home Comfort</td>
                     <td style="font-size:11px;color:#9ca3af">Feb 19</td>
                     <td style="font-weight:600">4 days</td>
                     <td class="r font-semibold">$4,800</td>
                   </tr>
-                  <tr>
+                  <tr data-channel="google-ads" data-capture="call" data-campaign="emergency-hvac" data-paid="paid" data-dtc="mid">
                     <td><a class="lead-link">Sarah M.</a><div style="font-size:11px;color:#9ca3af">sarah@example.com</div></td>
                     <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4415</span></div></td>
                     <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">Emergency HVAC</td>
                     <td style="font-size:11px;color:#9ca3af">Feb 27</td>
                     <td style="font-weight:600">8 days</td>
                     <td class="r font-semibold">$1,840</td>
                   </tr>
-                  <tr>
+                  <tr data-channel="google-organic" data-capture="form" data-campaign="none" data-paid="organic" data-dtc="fast">
                     <td><a class="lead-link">James R.</a><div style="font-size:11px;color:#9ca3af">james@example.com</div></td>
                     <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Book a consult"</span></div></td>
                     <td style="font-size:11px;color:#10b981;font-weight:600">Google Organic</td>
                     <td style="font-size:11px;color:#9ca3af">—</td>
                     <td style="font-size:11px;color:#9ca3af">Feb 26</td>
                     <td style="font-weight:600">4 days</td>
                     <td class="r font-semibold">$2,200</td>
+                  </tr>
+                  <tr class="filter-empty-row" id="customers-empty-row" style="display:none">
+                    <td colspan="8">No customers match these filters. <a class="lead-link" onclick="clearCustomerFilters()">Reset filters</a></td>
                   </tr>
                 </tbody>
                 <tfoot>
@@ -2804,6 +2863,8 @@ function switchTab(id, el) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-' + id).classList.add('active');
+  closeFilterPopover();
+  if (typeof updateFilterBadge === 'function') updateFilterBadge();
 }
 
 function switchTabById(id) {
@@ -2815,6 +2876,8 @@ function switchTabById(id) {
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
+  closeFilterPopover();
+  if (typeof updateFilterBadge === 'function') updateFilterBadge();
 }
 
 // ── Drill-down navigation ──────────────────────────────────────
@@ -2894,41 +2957,30 @@ function applyLeadFilters() {
   var empty = document.getElementById('leads-empty-row');
   if (empty) empty.style.display = visible === 0 ? '' : 'none';
 
-  // Count badge on the Filter button
-  var active = leadFilters.stage.size + leadFilters.quality.size +
-               leadFilters.channel.size + leadFilters.capture.size +
-               leadFilters.campaign.size + (leadFilters.followUp ? 1 : 0);
-  var badge = document.getElementById('filter-count');
-  var btn = document.getElementById('filter-btn');
-  if (active > 0) {
-    badge.textContent = active; badge.style.display = '';
-    btn.classList.add('active');
-  } else {
-    badge.style.display = 'none';
-    btn.classList.remove('active');
-  }
-
-  // Keep the Quality pill row in sync (single-select mirror of the quality facet)
-  syncQualityPills();
+  updateFilterBadge();
 }
 
 // ── Filter popover open/close ──────────────────────────────────
 function toggleFilterPopover(e) {
   e.stopPropagation();
-  // The filter popover drives the Leads report table. If the user opens it
-  // from another tab, jump to Leads first so the controls act on something.
-  var onLeads = document.getElementById('panel-leads').classList.contains('active');
-  var pop = document.getElementById('filter-popover');
-  if (!onLeads) { switchTabById('leads'); pop.classList.add('open'); return; }
-  pop.classList.toggle('open');
+  // The Filter button is context-aware: it opens the popover whose facets
+  // match the tab you're on. New Customers gets its own popover — it does NOT
+  // bounce you back to Leads.
+  var onCustomers = document.getElementById('panel-customers').classList.contains('active');
+  var target = onCustomers ? 'filter-popover-customers' : 'filter-popover';
+  var pop = document.getElementById(target);
+  var wasOpen = pop.classList.contains('open');
+  // Close any other open popover first
+  document.querySelectorAll('.filter-popover.open').forEach(function(p) { p.classList.remove('open'); });
+  if (!wasOpen) pop.classList.add('open');
 }
 function closeFilterPopover() {
-  document.getElementById('filter-popover').classList.remove('open');
+  document.querySelectorAll('.filter-popover.open').forEach(function(p) { p.classList.remove('open'); });
 }
 // Close on outside click
 document.addEventListener('click', function(e) {
-  var pop = document.getElementById('filter-popover');
-  if (!pop || !pop.classList.contains('open')) return;
+  var anyOpen = document.querySelector('.filter-popover.open');
+  if (!anyOpen) return;
   if (!e.target.closest('.filter-anchor')) closeFilterPopover();
 });
 
@@ -2957,6 +3009,86 @@ function filterToFollowUp() {
   // scroll the table into view so the effect is visible
   var tbl = document.getElementById('leads-table');
   if (tbl) tbl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ── New Customers filtering (own facets, own table) ───────────
+var customerFilters = {
+  channel: new Set(), capture: new Set(), campaign: new Set(), dtc: new Set(),
+  paid: null   // 'paid' | 'organic' | null
+};
+
+function customerRowMatches(row) {
+  function ok(facet, attr) {
+    if (customerFilters[facet].size === 0) return true;
+    return customerFilters[facet].has(row.getAttribute(attr));
+  }
+  if (!ok('channel', 'data-channel')) return false;
+  if (!ok('capture', 'data-capture')) return false;
+  if (!ok('campaign', 'data-campaign')) return false;
+  if (!ok('dtc', 'data-dtc')) return false;
+  if (customerFilters.paid && row.getAttribute('data-paid') !== customerFilters.paid) return false;
+  return true;
+}
+
+function applyCustomerFilters() {
+  var rows = document.querySelectorAll('#customers-table tbody tr:not(.filter-empty-row)');
+  var visible = 0;
+  rows.forEach(function(row) {
+    if (customerRowMatches(row)) { row.style.display = ''; visible++; }
+    else { row.style.display = 'none'; }
+  });
+  var empty = document.getElementById('customers-empty-row');
+  if (empty) empty.style.display = visible === 0 ? '' : 'none';
+  updateFilterBadge();
+}
+
+function customerActiveCount() {
+  return customerFilters.channel.size + customerFilters.capture.size +
+         customerFilters.campaign.size + customerFilters.dtc.size +
+         (customerFilters.paid ? 1 : 0);
+}
+
+function toggleCustomerChip(btn) {
+  var facet = btn.parentElement.getAttribute('data-cfacet');
+  var value = btn.getAttribute('data-value');
+  btn.classList.toggle('active');
+  if (btn.classList.contains('active')) customerFilters[facet].add(value);
+  else customerFilters[facet].delete(value);
+  applyCustomerFilters();
+}
+
+function toggleCustomerQuick(btn, which) {
+  var makeActive = !btn.classList.contains('active');
+  // paid/organic are mutually exclusive
+  document.querySelectorAll('#filter-popover-customers .filter-quick-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (makeActive) { btn.classList.add('active'); customerFilters.paid = which; }
+  else { customerFilters.paid = null; }
+  applyCustomerFilters();
+}
+
+function clearCustomerFilters() {
+  customerFilters.channel.clear(); customerFilters.capture.clear();
+  customerFilters.campaign.clear(); customerFilters.dtc.clear();
+  customerFilters.paid = null;
+  document.querySelectorAll('#filter-popover-customers .filter-chip.active, #filter-popover-customers .filter-quick-btn.active')
+    .forEach(function(c) { c.classList.remove('active'); });
+  applyCustomerFilters();
+}
+
+// Badge on the shared Filter button reflects the ACTIVE tab's filter count.
+function updateFilterBadge() {
+  var onCustomers = document.getElementById('panel-customers').classList.contains('active');
+  var count;
+  if (onCustomers) {
+    count = customerActiveCount();
+  } else {
+    count = leadFilters.stage.size + leadFilters.quality.size + leadFilters.channel.size +
+            leadFilters.capture.size + leadFilters.campaign.size + (leadFilters.followUp ? 1 : 0);
+  }
+  var badge = document.getElementById('filter-count');
+  var btn = document.getElementById('filter-btn');
+  if (count > 0) { badge.textContent = count; badge.style.display = ''; btn.classList.add('active'); }
+  else { badge.style.display = 'none'; btn.classList.remove('active'); }
 }
 
 // ── Sources panel cut toggle (shared by Leads + New Customers) ──
