@@ -680,7 +680,28 @@ tr:hover .row-actions { opacity: 1; }
 
 /* Leads-tab funnel card gets a little more height as the hero chart */
 .leads-funnel-card { min-height: 240px; }
+/* Chart row: tab-specific hero chart (funnel / days-to-convert) + shared Sources panel */
+.chart-row { display: grid; grid-template-columns: 1.35fr 1fr; gap: 12px; flex-shrink: 0; }
 .funnel-degrade-note { font-size: 10px; color: #9ca3af; padding-top: 8px; border-top: 1px solid #f3f4f6; margin-top: 4px; }
+
+/* ─── Shared "where from" Sources panel (both tabs) ─── */
+.sources-panel { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.sources-head { display: flex; align-items: center; justify-content: space-between; }
+.sources-title { font-size: 13px; font-weight: 600; color: #6b7280; }
+.sources-toggle { display: inline-flex; background: #f3f4f6; border-radius: 6px; padding: 2px; gap: 2px; }
+.sources-toggle button { border: 0; background: none; font: inherit; font-size: 11px; font-weight: 500; color: #6b7280; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+.sources-toggle button:hover { color: #111827; }
+.sources-toggle button.active { background: #ffffff; color: #1e3a5f; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.sources-cut { display: none; flex-direction: column; gap: 10px; }
+.sources-cut.active { display: flex; }
+/* Paid vs organic segmentation summary bar — fastest "where from" read */
+.paid-organic { display: flex; height: 26px; border-radius: 6px; overflow: hidden; font-size: 11px; font-weight: 700; color: white; }
+.po-seg { display: flex; align-items: center; padding: 0 10px; white-space: nowrap; }
+.po-seg.paid { background: #6366f1; }
+.po-seg.organic { background: #10b981; }
+/* capture-type detail (form name / phone) revealed in the row */
+.hbar-detail { font-size: 10px; color: #9ca3af; font-weight: 400; }
+.sources-cut .hbar-label { display: flex; flex-direction: column; gap: 1px; }
 
 /* Days-to-convert distribution (New Customers hero) */
 .dtc-dist { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding-top: 8px; }
@@ -1525,6 +1546,8 @@ tr:hover .row-actions { opacity: 1; }
             </div>
           </div>
 
+          <!-- Chart row: funnel (Leads-specific) + shared Sources panel -->
+          <div class="chart-row">
           <!-- Hero chart: canonical funnel (Leads tab hosts the FILTERABLE funnel) -->
           <div class="chart-card leads-funnel-card">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -1599,6 +1622,79 @@ tr:hover .row-actions { opacity: 1; }
               </div>
             </div>
           </div>
+
+          <!-- Shared "where from" Sources panel — answers Job #1 (attribution) at a glance -->
+          <div class="sources-panel">
+            <div class="sources-head">
+              <div class="sources-title">Where leads come from</div>
+              <div class="sources-toggle">
+                <button class="active" onclick="switchSourcesCut(this,'leads','channel')">By channel</button>
+                <button onclick="switchSourcesCut(this,'leads','capture')">By capture</button>
+              </div>
+            </div>
+
+            <!-- Cut: by channel (default) -->
+            <div class="sources-cut active" data-cut="channel">
+              <div class="paid-organic" title="Paid vs organic split of all leads">
+                <div class="po-seg paid" style="width:66%">Paid ads · 418</div>
+                <div class="po-seg organic" style="width:34%">Organic · 215</div>
+              </div>
+              <div class="hbar">
+                <div class="hbar-row">
+                  <div class="hbar-label">Google Ads</div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:62%;background:#6366f1">288</div></div>
+                  <div class="hbar-val">288</div>
+                </div>
+                <div class="hbar-row">
+                  <div class="hbar-label">Meta Ads</div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:28%;background:#818cf8">130</div></div>
+                  <div class="hbar-val">130</div>
+                </div>
+                <div class="hbar-row">
+                  <div class="hbar-label">Google Organic</div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:31%;background:#10b981">142</div></div>
+                  <div class="hbar-val">142</div>
+                </div>
+                <div class="hbar-row">
+                  <div class="hbar-label">Voice AI</div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:#f59e0b">48</div></div>
+                  <div class="hbar-val">48</div>
+                </div>
+                <div class="hbar-row">
+                  <div class="hbar-label">Referral</div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:5%;background:#34d399">25</div></div>
+                  <div class="hbar-val">25</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cut: by capture type -->
+            <div class="sources-cut" data-cut="capture">
+              <div class="hbar">
+                <div class="hbar-row">
+                  <div class="hbar-label">📞 Call<span class="hbar-detail">(555) 202-4415 +2 numbers</span></div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:58%;background:#7c3aed">367</div></div>
+                  <div class="hbar-val">367</div>
+                </div>
+                <div class="hbar-row">
+                  <div class="hbar-label">📋 Form<span class="hbar-detail">"Get a quote" +3 forms</span></div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:33%;background:#0369a1">208</div></div>
+                  <div class="hbar-val">208</div>
+                </div>
+                <div class="hbar-row">
+                  <div class="hbar-label">🎙 Voice<span class="hbar-detail">AI receptionist</span></div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:8%;background:#f59e0b">48</div></div>
+                  <div class="hbar-val">48</div>
+                </div>
+                <div class="hbar-row">
+                  <div class="hbar-label">⬆ Import<span class="hbar-detail">CRM backfill</span></div>
+                  <div class="hbar-track"><div class="hbar-fill" style="width:2%;background:#94a3b8">10</div></div>
+                  <div class="hbar-val">10</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div><!-- /chart-row -->
 
           <!-- Secondary row: value + timing metrics (visually lighter) -->
           <div class="metrics-row secondary">
@@ -1964,134 +2060,173 @@ tr:hover .row-actions { opacity: 1; }
             </div>
           </div>
 
-          <!-- Hero row: total + paid/organic split -->
-          <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:20px 20px 16px;">
-
-            <div class="nc-hero">
-              <div>
-                <div class="nc-hero-num">47</div>
-                <div class="nc-hero-label">New customers · Feb 2026</div>
-              </div>
-              <div class="nc-split">
-                <div class="nc-split-block">
-                  <div class="nc-split-num" style="color:#6366f1">32</div>
-                  <div class="nc-split-label">From paid ads</div>
-                </div>
-                <div class="nc-split-block">
-                  <div class="nc-split-num" style="color:#10b981">15</div>
-                  <div class="nc-split-label">From organic</div>
-                </div>
-                <div class="nc-split-block" style="border-right:none">
-                  <div class="nc-split-num">$303</div>
-                  <div class="nc-split-label">Avg cost per new customer</div>
+          <!-- Hero row: SAME 4-card scaffold as Leads — contents swap for the Converted lens -->
+          <div class="metrics-row hero">
+            <!-- New Customers (paid/organic split as the detail line, per brief §3) -->
+            <div class="metric-card">
+              <div class="metric-title">New Customers
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div class="metric-signal green"></div>
+                  <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
                 </div>
               </div>
+              <div class="metric-value">47</div>
+              <div class="metric-trend neutral" style="color:#6b7280"><span style="color:#6366f1;font-weight:600">32 paid</span> · <span style="color:#10b981;font-weight:600">15 organic</span></div>
             </div>
-
-            <!-- Insight callout -->
-            <div class="nc-insight">
-              <div class="nc-insight-icon">🌿</div>
-              <div>Google organic is delivering <strong>15 new customers at $0 ad spend</strong>. Your content and local presence are working. Modest SEO investment here could double this channel's output in 6 months.</div>
+            <!-- Avg Cost per New Customer -->
+            <div class="metric-card">
+              <div class="metric-title">Avg Cost per New Customer
+                <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
+              </div>
+              <div class="metric-value">$303</div>
+              <div class="metric-trend neutral" style="color:#9ca3af">Blended paid + organic</div>
             </div>
-          </div>
-
-          <!-- Two columns: channel breakdown + stat cards -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-
-            <!-- Left: New customers by channel -->
-            <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:16px">
-              <div class="nc-section-title">By channel</div>
-              <div class="hbar">
-                <div class="hbar-row">
-                  <div class="hbar-label">Google Ads</div>
-                  <div class="hbar-track"><div class="hbar-fill" style="width:60%;background:#6366f1">28</div></div>
-                  <div class="hbar-val">28</div>
-                </div>
-                <div class="hbar-row">
-                  <div class="hbar-label">Meta Ads</div>
-                  <div class="hbar-track"><div class="hbar-fill" style="width:8%;background:#818cf8">4</div></div>
-                  <div class="hbar-val">4</div>
-                </div>
-                <div class="hbar-row">
-                  <div class="hbar-label">Google Organic</div>
-                  <div class="hbar-track"><div class="hbar-fill" style="width:32%;background:#10b981">15</div></div>
-                  <div class="hbar-val">15</div>
-                </div>
-                <div class="hbar-row">
-                  <div class="hbar-label">Referral</div>
-                  <div class="hbar-track"><div class="hbar-fill" style="width:6%;background:#34d399">3</div></div>
-                  <div class="hbar-val">3</div>
-                </div>
-                <div class="hbar-row">
-                  <div class="hbar-label">Direct</div>
-                  <div class="hbar-track"><div class="hbar-fill" style="width:4%;background:#94a3b8">2</div></div>
-                  <div class="hbar-val">2</div>
+            <!-- Lead → Customer Rate (shared with Leads hero — the linking metric) -->
+            <div class="metric-card">
+              <div class="metric-title">Lead → Customer Rate
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div class="metric-signal green"></div>
+                  <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
                 </div>
               </div>
-              <div class="multi-touch-note">Channel totals (52) exceed 47 because some customers touched multiple channels. Multi-touch attribution applied.</div>
+              <div class="metric-value">7.4%</div>
+              <div class="metric-trend up">↑ from 6.1% prior period</div>
             </div>
-
-            <!-- Right: stat cards -->
-            <div style="display:flex;flex-direction:column;gap:12px">
-              <div class="nc-cards-grid">
-                <div class="nc-stat-card">
-                  <div class="nc-stat-card-title">Avg days to convert</div>
-                  <div class="nc-stat-card-val">11<span style="font-size:14px;font-weight:500;color:#6b7280">d</span></div>
-                  <div class="nc-stat-card-sub">Median from first touch to transaction</div>
-                </div>
-                <div class="nc-stat-card">
-                  <div class="nc-stat-card-title">Avg transaction value</div>
-                  <div class="nc-stat-card-val">$1,943</div>
-                  <div class="nc-stat-card-sub">First transaction only</div>
-                </div>
-                <div class="nc-stat-card">
-                  <div class="nc-stat-card-title">Lead → customer rate</div>
-                  <div class="nc-stat-card-val" style="color:#16a34a">7.4%</div>
-                  <div class="nc-stat-card-sub">↑ from 6.1% last period</div>
-                </div>
-                <div class="nc-stat-card">
-                  <div class="nc-stat-card-title">Best performing campaign</div>
-                  <div class="nc-stat-card-val" style="font-size:14px;font-weight:700;color:#111827;line-height:1.3">Emergency HVAC — Search</div>
-                  <div class="nc-stat-card-sub">22 new customers this period</div>
-                </div>
+            <!-- Best-performing campaign -->
+            <div class="metric-card">
+              <div class="metric-title">Best-performing Campaign
+                <svg class="metric-title-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"/></svg>
               </div>
+              <div class="metric-value" style="font-size:15px;line-height:1.3">Emergency HVAC — Search</div>
+              <div class="metric-trend up">22 new customers this period</div>
             </div>
           </div>
 
-          <!-- Days-to-convert distribution (replaces funnel — this is the endpoint) -->
-          <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div class="nc-section-title" style="margin-bottom:0">Days from first touch to conversion</div>
-              <div style="font-size:10px;color:#9ca3af">47 new customers · median 11 days</div>
+          <!-- Chart row: days-to-convert (Customers-specific) + the SAME shared Sources panel -->
+          <div class="chart-row">
+            <!-- Days-to-convert distribution (endpoint view — no funnel here) -->
+            <div class="chart-card leads-funnel-card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <div class="chart-title">Days from first touch to conversion</div>
+                <div style="font-size:10px;color:#9ca3af">47 new customers · median 11 days</div>
+              </div>
+              <div class="dtc-dist">
+                <div class="dtc-col">
+                  <div class="dtc-count">6</div>
+                  <div class="dtc-bar" style="height:38%"></div>
+                  <div class="dtc-label">0–3<br>days</div>
+                </div>
+                <div class="dtc-col">
+                  <div class="dtc-count">14</div>
+                  <div class="dtc-bar peak" style="height:88%"></div>
+                  <div class="dtc-label">4–7<br>days</div>
+                </div>
+                <div class="dtc-col">
+                  <div class="dtc-count">12</div>
+                  <div class="dtc-bar" style="height:75%"></div>
+                  <div class="dtc-label">8–14<br>days</div>
+                </div>
+                <div class="dtc-col">
+                  <div class="dtc-count">9</div>
+                  <div class="dtc-bar" style="height:56%"></div>
+                  <div class="dtc-label">15–30<br>days</div>
+                </div>
+                <div class="dtc-col">
+                  <div class="dtc-count">6</div>
+                  <div class="dtc-bar" style="height:38%"></div>
+                  <div class="dtc-label">30+<br>days</div>
+                </div>
+              </div>
+              <div class="funnel-degrade-note">Most customers convert within a week of first contact — front-load follow-up in the first 7 days.</div>
             </div>
-            <div class="dtc-dist">
-              <div class="dtc-col">
-                <div class="dtc-count">6</div>
-                <div class="dtc-bar" style="height:38%"></div>
-                <div class="dtc-label">0–3<br>days</div>
+
+            <!-- Shared Sources panel — identical component to Leads, scoped to customers -->
+            <div class="sources-panel">
+              <div class="sources-head">
+                <div class="sources-title">Where customers come from</div>
+                <div class="sources-toggle">
+                  <button class="active" onclick="switchSourcesCut(this,'customers','channel')">By channel</button>
+                  <button onclick="switchSourcesCut(this,'customers','capture')">By capture</button>
+                </div>
               </div>
-              <div class="dtc-col">
-                <div class="dtc-count">14</div>
-                <div class="dtc-bar peak" style="height:88%"></div>
-                <div class="dtc-label">4–7<br>days</div>
+
+              <!-- Cut: by channel (default) -->
+              <div class="sources-cut active" data-cut="channel">
+                <div class="paid-organic" title="Paid vs organic split of new customers">
+                  <div class="po-seg paid" style="width:68%">Paid ads · 32</div>
+                  <div class="po-seg organic" style="width:32%">Organic · 15</div>
+                </div>
+                <div class="hbar">
+                  <div class="hbar-row">
+                    <div class="hbar-label">Google Ads</div>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:60%;background:#6366f1">28</div></div>
+                    <div class="hbar-val">28</div>
+                  </div>
+                  <div class="hbar-row">
+                    <div class="hbar-label">Google Organic</div>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:32%;background:#10b981">15</div></div>
+                    <div class="hbar-val">15</div>
+                  </div>
+                  <div class="hbar-row">
+                    <div class="hbar-label">Meta Ads</div>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:8%;background:#818cf8">4</div></div>
+                    <div class="hbar-val">4</div>
+                  </div>
+                  <div class="hbar-row">
+                    <div class="hbar-label">Referral</div>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:6%;background:#34d399">3</div></div>
+                    <div class="hbar-val">3</div>
+                  </div>
+                  <div class="hbar-row">
+                    <div class="hbar-label">Direct</div>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:4%;background:#94a3b8">2</div></div>
+                    <div class="hbar-val">2</div>
+                  </div>
+                </div>
+                <div class="multi-touch-note">Channel totals (52) exceed 47 because some customers touched multiple channels — multi-touch attribution applied.</div>
               </div>
-              <div class="dtc-col">
-                <div class="dtc-count">12</div>
-                <div class="dtc-bar" style="height:75%"></div>
-                <div class="dtc-label">8–14<br>days</div>
-              </div>
-              <div class="dtc-col">
-                <div class="dtc-count">9</div>
-                <div class="dtc-bar" style="height:56%"></div>
-                <div class="dtc-label">15–30<br>days</div>
-              </div>
-              <div class="dtc-col">
-                <div class="dtc-count">6</div>
-                <div class="dtc-bar" style="height:38%"></div>
-                <div class="dtc-label">30+<br>days</div>
+
+              <!-- Cut: by capture type -->
+              <div class="sources-cut" data-cut="capture">
+                <div class="hbar">
+                  <div class="hbar-row">
+                    <div class="hbar-label">📞 Call<span class="hbar-detail">(555) 202-4415 +2 numbers</span></div>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:64%;background:#7c3aed">30</div></div>
+                    <div class="hbar-val">30</div>
+                  </div>
+                  <div class="hbar-row">
+                    <div class="hbar-label">📋 Form<span class="hbar-detail">"Get a quote" +3 forms</span></div>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:30%;background:#0369a1">14</div></div>
+                    <div class="hbar-val">14</div>
+                  </div>
+                  <div class="hbar-row">
+                    <div class="hbar-label">🎙 Voice<span class="hbar-detail">AI receptionist</span></div>
+                    <div class="hbar-track"><div class="hbar-fill" style="width:6%;background:#f59e0b">3</div></div>
+                    <div class="hbar-val">3</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="multi-touch-note">Most customers convert within a week of first contact — front-load follow-up in the first 7 days.</div>
+          </div>
+
+          <!-- Insight callout -->
+          <div class="nc-insight">
+            <div class="nc-insight-icon">🌿</div>
+            <div>Google organic is delivering <strong>15 new customers at $0 ad spend</strong>. Your content and local presence are working. Modest SEO investment here could double this channel's output in 6 months.</div>
+          </div>
+
+          <!-- Secondary row: value + timing metrics (SAME lighter strip as Leads) -->
+          <div class="metrics-row secondary" style="grid-template-columns:repeat(2,1fr)">
+            <div class="metric-card">
+              <div class="metric-title">Avg Days to Convert</div>
+              <div class="metric-value">11<span style="font-size:12px;font-weight:500;color:#6b7280">d</span></div>
+              <div class="metric-trend neutral" style="color:#9ca3af">Median, first touch to transaction</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">Avg Transaction Value</div>
+              <div class="metric-value">$1,943</div>
+              <div class="metric-trend neutral" style="color:#9ca3af">First transaction only</div>
+            </div>
           </div>
 
           <!-- Customer list table -->
@@ -2104,85 +2239,93 @@ tr:hover .row-actions { opacity: 1; }
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Stage</th>
+                    <th>Capture</th>
                     <th>Channel</th>
                     <th>Campaign</th>
-                    <th>First Contact</th>
+                    <th>First Transaction</th>
                     <th>Days to Convert</th>
                     <th class="r">Transaction Value</th>
-                    <th>Source Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td><a class="lead-link">Karen L.</a><div style="font-size:11px;color:#9ca3af">karen@example.com</div></td>
-                    <td><span class="platform-badge meta">Meta</span></td>
+                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
+                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td style="font-size:11px;color:#818cf8;font-weight:600">Meta Ads</td>
                     <td style="font-size:11px;color:#6b7280">Home Comfort</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 4</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 25</td>
                     <td style="font-weight:600">21 days</td>
                     <td class="r font-semibold">$2,400</td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
                   </tr>
                   <tr>
                     <td><a class="lead-link">Robert P.</a><div style="font-size:11px;color:#9ca3af">robert@example.com</div></td>
-                    <td><span class="platform-badge google">Google</span></td>
+                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
+                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">Emergency HVAC</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 7</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 15</td>
                     <td style="font-weight:600">8 days</td>
                     <td class="r font-semibold">$1,850</td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
                   </tr>
                   <tr>
                     <td><a class="lead-link">Mike H.</a><div style="font-size:11px;color:#9ca3af">(555) 190-3341</div></td>
-                    <td><span style="font-size:11px;color:#10b981;font-weight:600">Organic</span></td>
+                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
+                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td style="font-size:11px;color:#10b981;font-weight:600">Google Organic</td>
                     <td style="font-size:11px;color:#9ca3af">—</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 10</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 16</td>
                     <td style="font-weight:600">6 days</td>
                     <td class="r font-semibold">$3,100</td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
                   </tr>
                   <tr>
                     <td><a class="lead-link">Lisa W.</a><div style="font-size:11px;color:#9ca3af">lisa@example.com</div></td>
-                    <td><span class="platform-badge google">Google</span></td>
+                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
+                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">HVAC Local Map</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 13</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 25</td>
                     <td style="font-weight:600">12 days</td>
                     <td class="r font-semibold">$1,200</td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
                   </tr>
                   <tr>
                     <td><a class="lead-link">Chen X.</a><div style="font-size:11px;color:#9ca3af">chen@example.com</div></td>
-                    <td><span class="platform-badge meta">Meta</span></td>
+                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
+                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td style="font-size:11px;color:#818cf8;font-weight:600">Meta Ads</td>
                     <td style="font-size:11px;color:#6b7280">Home Comfort</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 15</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 19</td>
                     <td style="font-weight:600">4 days</td>
                     <td class="r font-semibold">$4,800</td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
                   </tr>
                   <tr>
                     <td><a class="lead-link">Sarah M.</a><div style="font-size:11px;color:#9ca3af">sarah@example.com</div></td>
-                    <td><span class="platform-badge google">Google</span></td>
+                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
+                    <td><span class="lead-source-badge call">📞 Call</span></td>
+                    <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">Emergency HVAC</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 19</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 27</td>
                     <td style="font-weight:600">8 days</td>
                     <td class="r font-semibold">$1,840</td>
-                    <td><span class="lead-source-badge call">📞 Call</span></td>
                   </tr>
                   <tr>
                     <td><a class="lead-link">James R.</a><div style="font-size:11px;color:#9ca3af">james@example.com</div></td>
-                    <td><span style="font-size:11px;color:#10b981;font-weight:600">Organic</span></td>
+                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
+                    <td><span class="lead-source-badge form">📋 Form</span></td>
+                    <td style="font-size:11px;color:#10b981;font-weight:600">Google Organic</td>
                     <td style="font-size:11px;color:#9ca3af">—</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 22</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 26</td>
                     <td style="font-weight:600">4 days</td>
                     <td class="r font-semibold">$2,200</td>
-                    <td><span class="lead-source-badge form">📋 Form</span></td>
                   </tr>
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colspan="5">Showing 7 of 47 new customers</td>
+                    <td colspan="6">Showing 7 of 47 new customers <a style="color:#6366f1;cursor:pointer;font-size:11px;margin-left:8px">View all →</a></td>
+                    <td></td>
                     <td class="r">$91,400 total</td>
-                    <td><a style="color:#6366f1;cursor:pointer;font-size:11px">View all →</a></td>
                   </tr>
                 </tfoot>
               </table>
@@ -2814,6 +2957,17 @@ function filterToFollowUp() {
   // scroll the table into view so the effect is visible
   var tbl = document.getElementById('leads-table');
   if (tbl) tbl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ── Sources panel cut toggle (shared by Leads + New Customers) ──
+// scope is 'leads' or 'customers'; cut is 'channel' or 'capture'.
+function switchSourcesCut(btn, scope, cut) {
+  var panel = btn.closest('.sources-panel');
+  panel.querySelectorAll('.sources-toggle button').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  panel.querySelectorAll('.sources-cut').forEach(function(c) {
+    c.classList.toggle('active', c.getAttribute('data-cut') === cut);
+  });
 }
 
 function clearAllFilters() {
