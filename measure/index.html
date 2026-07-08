@@ -2265,12 +2265,6 @@ tr:hover .row-actions { opacity: 1; }
             </div>
           </div>
 
-          <!-- Insight callout -->
-          <div class="nc-insight">
-            <div class="nc-insight-icon">🌿</div>
-            <div>Google organic is delivering <strong>15 new customers at $0 ad spend</strong>. Your content and local presence are working. Modest SEO investment here could double this channel's output in 6 months.</div>
-          </div>
-
           <!-- Secondary row: value + timing metrics (SAME lighter strip as Leads) -->
           <div class="metrics-row secondary" style="grid-template-columns:repeat(2,1fr)">
             <div class="metric-card">
@@ -2296,84 +2290,84 @@ tr:hover .row-actions { opacity: 1; }
                 <thead>
                   <tr>
                     <th>Contact</th>
-                    <th>Stage</th>
                     <th>Capture</th>
                     <th>Channel</th>
                     <th>Campaign</th>
-                    <th>First Transaction</th>
+                    <th>Lead Created</th>
                     <th>Days to Convert</th>
-                    <th class="r">Transaction Value</th>
+                    <th class="r">Txns</th>
+                    <th class="r">LTV</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr data-channel="meta-ads" data-capture="form" data-campaign="home-comfort" data-paid="paid" data-dtc="slow">
                     <td><a class="lead-link">Karen L.</a><div style="font-size:11px;color:#9ca3af">karen@example.com</div></td>
-                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
                     <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Free estimate"</span></div></td>
                     <td style="font-size:11px;color:#818cf8;font-weight:600">Meta Ads</td>
                     <td style="font-size:11px;color:#6b7280">Home Comfort</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 25</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 4, 2026</td>
                     <td style="font-weight:600">21 days</td>
+                    <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">1 →</td>
                     <td class="r font-semibold">$2,400</td>
                   </tr>
                   <tr data-channel="google-ads" data-capture="call" data-campaign="emergency-hvac" data-paid="paid" data-dtc="mid">
                     <td><a class="lead-link">Robert P.</a><div style="font-size:11px;color:#9ca3af">robert@example.com</div></td>
-                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
                     <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4415</span></div></td>
                     <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">Emergency HVAC</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 15</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 7, 2026</td>
                     <td style="font-weight:600">8 days</td>
+                    <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">1 →</td>
                     <td class="r font-semibold">$1,850</td>
                   </tr>
                   <tr data-channel="google-organic" data-capture="form" data-campaign="none" data-paid="organic" data-dtc="fast">
                     <td><a class="lead-link">Mike H.</a><div style="font-size:11px;color:#9ca3af">(555) 190-3341</div></td>
-                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
                     <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Book a consult"</span></div></td>
                     <td style="font-size:11px;color:#10b981;font-weight:600">Google Organic</td>
                     <td style="font-size:11px;color:#9ca3af">—</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 16</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 10, 2026</td>
                     <td style="font-weight:600">6 days</td>
+                    <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">2 →</td>
                     <td class="r font-semibold">$3,100</td>
                   </tr>
                   <tr data-channel="google-ads" data-capture="form" data-campaign="hvac-local-map" data-paid="paid" data-dtc="mid">
                     <td><a class="lead-link">Lisa W.</a><div style="font-size:11px;color:#9ca3af">lisa@example.com</div></td>
-                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
                     <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Request a quote"</span></div></td>
                     <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">HVAC Local Map</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 25</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 13, 2026</td>
                     <td style="font-weight:600">12 days</td>
+                    <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">1 →</td>
                     <td class="r font-semibold">$1,200</td>
                   </tr>
                   <tr data-channel="meta-ads" data-capture="call" data-campaign="home-comfort" data-paid="paid" data-dtc="fast">
                     <td><a class="lead-link">Chen X.</a><div style="font-size:11px;color:#9ca3af">chen@example.com</div></td>
-                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
                     <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4419</span></div></td>
                     <td style="font-size:11px;color:#818cf8;font-weight:600">Meta Ads</td>
                     <td style="font-size:11px;color:#6b7280">Home Comfort</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 19</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 15, 2026</td>
                     <td style="font-weight:600">4 days</td>
+                    <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">3 →</td>
                     <td class="r font-semibold">$4,800</td>
                   </tr>
                   <tr data-channel="google-ads" data-capture="call" data-campaign="emergency-hvac" data-paid="paid" data-dtc="mid">
                     <td><a class="lead-link">Sarah M.</a><div style="font-size:11px;color:#9ca3af">sarah@example.com</div></td>
-                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
                     <td><div class="capture-cell"><span class="lead-source-badge call">📞 Call</span><span class="capture-detail">(555) 202-4415</span></div></td>
                     <td style="font-size:11px;color:#6366f1;font-weight:600">Google Ads</td>
                     <td style="font-size:11px;color:#6b7280">Emergency HVAC</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 27</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 19, 2026</td>
                     <td style="font-weight:600">8 days</td>
+                    <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">1 →</td>
                     <td class="r font-semibold">$1,840</td>
                   </tr>
                   <tr data-channel="google-organic" data-capture="form" data-campaign="none" data-paid="organic" data-dtc="fast">
                     <td><a class="lead-link">James R.</a><div style="font-size:11px;color:#9ca3af">james@example.com</div></td>
-                    <td><div class="lead-stage"><span class="stage-badge converted">Converted</span><span class="stage-substage">Job won</span></div></td>
                     <td><div class="capture-cell"><span class="lead-source-badge form">📋 Form</span><span class="capture-detail">"Book a consult"</span></div></td>
                     <td style="font-size:11px;color:#10b981;font-weight:600">Google Organic</td>
                     <td style="font-size:11px;color:#9ca3af">—</td>
-                    <td style="font-size:11px;color:#9ca3af">Feb 26</td>
+                    <td style="font-size:11px;color:#9ca3af">Feb 22, 2026</td>
                     <td style="font-weight:600">4 days</td>
+                    <td class="r" style="font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">1 →</td>
                     <td class="r font-semibold">$2,200</td>
                   </tr>
                   <tr class="filter-empty-row" id="customers-empty-row" style="display:none">
