@@ -1,869 +1,468 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Leads in Engage — Wireframes (decision-driving core)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Leads in Engage — full experience</title>
 <style>
-/* ============================================================
-   Design-system tokens — from .claude/rules/onboarding-shell-design-system.md
-   These are wireframes, not production code. App-shell layout
-   (not the onboarding modal), framed as the embedded Engage experience.
-   ============================================================ */
-:root {
-  --bg-page: #ececec;
-  --bg-subtle: #f9fafb;
-  --bg-surface: #ffffff;
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
-  --success: #16a34a;
-  --success-bg: #f0fdf4;
-  --success-border: #bbf7d0;
-  --warning: #d97706;
-  --warning-bg: #fffbeb;
-  --warning-border: #fde68a;
-  --destructive: #dc2626;
-  --destructive-bg: #fef2f2;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04);
-  /* Partner-app accent (stands in for --reach-primary). Engage tab bar uses this at /10 */
-  --reach-primary: #4f46e5;
-}
+  :root {
+    --reach-foreground: 225 15% 16%; --reach-card: 0 0% 100%;
+    --reach-primary: 210 30% 25%; --reach-primary-foreground: 0 0% 100%;
+    --reach-secondary: 210 15% 94%; --reach-secondary-foreground: 210 30% 25%;
+    --reach-muted: 210 10% 96%; --reach-muted-foreground: 220 10% 45%;
+    --reach-destructive: 0 84.2% 60.2%; --reach-border: 220 13% 90%; --reach-input: 220 13% 90%;
+    --reach-font-body: Inter, system-ui, -apple-system, sans-serif;
+    --reach-font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
+    --success: 150 50% 38%; --success-bg: 150 50% 96%;
+    --warning: 38 92% 40%; --warning-bg: 38 92% 96%; --danger-bg: 0 72% 97%;
+    --muted-dot: 220 9% 70%;
+    --info-bg: 210 60% 97%; --info-border: 210 55% 80%; --info-fg: 210 55% 35%;
+    --goose-rail: 210 20% 98%; --goose-header: 200 45% 30%; --goose-accent: 20 90% 55%;
+  }
+  * { box-sizing: border-box; } html, body { margin: 0; height: 100%; }
+  body { font-family: var(--reach-font-body); color: hsl(var(--reach-foreground)); background: #fff; -webkit-font-smoothing: antialiased; }
 
-* { box-sizing: border-box; }
+  .goose { display: grid; grid-template-columns: 232px 1fr; height: 100vh; min-height: 720px; overflow: hidden; }
+  .goose-rail { background: hsl(var(--goose-rail)); border-right: 1px solid hsl(210 15% 90%); display: flex; flex-direction: column; }
+  .goose-brand { background: hsl(var(--goose-header)); color: #fff; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .goose-brand .logo { font-family: var(--reach-font-heading); font-weight: 800; font-size: 20px; }
+  .goose-tenant { padding: 12px 16px; border-bottom: 1px solid hsl(210 15% 90%); font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; }
+  .goose-new { margin: 12px 14px; background: hsl(var(--goose-accent)); color: #fff; border: 0; border-radius: 8px; padding: 11px; font-weight: 700; font-size: 13.5px; font-family: inherit; cursor: pointer; }
+  .goose-group { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; color: hsl(210 10% 60%); padding: 14px 18px 6px; }
+  .goose-nav { display: flex; align-items: center; gap: 12px; padding: 9px 18px; font-size: 13.5px; color: hsl(215 15% 30%); }
+  .goose-nav .ic { width: 16px; height: 16px; border-radius: 4px; background: hsl(210 12% 82%); }
+  .goose-nav[data-active] { background: hsl(20 90% 96%); color: hsl(var(--goose-accent)); font-weight: 600; box-shadow: inset 3px 0 0 hsl(var(--goose-accent)); }
+  .goose-nav[data-active] .ic { background: hsl(var(--goose-accent)); }
+  .goose-spacer { flex: 1; }
+  .goose-user { padding: 12px 16px; border-top: 1px solid hsl(210 15% 90%); font-size: 12px; color: hsl(var(--reach-muted-foreground)); }
 
-body {
-  margin: 0;
-  background: var(--bg-page);
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
+  .engage { position: relative; overflow: hidden; }
+  .engage-scroll { padding: 28px 40px; height: 100%; overflow-y: auto; }
+  .engage h1 { font-family: var(--reach-font-heading); font-size: 40px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 20px; }
+  .engage-tabs-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .engage-tabs { display: inline-flex; gap: 4px; background: hsl(var(--reach-muted)); border-radius: 10px; padding: 5px; }
+  .engage-tab { padding: 8px 16px; border-radius: 7px; font-size: 14px; font-weight: 500; color: hsl(var(--reach-muted-foreground)); border: 0; background: transparent; font-family: inherit; cursor: pointer; }
+  .engage-tab[data-active] { background: #fff; color: hsl(var(--reach-foreground)); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .actions { display: flex; gap: 8px; }
+  .btn-primary-sm { background: hsl(var(--reach-primary)); color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .btn-import { background: #fff; color: hsl(var(--reach-primary)); border: 1px solid hsl(var(--reach-border)); border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
 
-h1, h2, h3 { font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif; }
+  .tabview { display: none; } .tabview[data-active] { display: block; }
 
-/* ---------- Wireframe chrome: screen switcher ---------- */
-.wf-switcher {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: #111827;
-  color: #fff;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.wf-switcher strong { font-size: 13px; letter-spacing: -0.01em; }
-.wf-switcher .wf-tag {
-  font-size: 11px;
-  color: #9ca3af;
-  border: 1px solid #374151;
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-.wf-switcher nav { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
-.wf-switcher button {
-  appearance: none;
-  background: transparent;
-  border: 1px solid #374151;
-  color: #d1d5db;
-  font: inherit;
-  font-size: 12.5px;
-  padding: 5px 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-.wf-switcher button:hover { background: #1f2937; color: #fff; }
-.wf-switcher button[aria-current="true"] { background: #fff; color: #111827; border-color: #fff; font-weight: 600; }
+  /* Segments list */
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .search { flex: 1; max-width: 340px; padding: 9px 12px; border: 1px solid hsl(var(--reach-input)); border-radius: 8px; font-size: 13.5px; font-family: inherit; }
+  .filter-chip { padding: 8px 12px; border: 1px solid hsl(var(--reach-border)); border-radius: 8px; background: #fff; font-size: 13px; color: hsl(var(--reach-muted-foreground)); font-family: inherit; cursor: pointer; }
+  .count-note { margin-left: auto; font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); }
+  .card { border: 1px solid hsl(var(--reach-border)); border-radius: 12px; overflow: hidden; }
+  .seg-row { display: grid; grid-template-columns: 2fr 100px 90px 120px; gap: 12px; align-items: center; padding: 14px 16px; border-top: 1px solid hsl(var(--reach-border)); font-size: 13.5px; }
+  .seg-row:first-child { border-top: 0; }
+  .seg-row .nm { font-weight: 600; } .seg-row .nm small { display: block; font-weight: 400; color: hsl(var(--reach-muted-foreground)); font-size: 12px; margin-top: 2px; }
+  .seg-type { font-size: 11.5px; background: hsl(var(--success-bg)); color: hsl(var(--success)); padding: 3px 9px; border-radius: 999px; justify-self: start; }
+  .seg-type.new { background: hsl(var(--info-bg)); color: hsl(var(--info-fg)); }
+  .seg-mut { color: hsl(var(--reach-muted-foreground)); font-size: 12.5px; }
 
-.wf-stage {
-  padding: 32px 24px 64px;
-  display: flex;
-  justify-content: center;
-}
+  /* People table */
+  .thead, .trow { display: grid; grid-template-columns: 2fr 1fr 1.1fr 1.4fr 1fr; gap: 12px; align-items: center; padding: 12px 16px; }
+  .thead { background: hsl(var(--reach-muted)); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--reach-muted-foreground)); }
+  .trow { border-top: 1px solid hsl(var(--reach-border)); font-size: 13.5px; cursor: pointer; }
+  .trow:hover { background: hsl(210 30% 25% / 0.02); }
+  .person { display: flex; flex-direction: column; }
+  .person .nm { font-weight: 600; } .person .em { font-size: 12px; color: hsl(var(--reach-muted-foreground)); margin-top: 1px; }
+  .person .unident { font-style: italic; color: hsl(var(--reach-muted-foreground)); font-weight: 500; }
+  .src { font-size: 11.5px; padding: 3px 9px; border-radius: 999px; background: hsl(var(--reach-secondary)); color: hsl(var(--reach-secondary-foreground)); justify-self: start; }
+  .consent { display: flex; gap: 10px; align-items: center; }
+  .cdot { display: inline-flex; gap: 5px; align-items: center; font-size: 12px; color: hsl(var(--reach-muted-foreground)); }
+  .cdot .d { width: 8px; height: 8px; border-radius: 999px; }
+  .d.ok { background: hsl(var(--success)); } .d.no { background: hsl(var(--warning)); } .d.unk { background: hsl(var(--muted-dot)); }
+  .rtags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .rtag { font-size: 11.5px; background: hsl(var(--reach-muted)); border: 1px solid hsl(var(--reach-border)); color: hsl(var(--reach-foreground)); padding: 2px 8px; border-radius: 6px; }
+  .rdate { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); } .rdate small { display: block; font-size: 11px; opacity: 0.8; }
+  .partner-note { font-size: 12px; color: hsl(var(--reach-muted-foreground)); margin-top: 14px; line-height: 1.45; }
 
-.screen { display: none; width: 100%; max-width: 1180px; }
-.screen[data-active="true"] { display: block; }
+  /* ---------- Generic modal scrim ---------- */
+  .scrim { position: absolute; inset: 0; background: hsl(220 30% 12% / 0.45); display: none; align-items: center; justify-content: center; padding: 24px; }
+  .scrim[data-open] { display: flex; }
+  .scrim.right { justify-content: flex-end; padding: 0; background: hsl(220 30% 12% / 0.35); }
 
-.screen-note {
-  background: #fffbeb;
-  border: 1px solid var(--warning-border);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  font-size: 12.5px;
-  color: #92400e;
-  line-height: 1.55;
-}
-.screen-note strong { color: var(--warning); }
-.screen-note .area { display: inline-block; background: var(--warning); color: #fff; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; margin-right: 6px; }
+  /* Import wizard modal (broadcast-builder chrome) */
+  .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 1000px; height: 92%; max-height: 760px; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+  .modal-head { padding: 22px 28px 0; display: flex; align-items: center; gap: 12px; }
+  .modal-head h2 { font-family: var(--reach-font-heading); font-size: 22px; font-weight: 800; margin: 0; }
+  .draft-pill { font-size: 12px; color: hsl(var(--reach-muted-foreground)); background: hsl(var(--reach-muted)); padding: 4px 12px; border-radius: 999px; }
+  .modal-body { display: grid; grid-template-columns: 220px 1fr; gap: 0; padding: 22px 28px; min-height: 0; }
+  .rail { display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
+  .rail-step { display: flex; align-items: center; gap: 12px; font-size: 15px; color: hsl(var(--reach-muted-foreground)); }
+  .rail-step .rm { width: 18px; text-align: center; font-size: 15px; color: hsl(210 12% 70%); }
+  .rail-step[data-state="active"] { color: hsl(var(--reach-foreground)); font-weight: 700; }
+  .rail-step[data-state="active"] .rm { color: hsl(var(--reach-foreground)); }
+  .rail-step[data-state="complete"] .rm { color: hsl(var(--success)); }
+  .content-card { background: #fff; border: 1px solid hsl(var(--reach-border)); border-radius: 12px; padding: 28px 32px; overflow-y: auto; min-height: 0; }
+  .panel { display: none; } .panel[data-active] { display: block; }
+  .p-head h3 { font-family: var(--reach-font-heading); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 8px; }
+  .p-head p { font-size: 14px; color: hsl(var(--reach-muted-foreground)); line-height: 1.55; max-width: 520px; margin: 0 0 20px; }
+  .help-link { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: hsl(var(--reach-primary)); cursor: pointer; margin-bottom: 18px; }
+  .help-link .g { width: 17px; height: 17px; border-radius: 999px; border: 1.5px solid currentColor; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+  .dropzone { border: 1.5px dashed hsl(210 13% 76%); border-radius: 10px; padding: 36px; text-align: center; background: hsl(var(--reach-muted)); cursor: pointer; }
+  .dropzone .ic { font-size: 26px; } .dropzone h4 { font-family: var(--reach-font-heading); font-size: 15px; margin: 10px 0 3px; } .dropzone p { font-size: 13px; color: hsl(var(--reach-muted-foreground)); margin: 0; }
+  .file-chip { display: none; align-items: center; gap: 10px; margin-top: 14px; background: #fff; border: 1px solid hsl(var(--reach-border)); border-radius: 8px; padding: 10px 14px; font-size: 13px; }
+  .file-chip .nm { font-weight: 600; } .file-chip .mt { color: hsl(var(--reach-muted-foreground)); }
+  .sample { display: inline-block; margin-top: 16px; font-size: 13px; color: hsl(var(--reach-primary)); font-weight: 500; cursor: pointer; }
+  .map-row { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid hsl(var(--reach-border)); }
+  .map-row:last-child { border-bottom: 0; }
+  .cc { font-size: 13.5px; font-weight: 600; } .cc small { display: block; font-weight: 400; font-size: 12px; color: hsl(var(--reach-muted-foreground)); font-family: ui-monospace, monospace; margin-top: 2px; }
+  .ar { color: hsl(var(--reach-muted-foreground)); text-align: center; }
+  .modal select, .cond-row select { padding: 8px 10px; font-size: 13.5px; font-family: inherit; border: 1px solid hsl(var(--reach-input)); border-radius: 6px; background: #fff; color: hsl(var(--reach-foreground)); width: 100%; }
+  .modal select[data-un] { color: hsl(var(--reach-muted-foreground)); border-style: dashed; }
+  .lbl { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+  .tag-input { width: 100%; max-width: 460px; padding: 9px 12px; font-size: 14px; font-family: inherit; border: 1px solid hsl(var(--reach-input)); border-radius: 6px; }
+  .hint { font-size: 12px; color: hsl(var(--reach-muted-foreground)); margin-top: 6px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .tag { display: inline-flex; gap: 6px; align-items: center; padding: 5px 10px; font-size: 12.5px; background: hsl(var(--reach-secondary)); color: hsl(var(--reach-secondary-foreground)); border-radius: 6px; }
+  .tag .x { cursor: pointer; opacity: 0.6; }
+  .note { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); line-height: 1.55; max-width: 520px; margin: 16px 0 0; } .note strong { color: hsl(var(--reach-foreground)); }
+  .req-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .req { font-size: 12px; color: hsl(var(--reach-muted-foreground)); } .req .s { color: hsl(var(--reach-destructive)); }
+  .statushint { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); margin-top: 8px; max-width: 480px; line-height: 1.5; }
+  .attest-card { border: 1px solid hsl(var(--warning) / 0.4); background: hsl(var(--warning-bg)); border-radius: 10px; padding: 15px 17px; margin-bottom: 14px; }
+  .attest-card .l { display: flex; gap: 10px; } .attest-card .l .i { color: hsl(var(--warning)); font-size: 15px; }
+  .attest-card h4 { font-family: var(--reach-font-heading); font-size: 14px; margin: 0 0 4px; } .attest-card p { font-size: 13px; margin: 0; line-height: 1.5; color: hsl(var(--reach-foreground) / 0.85); }
+  .chk { display: flex; gap: 11px; align-items: flex-start; padding: 12px; border: 1px solid hsl(var(--reach-border)); border-radius: 8px; cursor: pointer; }
+  .chk input { margin-top: 2px; width: 16px; height: 16px; accent-color: hsl(var(--reach-primary)); } .chk label { font-size: 13.5px; cursor: pointer; }
+  .prov { font-size: 12px; color: hsl(var(--reach-muted-foreground)); margin-top: 11px; }
+  .outcome-bar { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: hsl(var(--reach-border)); border: 1px solid hsl(var(--reach-border)); border-radius: 10px; overflow: hidden; margin-bottom: 18px; }
+  .oc { background: #fff; padding: 13px 15px; } .oc .n { font-family: var(--reach-font-heading); font-size: 20px; font-weight: 800; } .oc .l { font-size: 11px; color: hsl(var(--reach-muted-foreground)); margin-top: 2px; }
+  .oc[data-t="ok"] .n { color: hsl(var(--success)); } .oc[data-t="warn"] .n { color: hsl(var(--warning)); } .oc[data-t="mute"] .n { color: hsl(var(--reach-muted-foreground)); }
+  .rsec { margin-bottom: 20px; } .rsec h4 { font-family: var(--reach-font-heading); font-size: 14px; margin: 0 0 4px; display: flex; gap: 8px; align-items: center; } .rsec .sub { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); margin: 0 0 12px; }
+  .bdg { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: hsl(var(--warning-bg)); color: hsl(var(--warning)); }
+  .errcard { border: 1px solid hsl(var(--reach-border)); border-radius: 9px; padding: 13px 15px; }
+  .errline { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 5px 0; } .errline .dd { width: 7px; height: 7px; border-radius: 999px; } .errline .dd[data-t="danger"] { background: hsl(var(--reach-destructive)); } .errline .dd[data-t="warn"] { background: hsl(var(--warning)); } .errline .c { font-weight: 600; } .errline .ds { color: hsl(var(--reach-muted-foreground)); } .dl { margin-left: auto; font-size: 12.5px; color: hsl(var(--reach-primary)); font-weight: 500; cursor: pointer; }
+  .bulk { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); margin-bottom: 12px; } .bulk select { width: auto; padding: 5px 8px; }
+  .col { border: 1px solid hsl(var(--reach-border)); border-radius: 9px; padding: 12px 14px; margin-bottom: 9px; }
+  .col-w { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 5px; } .col-w .p { font-size: 13.5px; font-weight: 600; } .col-w .m { font-size: 12px; color: hsl(var(--warning)); background: hsl(var(--warning-bg)); padding: 3px 8px; border-radius: 999px; }
+  .col-d { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); font-family: ui-monospace, monospace; margin-bottom: 8px; }
+  .preserved { font-size: 11.5px; color: hsl(var(--success)); background: hsl(var(--success-bg)); display: inline-block; padding: 2px 8px; border-radius: 999px; margin-bottom: 9px; }
+  .rz { display: flex; gap: 8px; } .rz button { flex: 1; padding: 7px; font-size: 12.5px; font-weight: 500; font-family: inherit; border: 1px solid hsl(var(--reach-border)); border-radius: 6px; background: #fff; cursor: pointer; color: hsl(var(--reach-foreground)); } .rz button[data-p] { border-color: hsl(var(--reach-primary)); background: hsl(var(--reach-primary)); color: #fff; }
+  .done-hero { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; } .done-hero .ck { width: 38px; height: 38px; border-radius: 999px; background: hsl(var(--success-bg)); color: hsl(var(--success)); display: inline-flex; align-items: center; justify-content: center; font-size: 19px; } .done-hero h3 { font-family: var(--reach-font-heading); font-size: 21px; font-weight: 800; margin: 0; } .done-hero p { font-size: 13px; color: hsl(var(--reach-muted-foreground)); margin: 2px 0 0; }
+  .handoff { border: 1px solid hsl(var(--reach-primary) / 0.35); background: hsl(210 30% 25% / 0.03); border-radius: 10px; padding: 19px 21px; } .handoff h4 { font-family: var(--reach-font-heading); font-size: 16px; margin: 0 0 6px; } .handoff > p { font-size: 13.5px; color: hsl(var(--reach-muted-foreground)); line-height: 1.55; margin: 0 0 15px; max-width: 540px; } .handoff > p strong { color: hsl(var(--reach-foreground)); }
+  .hp { background: #fff; border: 1px solid hsl(var(--reach-border)); border-radius: 8px; padding: 11px 13px; margin-bottom: 15px; } .hp .hl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: hsl(var(--reach-muted-foreground)); display: block; margin-bottom: 8px; } .hp .cond { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .hp .f { font-size: 12.5px; font-weight: 600; } .hp .o { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); } .hp .v { font-size: 12px; background: hsl(var(--reach-secondary)); color: hsl(var(--reach-secondary-foreground)); padding: 3px 9px; border-radius: 999px; } .hp .hn { display: block; font-size: 11.5px; color: hsl(var(--reach-muted-foreground)); margin-top: 8px; }
+  .ha { display: flex; gap: 10px; align-items: center; }
+  .skip { border: 1px solid hsl(var(--reach-border)); border-radius: 10px; padding: 15px 17px; margin-top: 16px; } .skip h4 { font-family: var(--reach-font-heading); font-size: 14px; margin: 0 0 4px; } .skip p { font-size: 13px; color: hsl(var(--reach-muted-foreground)); margin: 0 0 11px; line-height: 1.5; } .dlbtn { display: inline-flex; gap: 8px; align-items: center; padding: 8px 14px; font-size: 13px; font-weight: 500; font-family: inherit; border: 1px solid hsl(var(--reach-border)); border-radius: 6px; background: #fff; cursor: pointer; color: hsl(var(--reach-foreground)); }
+  .modal-foot { border-top: 1px solid hsl(var(--reach-border)); padding: 16px 28px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+  .foot-hint { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); margin-right: auto; }
+  .btn { border: 0; cursor: pointer; font: inherit; font-weight: 600; font-size: 14px; padding: 10px 20px; border-radius: 8px; }
+  .btn-primary { background: hsl(var(--reach-primary)); color: #fff; } .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-soft { background: hsl(var(--reach-muted)); color: hsl(var(--reach-foreground)); }
+  .btn-ghost { background: transparent; color: hsl(var(--reach-muted-foreground)); }
+  .primary-inline { background: hsl(var(--reach-primary)); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .ghost-inline { background: transparent; color: hsl(var(--reach-muted-foreground)); border: 0; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
 
-/* ============================================================
-   Embedded partner-app frame
-   ============================================================ */
-.app-frame {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  min-height: 720px;
-}
+  /* Segment builder dialog */
+  .dialog { background: #fff; border-radius: 16px; width: 92%; height: 90%; max-width: 1120px; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+  .dhead { padding: 20px 26px; border-bottom: 1px solid hsl(var(--reach-border)); display: flex; align-items: flex-start; justify-content: space-between; }
+  .dhead h2 { font-family: var(--reach-font-heading); font-size: 20px; font-weight: 800; margin: 0 0 2px; }
+  .dhead p { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); margin: 0; }
+  .dhead-right { display: flex; gap: 10px; align-items: center; }
+  .ai-btn { display: inline-flex; gap: 7px; align-items: center; border: 1px solid hsl(var(--reach-border)); background: #fff; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; color: hsl(var(--reach-foreground)); }
+  .xbtn { border: 0; background: transparent; font-size: 20px; color: hsl(var(--reach-muted-foreground)); cursor: pointer; }
+  .dbody { display: grid; grid-template-columns: 1fr 360px; min-height: 0; }
+  .conditions { padding: 24px 28px; overflow-y: auto; border-right: 1px solid hsl(var(--reach-border)); }
+  .preview { background: hsl(var(--reach-muted)); padding: 24px 22px; overflow-y: auto; }
+  .fld { margin-bottom: 16px; } .fld label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px; } .fld label .rq { color: hsl(var(--reach-destructive)); }
+  .inp { width: 100%; padding: 9px 12px; font-size: 14px; font-family: inherit; border: 1px solid hsl(var(--reach-input)); border-radius: 6px; color: hsl(var(--reach-foreground)); }
+  .divider { border: 0; border-top: 1px solid hsl(var(--reach-border)); margin: 20px 0; }
+  .audience-block { margin-bottom: 18px; } .audience-block .al { font-size: 13px; font-weight: 600; margin-bottom: 4px; } .audience-block .ah { font-size: 12px; color: hsl(var(--reach-muted-foreground)); margin: 0 0 10px; }
+  .seg-toggle { display: inline-flex; background: hsl(var(--reach-muted)); border: 1px solid hsl(var(--reach-border)); border-radius: 8px; padding: 3px; }
+  .seg-toggle button { border: 0; background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 500; padding: 7px 18px; border-radius: 6px; cursor: pointer; color: hsl(var(--reach-muted-foreground)); }
+  .seg-toggle button[data-on] { background: #fff; color: hsl(var(--reach-foreground)); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+  .cond-head { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .cond-sub { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); margin: 0 0 14px; }
+  .match-mode { font-family: inherit; font-size: 12.5px; font-weight: 700; color: hsl(var(--reach-foreground)); background: hsl(var(--reach-muted)); border: 1px solid hsl(var(--reach-border)); border-radius: 6px; padding: 2px 6px; cursor: pointer; }
+  .cond-row { background: #fff; border: 1px solid hsl(var(--reach-border)); border-radius: 9px; padding: 12px 14px; display: grid; grid-template-columns: 1.1fr 0.9fr 1.3fr; gap: 10px; align-items: center; }
+  .valbox { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; min-height: 38px; padding: 6px 8px; border: 1px solid hsl(var(--reach-input)); border-radius: 6px; }
+  .valtag { font-size: 12px; background: hsl(var(--reach-secondary)); color: hsl(var(--reach-secondary-foreground)); padding: 3px 9px; border-radius: 999px; display: inline-flex; gap: 5px; align-items: center; } .valtag .x2 { cursor: pointer; opacity: 0.6; font-size: 11px; }
+  .and-divider { display: flex; align-items: center; gap: 10px; margin: 10px 0; } .and-divider .line { flex: 1; border-top: 1px solid hsl(var(--reach-border)); }
+  .and-pill { font-size: 11px; font-weight: 700; color: hsl(var(--reach-muted-foreground)); background: hsl(var(--reach-muted)); border: 1px solid hsl(var(--reach-border)); padding: 2px 10px; border-radius: 999px; }
+  .add-cond { margin-top: 14px; width: 100%; border: 1.5px dashed hsl(220 13% 78%); background: transparent; border-radius: 8px; padding: 11px; font-size: 13.5px; font-weight: 600; color: hsl(var(--reach-primary)); font-family: inherit; cursor: pointer; }
+  .preview h3 { font-family: var(--reach-font-heading); font-size: 14px; margin: 0 0 3px; } .preview .psub { font-size: 12px; color: hsl(var(--reach-muted-foreground)); margin: 0 0 14px; }
+  .count-big { font-family: var(--reach-font-heading); font-size: 34px; font-weight: 800; letter-spacing: -0.02em; } .count-lbl { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); margin-bottom: 16px; }
+  .rtable { background: #fff; border: 1px solid hsl(var(--reach-border)); border-radius: 8px; overflow: hidden; }
+  .rt-head { display: flex; justify-content: space-between; padding: 9px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--reach-muted-foreground)); border-bottom: 1px solid hsl(var(--reach-border)); }
+  .rt-row { display: flex; justify-content: space-between; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid hsl(var(--reach-border)); } .rt-row:last-child { border-bottom: 0; } .rt-row .c { color: hsl(var(--reach-muted-foreground)); font-size: 12px; }
+  .sample-chip { font-size: 11px; color: hsl(var(--reach-muted-foreground)); margin-top: 10px; display: inline-block; }
+  .dfoot { border-top: 1px solid hsl(var(--reach-border)); padding: 14px 26px; display: flex; align-items: center; justify-content: space-between; }
+  .foot-count { font-size: 13.5px; font-weight: 600; } .foot-count .m { color: hsl(var(--reach-muted-foreground)); font-weight: 400; }
+  .foot-actions { display: flex; gap: 10px; }
 
-/* Partner sidebar (host app chrome) */
-.partner-rail {
-  background: #fbfbfc;
-  border-right: 1px solid var(--border);
-  padding: 18px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.partner-brand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 4px 10px 16px;
-}
-.partner-brand .logo {
-  width: 26px; height: 26px; border-radius: 7px;
-  background: var(--reach-primary);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-weight: 700; font-size: 13px;
-}
-.partner-brand .name { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
-.rail-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px; border-radius: var(--radius-sm);
-  color: var(--text-secondary); font-size: 13.5px; font-weight: 500;
-  cursor: default;
-}
-.rail-item .ico { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
-.rail-item[data-active="true"] { background: var(--reach-primary); color: #fff; font-weight: 600; }
-.rail-item[data-active="true"] .ico { opacity: 1; }
-.rail-spacer { flex: 1; }
-.rail-foot { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-top: 1px solid var(--border); margin-top: 8px; }
-.rail-foot .avatar { width: 24px; height: 24px; border-radius: 999px; background: #d1d5db; }
-.rail-foot .who { font-size: 12px; color: var(--text-secondary); }
+  /* People drawer */
+  .drawer { width: 440px; max-width: 92%; background: #fff; height: 100%; box-shadow: -8px 0 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+  .dw-head { padding: 22px 24px 18px; border-bottom: 1px solid hsl(var(--reach-border)); position: relative; }
+  .dw-head .x { position: absolute; top: 16px; right: 18px; border: 0; background: transparent; font-size: 20px; color: hsl(var(--reach-muted-foreground)); cursor: pointer; }
+  .dw-name { font-family: var(--reach-font-heading); font-size: 20px; font-weight: 700; margin: 0 0 3px; }
+  .dw-contact { font-size: 13px; color: hsl(var(--reach-muted-foreground)); }
+  .dw-meta { display: flex; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+  .dw-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  .sec { margin-bottom: 24px; } .sec h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: hsl(var(--reach-muted-foreground)); margin: 0 0 10px; }
+  .consent-panel { border: 1px solid hsl(var(--reach-border)); border-radius: 10px; overflow: hidden; }
+  .cp-row { display: grid; grid-template-columns: 60px 1fr; gap: 10px; padding: 12px 14px; border-bottom: 1px solid hsl(var(--reach-border)); align-items: start; } .cp-row:last-child { border-bottom: 0; }
+  .cp-ch { font-size: 12.5px; font-weight: 600; } .cp-state { font-size: 13px; display: flex; gap: 7px; align-items: center; } .cp-state .d { width: 8px; height: 8px; border-radius: 999px; } .cp-why { font-size: 12px; color: hsl(var(--reach-muted-foreground)); margin-top: 3px; line-height: 1.45; }
+  .tag-edit { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tag-e { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; background: hsl(var(--reach-secondary)); color: hsl(var(--reach-secondary-foreground)); padding: 4px 10px; border-radius: 6px; } .tag-e .x2 { cursor: pointer; opacity: 0.6; }
+  .tag-add { border: 1px dashed hsl(220 13% 72%); background: transparent; color: hsl(var(--reach-primary)); font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+  .seg-list { display: flex; flex-direction: column; gap: 8px; }
+  .seg-item { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 8px 12px; border: 1px solid hsl(var(--reach-border)); border-radius: 8px; } .seg-item .sd { width: 7px; height: 7px; border-radius: 999px; background: hsl(var(--success)); }
+  .activity { display: flex; flex-direction: column; }
+  .act { display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid hsl(var(--reach-border)); font-size: 13px; align-items: center; } .act:last-child { border-bottom: 0; }
+  .act .ai { color: hsl(var(--reach-muted-foreground)); } .act .at { color: hsl(var(--reach-muted-foreground)); font-size: 12px; } .act .an strong { font-weight: 600; }
+  .act-badge { font-size: 11px; padding: 2px 7px; border-radius: 999px; } .act-badge.open { background: hsl(var(--success-bg)); color: hsl(var(--success)); }
+  .deeplink { display: inline-flex; gap: 7px; align-items: center; font-size: 13px; font-weight: 600; color: hsl(var(--reach-primary)); cursor: pointer; }
 
-/* Engage content region */
-.engage { display: flex; flex-direction: column; min-width: 0; }
-
-.engage-head {
-  padding: 18px 24px 0;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-}
-.engage-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
-.engage-title small { display: block; font-family: "Inter"; font-size: 12.5px; font-weight: 400; color: var(--text-secondary); margin-top: 2px; }
-
-/* Engage tab bar — primary/10 pill bar, matches EngageMain */
-.engage-tabs {
-  margin: 16px 24px 0;
-  background: color-mix(in srgb, var(--reach-primary) 10%, transparent);
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  display: inline-flex;
-  gap: 4px;
-  width: fit-content;
-}
-.engage-tab {
-  appearance: none; border: 0; background: transparent; font: inherit;
-  font-size: 13px; font-weight: 500; color: var(--text-secondary);
-  display: flex; align-items: center; gap: 7px;
-  padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer;
-}
-.engage-tab .ico { width: 15px; height: 15px; }
-.engage-tab[data-active="true"] { background: var(--bg-surface); color: var(--text-primary); font-weight: 600; box-shadow: var(--shadow-card); }
-.engage-tab .new-pill { font-size: 9.5px; font-weight: 700; background: var(--reach-primary); color:#fff; padding: 1px 6px; border-radius: 999px; letter-spacing: 0.03em; }
-
-.engage-body { padding: 16px 24px 24px; flex: 1; min-height: 0; }
-
-/* ---------- Buttons ---------- */
-.btn {
-  appearance: none; border: 0; cursor: pointer; font: inherit;
-  font-weight: 500; font-size: 13.5px; padding: 8px 15px; border-radius: var(--radius-sm);
-  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
-}
-.btn-primary { background: var(--text-primary); color: #fff; }
-.btn-primary:hover { background: #1f2937; }
-.btn-secondary { background: #fff; color: var(--text-primary); border: 1px solid var(--border-strong); }
-.btn-secondary:hover { border-color: var(--text-primary); }
-.btn-ghost { background: transparent; color: var(--text-secondary); padding: 7px 10px; }
-.btn-ghost:hover { color: var(--text-primary); }
-.btn-accent { background: var(--reach-primary); color: #fff; }
-
-/* ---------- Toolbar ---------- */
-.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-.search {
-  flex: 1; min-width: 180px;
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 8px 12px; font-size: 13.5px; color: var(--text-secondary); background: #fff;
-}
-.filter-chip {
-  border: 1px solid var(--border-strong); background: #fff; border-radius: var(--radius-sm);
-  padding: 7px 12px; font-size: 13px; color: var(--text-primary); cursor: pointer;
-  display: inline-flex; align-items: center; gap: 7px;
-}
-.filter-chip .v { color: var(--text-secondary); }
-.filter-chip[data-on="true"] { border-color: var(--text-primary); }
-.filter-chip .caret { color: var(--text-muted); font-size: 10px; }
-
-/* ---------- Table ---------- */
-.table-wrap { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-thead th {
-  text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.05em; color: var(--text-muted); padding: 11px 16px;
-  background: var(--bg-subtle); border-bottom: 1px solid var(--border);
-}
-tbody td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-tbody tr:last-child td { border-bottom: 0; }
-tbody tr.clickable { cursor: pointer; }
-tbody tr.clickable:hover { background: var(--bg-subtle); }
-.cell-name { font-weight: 600; }
-.cell-sub { color: var(--text-secondary); font-size: 12.5px; }
-.muted { color: var(--text-muted); }
-
-/* Stage badge */
-.stage {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
-}
-.stage::before { content: ""; width: 7px; height: 7px; border-radius: 999px; }
-.stage.lead { background: #eff6ff; color: #1d4ed8; }
-.stage.lead::before { background: #1d4ed8; }
-.stage.qualified { background: #f5f3ff; color: #6d28d9; }
-.stage.qualified::before { background: #6d28d9; }
-.stage.conversion { background: var(--success-bg); color: var(--success); }
-.stage.conversion::before { background: var(--success); }
-.stage.disqualified { background: #f3f4f6; color: #6b7280; }
-.stage.disqualified::before { background: #9ca3af; }
-.stage.lost { background: var(--destructive-bg); color: var(--destructive); }
-.stage.lost::before { background: var(--destructive); }
-
-/* Source label */
-.source { display: inline-flex; align-items: center; gap: 7px; }
-.source .dot { width: 8px; height: 8px; border-radius: 2px; }
-.source.google .dot { background: #ea4335; }
-.source.voice .dot { background: #0ea5e9; border-radius: 999px; }
-.source.import .dot { background: #6b7280; }
-.source.form .dot { background: #16a34a; }
-.source.pixel .dot { background: #f59e0b; }
-
-/* Consent dots */
-.consent { display: inline-flex; gap: 10px; align-items: center; }
-.consent .ch { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; }
-.consent .pip { width: 9px; height: 9px; border-radius: 999px; }
-.consent .ok { color: var(--success); }
-.consent .ok .pip { background: var(--success); }
-.consent .off { color: var(--text-muted); }
-.consent .off .pip { background: #d1d5db; }
-.consent .none { color: var(--text-muted); }
-.consent .none .pip { background: #fff; border: 1px solid var(--border-strong); }
-
-.pager { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px 0; color: var(--text-secondary); font-size: 12.5px; }
-
-/* ---------- Detail drawer (screen 2) ---------- */
-.drawer-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.drawer {
-  border: 1px solid var(--border); border-radius: var(--radius-md);
-  background: #fff; overflow: hidden; box-shadow: var(--shadow-card);
-}
-.drawer-head { padding: 18px 20px; border-bottom: 1px solid var(--border); }
-.drawer-head .who { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
-.drawer-head .meta { color: var(--text-secondary); font-size: 12.5px; margin-top: 2px; }
-.drawer-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
-.drawer-tag.sparse { background: #fff7ed; color: #c2410c; }
-.drawer-tag.rich { background: var(--success-bg); color: var(--success); }
-.drawer-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.drawer-section:last-child { border-bottom: 0; }
-.drawer-section h4 { margin: 0 0 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-family: "Inter"; }
-.kv { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 13px; }
-.kv .k { color: var(--text-secondary); }
-.kv .v { font-weight: 500; text-align: right; }
-.kv .v.empty { color: var(--text-muted); font-style: italic; font-weight: 400; }
-
-/* per-channel consent block */
-.consent-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; }
-.consent-row:last-child { margin-bottom: 0; }
-.consent-row .lbl { font-weight: 600; font-size: 13px; }
-.consent-row .prov { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
-.consent-state { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
-.consent-state.ok { background: var(--success-bg); color: var(--success); }
-.consent-state.off { background: #f3f4f6; color: var(--text-secondary); }
-
-.banner {
-  display: flex; gap: 10px; padding: 11px 13px; border-radius: var(--radius-sm);
-  font-size: 12.5px; line-height: 1.5; margin-top: 12px;
-}
-.banner.warn { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning); }
-.banner.info { background: var(--bg-subtle); border: 1px solid var(--border); color: var(--text-secondary); }
-.banner.ok { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success); }
-.banner .b-ico { flex-shrink: 0; font-weight: 700; }
-
-/* ---------- Segment builder (screen 3) ---------- */
-.builder { border: 1px solid var(--border); border-radius: var(--radius-md); background: #fff; overflow: hidden; }
-.builder-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.builder-head input.seg-name { border: 0; font-size: 16px; font-weight: 700; font-family: "Plus Jakarta Sans"; letter-spacing: -0.01em; outline: none; width: 60%; }
-.builder-body { padding: 20px; }
-.toplevel {
-  background: #eef2ff; border: 1px solid #c7d2fe; border-radius: var(--radius-sm);
-  padding: 14px 16px; margin-bottom: 18px;
-}
-.toplevel .tl-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #4338ca; margin-bottom: 9px; }
-.stage-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-.stage-pill {
-  appearance: none; font: inherit; cursor: pointer;
-  border: 1px solid var(--border-strong); background: #fff; color: var(--text-secondary);
-  font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px;
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.stage-pill[aria-pressed="true"] { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
-.stage-pill .ct { opacity: 0.65; font-weight: 500; }
-
-.cond-group { border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 14px; }
-.cond-group .ctxt { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 10px; }
-.cond-row { display: flex; gap: 8px; align-items: center; margin-bottom: 9px; flex-wrap: wrap; }
-.cond-row:last-of-type { margin-bottom: 0; }
-.field-sel {
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 7px 11px; font-size: 13px; background: #fff; color: var(--text-primary);
-}
-.field-sel.op { color: var(--text-secondary); }
-.field-sel.val { flex: 1; min-width: 120px; }
-.and { font-size: 11px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 7px 0; }
-.add-cond { margin-top: 12px; }
-
-.audience-readout { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }
-.audience-readout .count { font-size: 22px; font-weight: 700; font-family: "Plus Jakarta Sans"; letter-spacing: -0.02em; }
-.audience-readout .count small { font-family: "Inter"; font-size: 13px; font-weight: 400; color: var(--text-secondary); margin-left: 6px; }
-
-/* ---------- Interstitial (screen 4) ---------- */
-.modal-stage { display: flex; justify-content: center; padding: 8px 0; }
-.modal {
-  width: 520px; max-width: 100%; background: #fff;
-  border: 1px solid var(--border); border-radius: var(--radius-lg);
-  box-shadow: 0 12px 40px rgba(15,23,42,0.16); overflow: hidden;
-}
-.modal-head { padding: 22px 24px 16px; display: flex; gap: 14px; }
-.modal-head .warn-ico {
-  width: 38px; height: 38px; border-radius: 999px; flex-shrink: 0;
-  background: var(--warning-bg); border: 1px solid var(--warning-border);
-  display: flex; align-items: center; justify-content: center; color: var(--warning); font-size: 20px; font-weight: 700;
-}
-.modal-head h3 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.01em; }
-.modal-head p { margin: 0; color: var(--text-secondary); font-size: 13.5px; line-height: 1.55; }
-.modal-body { padding: 0 24px 8px; }
-.recipient-breakdown { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 4px; }
-.rb-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 15px; border-bottom: 1px solid var(--border); font-size: 13px; }
-.rb-row:last-child { border-bottom: 0; }
-.rb-row .n { font-weight: 700; }
-.rb-row.excluded { background: var(--bg-subtle); color: var(--text-secondary); }
-.rb-row.excluded .n { color: var(--text-muted); text-decoration: line-through; }
-.modal-foot { padding: 16px 24px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.modal-foot label.confirm { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); }
-
-/* ---------- Automation trigger picker (screen 5) ---------- */
-.trigger-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 22px; }
-.trigger-card {
-  border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 18px;
-  cursor: pointer; background: #fff; position: relative;
-}
-.trigger-card:hover { border-color: var(--border-strong); }
-.trigger-card[data-selected="true"] { border-color: var(--text-primary); box-shadow: 0 0 0 3px rgba(17,24,39,0.06); }
-.trigger-card .tc-ico { width: 34px; height: 34px; border-radius: 9px; background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; margin-bottom: 11px; font-size: 17px; }
-.trigger-card[data-selected="true"] .tc-ico { background: #eef2ff; }
-.trigger-card h4 { margin: 0 0 4px; font-size: 14.5px; font-family: "Inter"; }
-.trigger-card p { margin: 0; color: var(--text-secondary); font-size: 12.5px; line-height: 1.5; }
-.trigger-card .new-pill { position: absolute; top: 14px; right: 14px; font-size: 9.5px; font-weight: 700; background: var(--reach-primary); color:#fff; padding: 2px 7px; border-radius: 999px; letter-spacing: 0.03em; }
-.trigger-card.soon { opacity: 0.55; cursor: default; }
-.trigger-card.soon .new-pill { background: var(--text-muted); }
-
-.config-panel { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px 20px; background: var(--bg-subtle); }
-.config-panel h4 { margin: 0 0 4px; font-size: 14px; font-family: "Inter"; }
-.config-panel .sub { color: var(--text-secondary); font-size: 12.5px; margin: 0 0 16px; }
-.form-group { margin-bottom: 16px; }
-.form-group > label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-.checks { display: flex; flex-direction: column; gap: 8px; }
-.checks label { display: flex; align-items: center; gap: 9px; font-size: 13px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; }
-.checks label .src-tag { margin-left: auto; font-size: 11px; }
-
-.legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 11.5px; color: var(--text-secondary); }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend .pip { width: 9px; height: 9px; border-radius: 999px; }
-
-@media (max-width: 920px) {
-  .app-frame { grid-template-columns: 1fr; }
-  .partner-rail { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--border); }
-  .rail-spacer, .rail-foot { display: none; }
-  .drawer-demo, .trigger-grid { grid-template-columns: 1fr; }
-}
+  /* Guide banner */
+  .guide { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: hsl(var(--reach-primary)); color: #fff; font-size: 12.5px; padding: 8px 16px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); z-index: 50; max-width: 90%; }
 </style>
 </head>
 <body>
+<div class="goose">
+  <aside class="goose-rail">
+    <div class="goose-brand"><span class="logo">goose</span><span>☰</span></div>
+    <div class="goose-tenant">Pampered Paws Pet Resort <span>⌄</span></div>
+    <button class="goose-new">＋ New Booking</button>
+    <div class="goose-group">FRONT DESK</div>
+    <div class="goose-nav"><span class="ic"></span>Dashboard</div>
+    <div class="goose-nav"><span class="ic"></span>Bookings</div>
+    <div class="goose-nav"><span class="ic"></span>Customers</div>
+    <div class="goose-nav"><span class="ic"></span>Messages</div>
+    <div class="goose-group">MARKETING</div>
+    <div class="goose-nav"><span class="ic"></span>Attribution</div>
+    <div class="goose-nav" data-active><span class="ic"></span>Engagement</div>
+    <div class="goose-spacer"></div>
+    <div class="goose-user">collaborate@embedreach<br>Administrator</div>
+  </aside>
 
-<div class="wf-switcher">
-  <strong>Leads in Engage</strong>
-  <span class="wf-tag">Wireframes · decision-driving core</span>
-  <span class="wf-tag">Source-keyed consent</span>
-  <nav>
-    <button data-go="s1" aria-current="true">1 · People list</button>
-    <button data-go="s2">2 · Lead detail</button>
-    <button data-go="s3">3 · Segment builder</button>
-    <button data-go="s4">4 · Send confirm</button>
-    <button data-go="s5">5 · Drip trigger</button>
-  </nav>
-</div>
-
-<div class="wf-stage">
-
-  <!-- ============================================================
-       SCREEN 1 — People list
-       ============================================================ -->
-  <section class="screen" id="s1" data-active="true">
-    <p class="screen-note">
-      <span class="area">Area 3·7·1</span>
-      <strong>People list (new Engage tab).</strong> The surface that doesn't exist today — one row per person (a <code>partner_user</code>), not per identification. Columns make the <strong>canonical stage</strong>, <strong>source</strong>, and <strong>per-channel consent</strong> legible at a glance. Under the source-keyed model, a <em>passive pixel</em> lead lands opted-out of both channels by default; an <em>SDK form w/ opt-in</em> lead is messageable.
-    </p>
-
-    <div class="app-frame">
-      <aside class="partner-rail">
-        <div class="partner-brand"><div class="logo">A</div><div class="name">AnyCreek</div></div>
-        <div class="rail-item"><span class="ico">◧</span> Dashboard</div>
-        <div class="rail-item"><span class="ico">◫</span> Measure</div>
-        <div class="rail-item" data-active="true"><span class="ico">✉</span> Engage</div>
-        <div class="rail-item"><span class="ico">★</span> Reputation</div>
-        <div class="rail-item"><span class="ico">☏</span> Voice</div>
-        <div class="rail-spacer"></div>
-        <div class="rail-foot"><div class="avatar"></div><div class="who">Backcountry Co.</div></div>
-      </aside>
-
-      <div class="engage">
-        <div class="engage-head">
-          <div class="engage-title">Engage<small>Message and nurture the people Reach already captured.</small></div>
-          <button class="btn btn-secondary">⚙</button>
-        </div>
-
+  <main class="engage">
+    <div class="engage-scroll">
+      <h1>Engagement</h1>
+      <div class="engage-tabs-row">
         <div class="engage-tabs">
-          <button class="engage-tab"><span class="ico">📣</span> Broadcasts</button>
-          <button class="engage-tab"><span class="ico">🔁</span> Automations</button>
-          <button class="engage-tab"><span class="ico">◍</span> Segments</button>
-          <button class="engage-tab" data-active="true"><span class="ico">👥</span> People <span class="new-pill">NEW</span></button>
-          <button class="engage-tab"><span class="ico">📊</span> Insights</button>
+          <button class="engage-tab" data-tab="automations">🗲 Automations</button>
+          <button class="engage-tab" data-tab="broadcasts">📣 Broadcasts</button>
+          <button class="engage-tab" data-tab="segments" data-active>👥 Segments</button>
+          <button class="engage-tab" data-tab="people">🧑 People</button>
+          <button class="engage-tab" data-tab="insights">✉ Insights</button>
         </div>
-
-        <div class="engage-body">
-          <div class="toolbar">
-            <input class="search" placeholder="Search name, email, phone…" />
-            <button class="filter-chip" data-on="true">Stage <span class="v">All</span> <span class="caret">▾</span></button>
-            <button class="filter-chip">Source <span class="v">All</span> <span class="caret">▾</span></button>
-            <button class="filter-chip">Consent <span class="v">Any</span> <span class="caret">▾</span></button>
-            <button class="btn btn-secondary" style="margin-left:auto">⤓ Import CSV</button>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Person</th>
-                  <th>Stage</th>
-                  <th>Source</th>
-                  <th>Consent</th>
-                  <th>Value</th>
-                  <th>Last activity</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="clickable" data-go="s2">
-                  <td><div class="cell-name">Dana Whitfield</div><div class="cell-sub">dana.w@gmail.com · (303) 555‑0142</div></td>
-                  <td><span class="stage qualified">Qualified lead</span></td>
-                  <td><span class="source form"><span class="dot"></span>Form (SDK)</span></td>
-                  <td><div class="consent"><span class="ch ok"><span class="pip"></span>Email</span><span class="ch ok"><span class="pip"></span>SMS</span></div></td>
-                  <td>$2,400</td>
-                  <td class="cell-sub">2h ago</td>
-                </tr>
-                <tr class="clickable" data-go="s2">
-                  <td><div class="cell-name muted">— no name —</div><div class="cell-sub">kayak.fan88@outlook.com</div></td>
-                  <td><span class="stage lead">Lead</span></td>
-                  <td><span class="source pixel"><span class="dot"></span>Pixel (passive)</span></td>
-                  <td><div class="consent"><span class="ch off"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
-                  <td class="muted">$0</td>
-                  <td class="cell-sub">5h ago</td>
-                </tr>
-                <tr class="clickable" data-go="s2">
-                  <td><div class="cell-name">Marcus Lee</div><div class="cell-sub">(720) 555‑0199</div></td>
-                  <td><span class="stage lead">Lead</span></td>
-                  <td><span class="source voice"><span class="dot"></span>AI Voice call</span></td>
-                  <td><div class="consent"><span class="ch none"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
-                  <td class="muted">$0</td>
-                  <td class="cell-sub">Yesterday</td>
-                </tr>
-                <tr class="clickable" data-go="s2">
-                  <td><div class="cell-name">Priya Anand</div><div class="cell-sub">priya@anand.co · (415) 555‑0177</div></td>
-                  <td><span class="stage conversion">Customer</span></td>
-                  <td><span class="source google"><span class="dot"></span>Google Ads → form</span></td>
-                  <td><div class="consent"><span class="ch ok"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
-                  <td>$5,800</td>
-                  <td class="cell-sub">3d ago</td>
-                </tr>
-                <tr class="clickable" data-go="s2">
-                  <td><div class="cell-name">Sam Ortega</div><div class="cell-sub">sortega@workmail.com</div></td>
-                  <td><span class="stage lead">Lead</span></td>
-                  <td><span class="source import"><span class="dot"></span>CSV import</span></td>
-                  <td><div class="consent"><span class="ch ok"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
-                  <td class="muted">$0</td>
-                  <td class="cell-sub">1w ago</td>
-                </tr>
-                <tr class="clickable" data-go="s2">
-                  <td><div class="cell-name">Jordan Pratt</div><div class="cell-sub">jpratt@gmail.com · (206) 555‑0123</div></td>
-                  <td><span class="stage disqualified">Disqualified</span></td>
-                  <td><span class="source form"><span class="dot"></span>Form (SDK)</span></td>
-                  <td><div class="consent"><span class="ch off"><span class="pip"></span>Email</span><span class="ch off"><span class="pip"></span>SMS</span></div></td>
-                  <td class="muted">$0</td>
-                  <td class="cell-sub">2w ago</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="legend">
-            <span><span class="pip" style="background:var(--success)"></span> Opted in (provenance recorded)</span>
-            <span><span class="pip" style="background:#d1d5db"></span> Opted out / default-out</span>
-            <span><span class="pip" style="background:#fff;border:1px solid var(--border-strong)"></span> No channel identifier</span>
-          </div>
-
-          <div class="pager">
-            <span>1–6 of 1,284 people</span>
-            <span><button class="btn btn-ghost">‹ Prev</button> <button class="btn btn-secondary">Next ›</button></span>
-          </div>
-        </div>
+        <div class="actions" id="tabActions"></div>
       </div>
+
+      <!-- SEGMENTS -->
+      <section class="tabview" data-view="segments" data-active>
+        <div class="toolbar"><input class="search" placeholder="Search…" /><span class="count-note">4 segments</span></div>
+        <div class="card" id="segList">
+          <div class="seg-row"><div class="nm">High Risk Churn - Daycare<small>Have more than 0 living pets…</small></div><span class="seg-type">Managed</span><span class="seg-mut">0 users</span><span class="seg-mut">5 mo ago</span></div>
+          <div class="seg-row"><div class="nm">Lapsed Customers<small>Have more than 0 living pets…</small></div><span class="seg-type">Managed</span><span class="seg-mut">0 users</span><span class="seg-mut">5 mo ago</span></div>
+          <div class="seg-row"><div class="nm">internal-review-exists<small>Any customer who gave an NPS score…</small></div><span class="seg-type">Managed</span><span class="seg-mut">0 users</span><span class="seg-mut">6 days ago</span></div>
+        </div>
+      </section>
+
+      <!-- PEOPLE -->
+      <section class="tabview" data-view="people">
+        <div class="toolbar"><input class="search" placeholder="Search name, email, phone…" /><button class="filter-chip">Source ▾</button><button class="filter-chip">Consent ▾</button><button class="filter-chip">Tags ▾</button><span class="count-note">4,197 people</span></div>
+        <div class="card">
+          <div class="thead"><div>Person</div><div>Source</div><div>Consent</div><div>Tags</div><div>Added</div></div>
+          <div class="trow" data-person="dana"><div class="person"><span class="nm">Dana Whitfield</span><span class="em">dana@example.com</span></div><span class="src">CSV</span><div class="consent"><span class="cdot"><span class="d ok"></span>Email</span><span class="cdot"><span class="d unk"></span>SMS</span></div><div class="rtags"><span class="rtag">newsletter</span><span class="rtag">wellness-2025</span></div><div class="rdate">Jul 15<small>imported</small></div></div>
+          <div class="trow" data-person="marcus"><div class="person"><span class="nm">Marcus Lee</span><span class="em">+1 215 555 0148</span></div><span class="src">CRM</span><div class="consent"><span class="cdot"><span class="d ok"></span>Email</span><span class="cdot"><span class="d ok"></span>SMS</span></div><div class="rtags"><span class="rtag">boarding</span></div><div class="rdate">Jan 19<small>created</small></div></div>
+          <div class="trow" data-person="pixel"><div class="person"><span class="unident">Unidentified visitor</span><span class="em">jo****@example.com</span></div><span class="src">Pixel</span><div class="consent"><span class="cdot"><span class="d no"></span>Email</span><span class="cdot"><span class="d unk"></span>SMS</span></div><div class="rtags"></div><div class="rdate">Jul 12<small>captured</small></div></div>
+          <div class="trow" data-person="priya"><div class="person"><span class="nm">Priya Anand</span><span class="em">priya@example.com</span></div><span class="src">CSV</span><div class="consent"><span class="cdot"><span class="d ok"></span>Email</span><span class="cdot"><span class="d unk"></span>SMS</span></div><div class="rtags"><span class="rtag">newsletter</span></div><div class="rdate">Jul 15<small>imported</small></div></div>
+        </div>
+        <p class="partner-note">People includes everyone Reach can message — imported contacts, pixel-captured leads, and contacts synced from your CRM. Click anyone to see consent, tags, and message activity.</p>
+      </section>
+
+      <!-- other tabs placeholder -->
+      <section class="tabview" data-view="automations"><p class="partner-note">Automations list… (not part of this walkthrough)</p></section>
+      <section class="tabview" data-view="broadcasts"><p class="partner-note">Broadcasts list… (not part of this walkthrough)</p></section>
+      <section class="tabview" data-view="insights"><p class="partner-note">Insights… (not part of this walkthrough)</p></section>
     </div>
-  </section>
 
-  <!-- ============================================================
-       SCREEN 2 — Lead detail drawer (sparse vs rich)
-       ============================================================ -->
-  <section class="screen" id="s2">
-    <p class="screen-note">
-      <span class="area">Area 3·8·1</span>
-      <strong>Lead detail.</strong> Two records side by side make the <strong>sparse-record reality</strong> visible: an email‑only passive‑pixel lead (left) vs. a rich SDK‑form lead (right). Each shows <strong>per‑channel consent with provenance</strong> (status · source · timestamp) — the TCPA‑proof hook the data model stores from day one. Note how consent default differs <em>by ingestion source</em>.
-    </p>
-
-    <div class="drawer-demo">
-
-      <!-- Sparse, passive-pixel -->
-      <div class="drawer">
-        <div class="drawer-head">
-          <div style="display:flex;justify-content:space-between;align-items:start;gap:10px">
-            <div>
-              <div class="who muted">— no name on record —</div>
-              <div class="meta">kayak.fan88@outlook.com</div>
-            </div>
-            <span class="drawer-tag sparse">Sparse · email‑only</span>
-          </div>
-        </div>
-
-        <div class="drawer-section">
-          <h4>Stage</h4>
-          <div class="kv"><span class="k">Canonical stage</span><span class="v"><span class="stage lead">Lead</span></span></div>
-          <div class="kv"><span class="k">Entered stage</span><span class="v">5h ago · auto‑fire on identification</span></div>
-        </div>
-
-        <div class="drawer-section">
-          <h4>Messaging consent</h4>
-          <div class="consent-row">
-            <div><div class="lbl">Email</div><div class="prov">Default‑out · passive pixel, partner doesn't own the form</div></div>
-            <span class="consent-state off">Opted out</span>
-          </div>
-          <div class="consent-row">
-            <div><div class="lbl">SMS</div><div class="prov">No explicit opt‑in captured</div></div>
-            <span class="consent-state off">Opted out</span>
-          </div>
-          <div class="banner warn"><span class="b-ico">!</span><span>Captured via passive pixel interception. Not messageable until an explicit opt‑in upgrades it. Usable for analytics & segmentation.</span></div>
-        </div>
-
-        <div class="drawer-section">
-          <h4>Identity & attributes</h4>
-          <div class="kv"><span class="k">First name</span><span class="v empty">— (merge falls back to “there”)</span></div>
-          <div class="kv"><span class="k">Phone</span><span class="v empty">none</span></div>
-          <div class="kv"><span class="k">Interest tags</span><span class="v empty">none</span></div>
-        </div>
-
-        <div class="drawer-section">
-          <h4>Capture context</h4>
-          <div class="kv"><span class="k">Source</span><span class="v">Pixel (passive)</span></div>
-          <div class="kv"><span class="k">Landing page</span><span class="v">/kayak‑tours</span></div>
-          <div class="kv"><span class="k">UTM</span><span class="v empty">none</span></div>
-        </div>
-      </div>
-
-      <!-- Rich, SDK form -->
-      <div class="drawer">
-        <div class="drawer-head">
-          <div style="display:flex;justify-content:space-between;align-items:start;gap:10px">
-            <div>
-              <div class="who">Dana Whitfield</div>
-              <div class="meta">dana.w@gmail.com · (303) 555‑0142</div>
-            </div>
-            <span class="drawer-tag rich">Rich · SDK form</span>
-          </div>
-        </div>
-
-        <div class="drawer-section">
-          <h4>Stage</h4>
-          <div class="kv"><span class="k">Canonical stage</span><span class="v"><span class="stage qualified">Qualified lead</span></span></div>
-          <div class="kv"><span class="k">Sub‑stage</span><span class="v">Estimate requested</span></div>
-          <div class="kv"><span class="k">Entered stage</span><span class="v">2h ago · segment‑derived</span></div>
-        </div>
-
-        <div class="drawer-section">
-          <h4>Messaging consent</h4>
-          <div class="consent-row">
-            <div><div class="lbl">Email</div><div class="prov">Opt‑in form · optInToEmail=true · Jun 4, 2026 10:14</div></div>
-            <span class="consent-state ok">Opted in</span>
-          </div>
-          <div class="consent-row">
-            <div><div class="lbl">SMS</div><div class="prov">Opt‑in form · optInToSms=true · Jun 4, 2026 10:14</div></div>
-            <span class="consent-state ok">Opted in</span>
-          </div>
-          <div class="banner ok"><span class="b-ico">✓</span><span>Captured via partner‑owned SDK form with explicit opt‑in. Messageable on both channels; provenance stored for TCPA.</span></div>
-        </div>
-
-        <div class="drawer-section">
-          <h4>Identity & attributes</h4>
-          <div class="kv"><span class="k">First name</span><span class="v">Dana</span></div>
-          <div class="kv"><span class="k">Interest tags</span><span class="v">backcountry · avalanche‑course</span></div>
-          <div class="kv"><span class="k">Lead value</span><span class="v">$2,400</span></div>
-        </div>
-
-        <div class="drawer-section">
-          <h4>Capture context</h4>
-          <div class="kv"><span class="k">Source</span><span class="v">Form (SDK) · “Request a quote”</span></div>
-          <div class="kv"><span class="k">UTM campaign</span><span class="v">spring‑backcountry</span></div>
-          <div class="kv"><span class="k">Click → form</span><span class="v">Google Ads · 4 min</span></div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ============================================================
-       SCREEN 3 — Blended segment builder
-       ============================================================ -->
-  <section class="screen" id="s3">
-    <p class="screen-note">
-      <span class="area">Area 5</span>
-      <strong>Blended segment builder.</strong> Leads and customers are built in one place (the meeting's resolved position). <strong>Funnel stage is a top‑level filter</strong> above the existing condition‑group UI. The <strong>sparse‑field guard</strong> warns when a chosen field excludes people who lack it. Consent filtering is always applied automatically on send (shown on screen 4).
-    </p>
-
-    <div class="app-frame">
-      <aside class="partner-rail">
-        <div class="partner-brand"><div class="logo">A</div><div class="name">AnyCreek</div></div>
-        <div class="rail-item"><span class="ico">◧</span> Dashboard</div>
-        <div class="rail-item"><span class="ico">◫</span> Measure</div>
-        <div class="rail-item" data-active="true"><span class="ico">✉</span> Engage</div>
-        <div class="rail-item"><span class="ico">★</span> Reputation</div>
-        <div class="rail-spacer"></div>
-        <div class="rail-foot"><div class="avatar"></div><div class="who">Backcountry Co.</div></div>
-      </aside>
-
-      <div class="engage">
-        <div class="engage-head"><div class="engage-title">New segment</div><button class="btn btn-ghost">✕</button></div>
-        <div class="engage-body">
-          <div class="builder">
-            <div class="builder-head">
-              <input class="seg-name" value="Avalanche‑course prospects" />
-              <span class="muted" style="font-size:12.5px">Auto‑updating</span>
-            </div>
-            <div class="builder-body">
-
-              <div class="toplevel">
-                <div class="tl-label">Funnel stage <span style="font-weight:500;text-transform:none;letter-spacing:0;color:#6366f1">— top‑level filter</span></div>
-                <div class="stage-pills">
-                  <button class="stage-pill" aria-pressed="true">Lead <span class="ct">412</span></button>
-                  <button class="stage-pill" aria-pressed="true">Qualified lead <span class="ct">96</span></button>
-                  <button class="stage-pill">Customer <span class="ct">203</span></button>
-                  <button class="stage-pill">Disqualified <span class="ct">31</span></button>
-                  <button class="stage-pill">Lost <span class="ct">12</span></button>
-                </div>
-              </div>
-
-              <div class="cond-group">
-                <div class="ctxt">Match all of the following</div>
-                <div class="cond-row">
-                  <select class="field-sel"><option>Interest tag</option></select>
-                  <select class="field-sel op"><option>is one of</option></select>
-                  <input class="field-sel val" value="avalanche‑course, backcountry" />
-                </div>
-                <div class="and">AND</div>
-                <div class="cond-row">
-                  <select class="field-sel"><option>Page visited</option></select>
-                  <select class="field-sel op"><option>contains</option></select>
-                  <input class="field-sel val" value="/courses/avalanche" />
-                </div>
-                <div class="add-cond"><button class="btn btn-ghost">+ Add condition</button></div>
-              </div>
-
-              <div class="banner warn" style="margin-top:14px"><span class="b-ico">!</span><span><strong>Sparse‑field guard:</strong> <strong>~318 people</strong> in this stage have no <em>Interest tag</em> and will be silently excluded. 190 match the full segment.</span></div>
-
-              <div class="audience-readout">
-                <div class="count">190 <small>people match · 508 in selected stages</small></div>
-                <div style="display:flex;gap:10px">
-                  <button class="btn btn-secondary">✦ Describe with AI</button>
-                  <button class="btn btn-primary">Save segment</button>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       SCREEN 4 — Non-customer confirmation interstitial
-       ============================================================ -->
-  <section class="screen" id="s4">
-    <p class="screen-note">
-      <span class="area">Area 5·1</span>
-      <strong>Send confirmation.</strong> When a broadcast audience contains non‑customers (leads), this interstitial appears before send. It surfaces the breakdown and shows that <strong>opted‑out / no‑consent contacts are removed automatically</strong> — the deliverability safeguard that protects the &lt;0.1% complaint ceiling.
-    </p>
-
-    <div class="modal-stage">
+    <!-- ============ IMPORT WIZARD ============ -->
+    <div class="scrim" id="importScrim">
       <div class="modal">
-        <div class="modal-head">
-          <div class="warn-ico">!</div>
-          <div>
-            <h3>You're about to message non‑customers</h3>
-            <p>This audience includes <strong>leads</strong>, not just existing customers. Confirm you have a basis to message them.</p>
-          </div>
-        </div>
+        <div class="modal-head"><h2>Import contacts</h2><span class="draft-pill">CSV</span></div>
         <div class="modal-body">
-          <div class="recipient-breakdown">
-            <div class="rb-row"><span>Customers</span><span class="n">203</span></div>
-            <div class="rb-row"><span>Qualified leads</span><span class="n">96</span></div>
-            <div class="rb-row"><span>Leads</span><span class="n">412</span></div>
-            <div class="rb-row excluded"><span>Excluded — opted out / no email consent</span><span class="n">228</span></div>
-            <div class="rb-row excluded"><span>Excluded — no email on record</span><span class="n">41</span></div>
+          <nav class="rail" id="rail">
+            <div class="rail-step" data-step="0"><span class="rm">○</span>Upload file</div>
+            <div class="rail-step" data-step="1"><span class="rm">○</span>Map columns</div>
+            <div class="rail-step" data-step="2"><span class="rm">○</span>Tag contacts</div>
+            <div class="rail-step" data-step="3"><span class="rm">○</span>Consent</div>
+            <div class="rail-step" data-step="4"><span class="rm">○</span>Review &amp; import</div>
+            <div class="rail-step" data-step="5"><span class="rm">○</span>Done</div>
+          </nav>
+          <div class="content-card">
+            <section class="panel" data-panel="0"><div class="p-head"><h3>Upload your list</h3><p>A CSV with one contact per row. You'll map columns to Reach fields next.</p></div><div class="help-link"><span class="g">?</span>How to format your CSV</div><div class="dropzone" id="dz"><div class="ic">⬆</div><h4>Drag a CSV here, or click to browse</h4><p>Up to 50,000 rows · .csv</p><div class="file-chip" id="fc"><span>📄</span><span class="nm">newsletter-signups.csv</span><span class="mt">· 4,212 rows</span></div></div><span class="sample">↓ Download a sample CSV</span></section>
+            <section class="panel" data-panel="1"><div class="p-head"><h3>Map your columns</h3><p>Confirm each column maps to the right Reach field. Unmapped columns are ignored.</p></div><div class="map-row"><div class="cc">Full Name<small>Dana Whitfield</small></div><div class="ar">→</div><select><option>Name</option><option>Ignore</option></select></div><div class="map-row"><div class="cc">Email<small>dana@example.com</small></div><div class="ar">→</div><select><option>Email</option><option>Ignore</option></select></div><div class="map-row"><div class="cc">Phone<small>+1 215 555 0142</small></div><div class="ar">→</div><select><option>Phone</option><option>Ignore</option></select></div><div class="map-row"><div class="cc">Internal ID<small>HNT-88421</small></div><div class="ar">→</div><select data-un><option>Ignore this column</option><option>External ID</option></select></div></section>
+            <section class="panel" data-panel="2"><div class="p-head"><h3>Tag these contacts</h3><p>Every contact in this import gets these tags. You'll use them to build the segment that makes these contacts messageable.</p></div><div class="help-link"><span class="g">?</span>How tags work</div><label class="lbl">Add tags to this import</label><input class="tag-input" placeholder="Type a tag and press Enter…" /><div class="hint">Applied to all 4,212 contacts in this file.</div><div class="tags"><span class="tag">newsletter <span class="x">×</span></span><span class="tag">wellness-2025 <span class="x">×</span></span></div><p class="note">Tags are how you'll target these contacts. At the end, we'll help you build a segment from the tags you add here — that's what makes them messageable.</p></section>
+            <section class="panel" data-panel="3"><div class="p-head"><h3>Set marketing consent</h3><p>Choose the status for the new contacts in this file.</p></div><div class="help-link"><span class="g">?</span>Why permission matters</div><div class="req-row"><label class="lbl" style="margin:0;">Email marketing status</label><span class="req"><span class="s">*</span> Required</span></div><select id="es" style="max-width:480px;"><option value="">Select a status…</option><option value="subscribed" selected>Subscribed — consented, messageable</option><option value="non">Non-subscribed — never opted in, not messageable</option><option value="unsub">Unsubscribed — opted out, not messageable</option></select><p class="statushint" id="sh">These contacts consented to email marketing and will be messageable.</p><p class="note">This status applies to <strong>new contacts only</strong>. Contacts you already have keep their current status — an import never re-subscribes someone who opted out.</p><div id="ab" style="margin-top:18px;"><div class="attest-card"><div class="l"><span class="i">⚠</span><div><h4>Confirm you have permission</h4><p>Only import contacts who consented to marketing from your business. Importing without permission can violate CAN-SPAM / TCPA rules and damage your sending reputation.</p></div></div></div><label class="chk" for="at"><input type="checkbox" id="at" checked /><label for="at">I confirm these contacts consented to receive marketing from my business.</label></label><p class="prov">Recorded with your name, the time, and your IP address as proof of attestation.</p></div></section>
+            <section class="panel" data-panel="4"><div class="p-head"><h3>Review &amp; import</h3><p>Here's exactly what will happen. Resolve any matches, then import.</p></div><div class="outcome-bar"><div class="oc" data-t="ok"><div class="n">4,196</div><div class="l">Import as new</div></div><div class="oc" data-t="mute"><div class="n">1</div><div class="l">Update existing</div></div><div class="oc" data-t="warn"><div class="n">15</div><div class="l">Won't import</div></div><div class="oc"><div class="n">4,193</div><div class="l">Messageable</div></div></div><div class="rsec"><h4>Rows that won't import <span class="bdg">15</span></h4><p class="sub">Download, fix, and re-import.</p><div class="errcard"><div class="errline"><span class="dd" data-t="danger"></span><span class="c">12</span><span class="ds">invalid or missing email</span></div><div class="errline"><span class="dd" data-t="warn"></span><span class="c">3</span><span class="ds">duplicate of another row in this file</span></div><div class="errline" style="border-top:1px solid hsl(var(--reach-border)); margin-top:6px; padding-top:11px;"><span class="dl" style="margin-left:0;">↓ Download the 15 rows that won't import</span></div></div></div><div class="rsec"><h4>Matches an existing contact <span class="bdg">3</span></h4><p class="sub">Choose per row. Nothing is merged automatically.</p><div class="bulk">Apply to all: <select><option>Choose per row…</option><option>Update details</option><option>Keep separate</option><option>Skip</option></select></div><div class="col"><div class="col-w"><span class="p">Dana Whitfield</span><span class="m">Matches on email</span></div><div class="col-d">dana@example.com · since 2025-11-02</div><div class="preserved">✓ Existing consent preserved</div><div class="rz"><button data-p>Update details</button><button>Keep separate</button><button>Skip</button></div></div></div></section>
+            <section class="panel" data-panel="5"><div class="done-hero"><span class="ck">✓</span><div><h3>4,197 contacts imported</h3><p>4,196 new · 1 updated · 15 skipped</p></div></div><div class="handoff"><h4>One more step to message them</h4><p>Your contacts are saved, but Engage sends to <strong>segments</strong>, not raw lists. Create a segment that includes this import and you can message them.</p><div class="hp"><span class="hl">We'll start you with</span><div class="cond"><span class="f">Tag</span><span class="o">is any of</span><span class="v">newsletter</span><span class="v">wellness-2025</span></div><span class="hn">Built from the tags you added — edit anything in the segment builder.</span></div><div class="ha"><button class="primary-inline" id="toSegment">Create a segment for these contacts →</button><button class="ghost-inline" id="handoffLater">Add to existing segment</button></div></div><div class="skip"><h4>15 rows were skipped</h4><p>12 invalid/missing email · 3 in-file duplicates. Fix and re-import.</p><button class="dlbtn">↓ Download skipped rows (.csv)</button></div></section>
           </div>
-          <div class="banner info" style="margin-top:12px"><span class="b-ico">ℹ</span><span>Opted‑out and no‑consent contacts are <strong>always removed automatically</strong>, regardless of segment. <strong>442</strong> people will receive this broadcast.</span></div>
         </div>
-        <div class="modal-foot">
-          <label class="confirm"><input type="checkbox" checked /> I have a basis to message these leads</label>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-ghost">Cancel</button>
-            <button class="btn btn-primary">Send to 442 →</button>
-          </div>
-        </div>
+        <div class="modal-foot"><span class="foot-hint" id="fh"></span><button class="btn btn-soft" id="importCancel">Cancel</button><button class="btn btn-ghost" id="back" style="display:none;">← Back</button><button class="btn btn-primary" id="next">Continue</button></div>
       </div>
     </div>
-  </section>
 
-  <!-- ============================================================
-       SCREEN 5 — Drip-on-capture automation trigger
-       ============================================================ -->
-  <section class="screen" id="s5">
-    <p class="screen-note">
-      <span class="area">Area 7·1</span>
-      <strong>Drip‑on‑capture trigger.</strong> The headline use case — a new <strong>“When a lead is captured”</strong> trigger in the automation‑type picker. The source filter ties consent to automation: passive‑pixel leads (default opted‑out) can be enrolled in email only after upgrade, and never auto‑enrolled into SMS without explicit opt‑in.
-    </p>
+    <!-- ============ SEGMENT BUILDER ============ -->
+    <div class="scrim" id="segScrim">
+      <div class="dialog">
+        <div class="dhead"><div><h2>New segment</h2><p>Define who this segment includes. Match updates live on the right.</p></div><div class="dhead-right"><button class="ai-btn">✦ Build with AI</button><button class="xbtn" id="segClose">×</button></div></div>
+        <div class="dbody">
+          <div class="conditions">
+            <div class="fld"><label>Segment name <span class="rq">*</span></label><input class="inp" id="segName" value="Newsletter import — Jul 2026" /></div>
+            <div class="fld"><label>Description</label><input class="inp" id="segDesc" value="Contacts imported Jul 15, tagged newsletter." /></div>
+            <hr class="divider" />
+            <div class="audience-block"><div class="al">Who to include</div><p class="ah">Leads, customers, or both — set the group before adding filters.</p><div class="seg-toggle"><button data-on>Leads</button><button>Customers</button><button>Both</button></div></div>
+            <div class="cond-head">Audience conditions</div>
+            <p class="cond-sub">Contacts must match <select class="match-mode" id="matchMode"><option value="all">all</option><option value="any">any</option></select> of the following.</p>
+            <div id="condSeeded">
+              <div class="cond-row"><select><option>Tag</option><option>Email opt-out</option><option>Phone opt-out</option><option>Imported date</option><option>Email</option></select><select><option>is any of</option><option>is none of</option></select><div class="valbox"><span class="valtag">newsletter <span class="x2">×</span></span><span class="valtag">wellness-2025 <span class="x2">×</span></span></div></div>
+              <div class="and-divider"><span class="line"></span><span class="and-pill" data-joiner>AND</span><span class="line"></span></div>
+              <div class="cond-row"><select><option>Email opt-out</option><option>Tag</option><option>Imported date</option></select><select><option>is</option></select><select><option>false (still messageable)</option><option>true (opted out)</option></select></div>
+            </div>
+            <div id="condEmpty" style="display:none;">
+              <div class="cond-row" style="border-style:dashed; color:hsl(var(--reach-muted-foreground));"><select><option>Choose a field…</option><option>Tag</option><option>Email opt-out</option><option>Phone opt-out</option><option>Imported date</option><option>Email</option></select><select><option>—</option></select><div class="valbox" style="opacity:0.5;"></div></div>
+            </div>
+            <button class="add-cond">＋ Add condition</button>
+          </div>
+          <div class="preview">
+            <h3>Audience preview</h3><p class="psub">Updates as you edit conditions.</p>
+            <div class="count-big" id="cnt">4,193</div><div class="count-lbl">contacts match this segment</div>
+            <div class="rtable"><div class="rt-head"><span>Name</span><span>Contact</span></div><div class="rt-row"><span>Dana Whitfield</span><span class="c">dana@example.com</span></div><div class="rt-row"><span>Priya Anand</span><span class="c">priya@example.com</span></div><div class="rt-row"><span>Marcus Lee</span><span class="c">+1 215 555 0148</span></div></div>
+            <span class="sample-chip">ⓘ Preview based on sample data</span>
+          </div>
+        </div>
+        <div class="dfoot"><div class="foot-count"><span id="segFc">4,193</span> <span class="m">contacts match this segment</span></div><div class="foot-actions"><button class="btn btn-ghost" id="segCancel">Cancel</button><button class="btn btn-primary" id="segCreate">Create segment</button></div></div>
+      </div>
+    </div>
 
-    <div class="app-frame">
-      <aside class="partner-rail">
-        <div class="partner-brand"><div class="logo">A</div><div class="name">AnyCreek</div></div>
-        <div class="rail-item"><span class="ico">◧</span> Dashboard</div>
-        <div class="rail-item"><span class="ico">◫</span> Measure</div>
-        <div class="rail-item" data-active="true"><span class="ico">✉</span> Engage</div>
-        <div class="rail-item"><span class="ico">★</span> Reputation</div>
-        <div class="rail-spacer"></div>
-        <div class="rail-foot"><div class="avatar"></div><div class="who">Backcountry Co.</div></div>
+    <!-- ============ PEOPLE DRAWER ============ -->
+    <div class="scrim right" id="drawerScrim">
+      <aside class="drawer">
+        <div class="dw-head"><button class="x" id="drawerClose">×</button><h3 class="dw-name" id="dwName">Dana Whitfield</h3><div class="dw-contact" id="dwContact">dana@example.com · +1 215 555 0142</div><div class="dw-meta"><span class="src" id="dwSrc">CSV</span><span class="rdate" id="dwAdded">Imported Jul 15, 2026</span></div></div>
+        <div class="dw-body">
+          <div class="sec"><h4>Messaging consent</h4><div class="consent-panel"><div class="cp-row"><span class="cp-ch">Email</span><div><div class="cp-state"><span class="d" style="background:hsl(var(--success))"></span>Subscribed</div><div class="cp-why">Attested on import — Jul 15, 2026 by collaborate@embedreach.</div></div></div><div class="cp-row"><span class="cp-ch">SMS</span><div><div class="cp-state"><span class="d" style="background:hsl(var(--muted-dot))"></span>Not set</div><div class="cp-why">No SMS consent captured. Not messageable by SMS until they opt in.</div></div></div></div></div>
+          <div class="sec"><h4>Tags</h4><div class="tag-edit"><span class="tag-e">newsletter <span class="x2">×</span></span><span class="tag-e">wellness-2025 <span class="x2">×</span></span><button class="tag-add">＋ Add tag</button></div></div>
+          <div class="sec"><h4>Segments</h4><div class="seg-list"><div class="seg-item"><span class="sd"></span>Newsletter import — Jul 2026</div><div class="seg-item"><span class="sd"></span>Leads · wellness interest</div></div></div>
+          <div class="sec"><h4>Message activity</h4><div class="activity"><div class="act"><span class="ai">✉</span><span class="an"><strong>Summer wellness promo</strong><br><span class="at">Broadcast · Jul 14</span></span><span class="act-badge open">Opened</span></div><div class="act"><span class="ai">✉</span><span class="an"><strong>Welcome to Pampered Paws</strong><br><span class="at">Automation · Jul 15</span></span><span class="act-badge open">Opened</span></div><div class="act"><span class="ai">✉</span><span class="an"><strong>July 4th grooming special</strong><br><span class="at">Broadcast · Jul 3</span></span><span class="at">Delivered</span></div></div></div>
+          <div class="sec"><h4>More about this person</h4><span class="deeplink">↗ Open full profile</span></div>
+        </div>
       </aside>
-
-      <div class="engage">
-        <div class="engage-head"><div class="engage-title">New automation<small>Choose what starts this automation.</small></div><button class="btn btn-ghost">✕</button></div>
-        <div class="engage-body">
-
-          <div class="trigger-grid">
-            <div class="trigger-card" data-selected="true">
-              <span class="new-pill">NEW</span>
-              <div class="tc-ico">⚡</div>
-              <h4>When a lead is captured</h4>
-              <p>Fires the instant a new lead is created — form fill, tracked call, import, or voice. AnyCreek's #1 ask.</p>
-            </div>
-            <div class="trigger-card">
-              <div class="tc-ico">◍</div>
-              <h4>Enters a segment</h4>
-              <p>Fires when a person starts matching a segment's conditions.</p>
-            </div>
-            <div class="trigger-card soon">
-              <span class="new-pill">SOON</span>
-              <div class="tc-ico">🎂</div>
-              <h4>Date milestone</h4>
-              <p>Birthday, renewal, or anniversary dates.</p>
-            </div>
-            <div class="trigger-card soon">
-              <span class="new-pill">SOON</span>
-              <div class="tc-ico">🛒</div>
-              <h4>Real‑time activity</h4>
-              <p>Cart abandonment, appointment booked.</p>
-            </div>
-          </div>
-
-          <div class="config-panel">
-            <h4>Trigger: When a lead is captured</h4>
-            <p class="sub">Only leads matching these sources will be enrolled.</p>
-
-            <div class="form-group">
-              <label>Capture sources</label>
-              <div class="checks">
-                <label><input type="checkbox" checked /> Form (SDK, with opt‑in) <span class="src-tag"><span class="consent"><span class="ch ok"><span class="pip"></span>messageable</span></span></span></label>
-                <label><input type="checkbox" checked /> AI Voice call <span class="src-tag"><span class="consent"><span class="ch off"><span class="pip"></span>email only after opt‑in</span></span></span></label>
-                <label><input type="checkbox" /> Pixel (passive) <span class="src-tag"><span class="consent"><span class="ch off"><span class="pip"></span>default opted‑out</span></span></span></label>
-                <label><input type="checkbox" /> CSV import <span class="src-tag"><span class="consent"><span class="ch off"><span class="pip"></span>per‑row consent</span></span></span></label>
-              </div>
-            </div>
-
-            <div class="banner warn"><span class="b-ico">!</span><span>Passive‑pixel leads are opted‑out by default and can't be auto‑enrolled into an SMS sequence. They become eligible for email only once an explicit opt‑in upgrades them.</span></div>
-
-            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
-              <button class="btn btn-ghost">Back</button>
-              <button class="btn btn-primary">Continue → build sequence</button>
-            </div>
-          </div>
-
-        </div>
-      </div>
     </div>
-  </section>
-
+  </main>
 </div>
+
+<div class="guide" id="guide">👋 Start on <strong>Segments</strong> or <strong>People</strong> → click <strong>Import contacts</strong> to walk the whole flow.</div>
 
 <script>
-  const screens = document.querySelectorAll('.screen');
-  const navBtns = document.querySelectorAll('.wf-switcher button[data-go]');
-  function show(id) {
-    screens.forEach(s => s.setAttribute('data-active', s.id === id ? 'true' : 'false'));
-    navBtns.forEach(b => b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false'));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  document.addEventListener('click', e => {
-    const go = e.target.closest('[data-go]');
-    if (go) { show(go.dataset.go); }
-  });
-</script>
+  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
+  // ---- Tab switching + per-tab action buttons ----
+  const actionsFor = {
+    segments: '<button class="btn-import" id="btnImportSeg">↧ Import contacts</button><button class="btn-primary-sm" id="btnNewSegment">＋ New Segment</button>',
+    people:   '<button class="btn-import" id="btnImportPpl">↧ Import contacts</button>',
+    automations: '<button class="btn-primary-sm">＋ New Automation</button>',
+    broadcasts:  '<button class="btn-primary-sm">＋ New Broadcast</button>',
+    insights: '',
+  };
+  function setTab(tab){
+    $$(".engage-tab").forEach(t=>t.toggleAttribute("data-active", t.dataset.tab===tab));
+    $$(".tabview").forEach(v=>v.toggleAttribute("data-active", v.dataset.view===tab));
+    $("#tabActions").innerHTML = actionsFor[tab] || '';
+    const imp = $("#btnImportSeg") || $("#btnImportPpl");
+    if (imp) imp.onclick = openImport;
+    const newSeg = $("#btnNewSegment");
+    if (newSeg) newSeg.onclick = () => openSegmentBuilder("blank");
+    setGuide(tab==="segments"||tab==="people"
+      ? '👋 Click <strong>Import contacts</strong> to walk the flow — or click a row.'
+      : 'This tab is a placeholder — the walkthrough lives in Segments &amp; People.');
+  }
+  $$(".engage-tab").forEach(t=>t.onclick=()=>setTab(t.dataset.tab));
+  function setGuide(html){ $("#guide").innerHTML = html; }
+
+  // ---- Import wizard ----
+  const steps=[{next:"Continue"},{next:"Continue"},{next:"Continue"},{next:"Continue"},{next:"Import 4,197 contacts",hint:"Resolve matches to continue"},{next:"Done",last:true}];
+  let cur=0;
+  const hints={subscribed:"These contacts consented to email marketing and will be messageable.",non:"Stored but not messageable until they opt in. No attestation needed.",unsub:"Stored and explicitly opted out. No attestation needed.","":""};
+  function renderWizard(){
+    $$(".rail-step").forEach((el,i)=>{ el.dataset.state=i<cur?"complete":i===cur?"active":""; $(".rm",el).textContent=i<cur?"✓":i===cur?"●":"○"; });
+    $$(".panel").forEach((el,i)=>i===cur?el.setAttribute("data-active",""):el.removeAttribute("data-active"));
+    $("#back").style.display=cur===0?"none":"inline-block";
+    $("#next").textContent=steps[cur].next;
+    $("#next").className=steps[cur].last?"btn btn-ghost":"btn btn-primary";
+    const status=$("#es").value, needsAttest=status==="subscribed";
+    $("#ab").style.display=needsAttest?"block":"none";
+    const uploaded=$("#fc").style.display==="inline-flex"||$("#fc").style.display==="flex";
+    const consentOk=status!==""&&(!needsAttest||$("#at").checked);
+    let hint=steps[cur].hint||"";
+    if(cur===3&&!consentOk) hint=status===""?"Select a status to continue":"Confirm consent to continue";
+    $("#fh").textContent=hint;
+    $("#next").disabled=(cur===0&&!uploaded)||(cur===3&&!consentOk);
+  }
+  function openImport(){ cur=0; $("#fc").style.display="none"; $("#importScrim").setAttribute("data-open",""); renderWizard(); setGuide('Click the dropzone → step through → the last step hands you to the segment builder.'); }
+  $("#dz").onclick=()=>{ $("#fc").style.display="inline-flex"; renderWizard(); };
+  $("#es").onchange=e=>{ $("#sh").textContent=hints[e.target.value]||""; renderWizard(); };
+  $("#at").onchange=renderWizard;
+  $$("#importScrim .tag .x").forEach(x=>x.onclick=()=>x.closest(".tag").remove());
+  $$("#importScrim .rz button").forEach(b=>b.onclick=()=>{ $$(".rz button",b.closest(".col")).forEach(x=>x.removeAttribute("data-p")); b.setAttribute("data-p",""); });
+  $("#next").onclick=()=>{ if(steps[cur].last) return; if(cur<steps.length-1){cur++;renderWizard();} };
+  $("#back").onclick=()=>{ if(cur>0){cur--;renderWizard();} };
+  $("#importCancel").onclick=()=>$("#importScrim").removeAttribute("data-open");
+  // hand-off: import → segment builder (pre-seeded)
+  $("#toSegment").onclick=()=>{ $("#importScrim").removeAttribute("data-open"); setTab("segments"); openSegmentBuilder("import"); setGuide('Segment pre-filled from your import. Toggle Leads/Customers/Both and all/any, then Create segment.'); };
+  $("#handoffLater").onclick=()=>{ $("#importScrim").removeAttribute("data-open"); setTab("segments"); setGuide('Contacts imported. Build a segment anytime to message them.'); };
+
+  // ---- Segment builder ----
+  function openSegmentBuilder(mode){
+    const isImport = mode==="import";
+    // name / description
+    $("#segName").value = isImport ? "Newsletter import — Jul 2026" : "";
+    $("#segName").placeholder = "Name this segment…";
+    $("#segDesc").value = isImport ? "Contacts imported Jul 15, tagged newsletter." : "";
+    $("#segDesc").placeholder = "Optional";
+    // conditions: seeded rows for import, empty starter row for blank
+    $("#condSeeded").style.display = isImport ? "block" : "none";
+    $("#condEmpty").style.display  = isImport ? "none" : "block";
+    // audience toggle → Leads for import, Both for a fresh segment
+    $$(".seg-toggle button").forEach(x=>x.removeAttribute("data-on"));
+    $(`.seg-toggle button:nth-child(${isImport?1:3})`).setAttribute("data-on","");
+    // match mode + count
+    $("#matchMode").value = "all";
+    $$("[data-joiner]").forEach(p=>p.textContent="AND");
+    const startCount = isImport ? "4,193" : "0";
+    $("#cnt").textContent = startCount; $("#segFc").textContent = startCount;
+    $("#segScrim").setAttribute("data-open","");
+  }
+  $$(".seg-toggle button").forEach(b=>b.onclick=()=>{ $$(".seg-toggle button").forEach(x=>x.removeAttribute("data-on")); b.setAttribute("data-on",""); const m={Leads:"4,193",Customers:"812",Both:"5,005"}; const v=m[b.textContent]||"4,193"; $("#cnt").textContent=v; $("#segFc").textContent=v; });
+  $("#matchMode").onchange=e=>{ const any=e.target.value==="any"; $$("[data-joiner]").forEach(p=>p.textContent=any?"OR":"AND"); const v=any?"4,410":"4,193"; $("#cnt").textContent=v; $("#segFc").textContent=v; };
+  $$("#segScrim .valtag .x2").forEach(x=>x.onclick=()=>x.closest(".valtag").remove());
+  function closeSeg(){ $("#segScrim").removeAttribute("data-open"); }
+  $("#segClose").onclick=closeSeg; $("#segCancel").onclick=closeSeg;
+  $("#segCreate").onclick=()=>{ closeSeg(); // add the new segment to the list
+    const name = $("#segName").value.trim() || "Untitled segment";
+    const seeded = $("#condSeeded").style.display !== "none";
+    const desc = seeded ? "Tag is any of newsletter, wellness-2025" : "Custom conditions";
+    const users = $("#segFc").textContent;
+    const row=document.createElement("div"); row.className="seg-row";
+    row.innerHTML=`<div class="nm">${name}<small>${desc}</small></div><span class="seg-type new">Custom</span><span class="seg-mut">${users} users</span><span class="seg-mut">just now</span>`;
+    $("#segList").prepend(row); setTab("segments"); setGuide('✅ Segment created. It now appears at the top of your Segments list — ready to message.');
+  };
+
+  // ---- People drawer ----
+  const data={ dana:{name:"Dana Whitfield",contact:"dana@example.com · +1 215 555 0142",src:"CSV",added:"Imported Jul 15, 2026"}, marcus:{name:"Marcus Lee",contact:"+1 215 555 0148 · marcus@example.com",src:"CRM",added:"Created Jan 19, 2026"}, pixel:{name:"Unidentified visitor",contact:"jo****@example.com",src:"Pixel",added:"Captured Jul 12, 2026"}, priya:{name:"Priya Anand",contact:"priya@example.com",src:"CSV",added:"Imported Jul 15, 2026"} };
+  function bindRows(){ $$(".trow").forEach(r=>r.onclick=()=>{ const p=data[r.dataset.person]; $("#dwName").textContent=p.name; $("#dwContact").textContent=p.contact; $("#dwSrc").textContent=p.src; $("#dwAdded").textContent=p.added; $("#drawerScrim").setAttribute("data-open",""); }); }
+  bindRows();
+  $("#drawerClose").onclick=()=>$("#drawerScrim").removeAttribute("data-open");
+  $("#drawerScrim").onclick=e=>{ if(e.target===$("#drawerScrim")) $("#drawerScrim").removeAttribute("data-open"); };
+  $$("#drawerScrim .tag-e .x2").forEach(x=>x.onclick=e=>{ e.stopPropagation(); x.closest(".tag-e").remove(); });
+
+  // init
+  setTab("segments");
+</script>
 </body>
 </html>
