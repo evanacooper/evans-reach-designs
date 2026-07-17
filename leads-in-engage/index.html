@@ -217,6 +217,51 @@
   .act-badge { font-size: 11px; padding: 2px 7px; border-radius: 999px; } .act-badge.open { background: hsl(var(--success-bg)); color: hsl(var(--success)); }
   .deeplink { display: inline-flex; gap: 7px; align-items: center; font-size: 13px; font-weight: 600; color: hsl(var(--reach-primary)); cursor: pointer; }
 
+  /* Broadcast templates */
+  .tmpl-section { border: 1px solid hsl(var(--reach-border)); border-radius: 14px; padding: 20px 22px; margin-bottom: 26px; background: linear-gradient(180deg, hsl(210 40% 98%), hsl(0 0% 100%)); }
+  .tmpl-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tmpl-title { font-family: var(--reach-font-heading); font-size: 18px; font-weight: 800; margin: 0 0 3px; }
+  .tmpl-sub { font-size: 13px; color: hsl(var(--reach-muted-foreground)); margin: 0; max-width: 460px; }
+  .tmpl-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tf { border: 1px solid hsl(var(--reach-border)); background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12.5px; font-family: inherit; color: hsl(var(--reach-muted-foreground)); cursor: pointer; }
+  .tf[data-on] { background: hsl(var(--reach-primary)); color: #fff; border-color: hsl(var(--reach-primary)); }
+  .tmpl-strip { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }
+  .tmpl-card { flex: 0 0 260px; scroll-snap-align: start; text-align: left; background: #fff; border: 1px solid hsl(var(--reach-border)); border-radius: 12px; padding: 16px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; gap: 8px; transition: box-shadow 120ms, transform 120ms; }
+  .tmpl-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.08); transform: translateY(-2px); }
+  .tc-cat { align-self: flex-start; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 999px; }
+  .tc-cat[data-cat="seasonal"] { background: hsl(200 60% 94%); color: hsl(200 60% 32%); }
+  .tc-cat[data-cat="reengage"] { background: hsl(38 80% 92%); color: hsl(38 80% 32%); }
+  .tc-cat[data-cat="announce"] { background: hsl(260 50% 94%); color: hsl(260 45% 42%); }
+  .tc-cat[data-cat="promo"] { background: hsl(150 45% 92%); color: hsl(150 45% 30%); }
+  .tc-title { font-family: var(--reach-font-heading); font-size: 15px; font-weight: 700; line-height: 1.3; }
+  .tc-snippet { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); line-height: 1.5; flex: 1; }
+  .tc-foot { display: flex; gap: 8px; margin-top: 4px; }
+  .tc-ch { font-size: 11.5px; color: hsl(var(--reach-muted-foreground)); background: hsl(var(--reach-muted)); padding: 3px 8px; border-radius: 6px; }
+
+  .bc-list-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .bc-list-head h3 { font-family: var(--reach-font-heading); font-size: 16px; font-weight: 700; margin: 0; }
+  .bc-status { font-size: 11.5px; padding: 3px 9px; border-radius: 999px; justify-self: start; }
+  .bc-status.sent { background: hsl(var(--success-bg)); color: hsl(var(--success)); }
+  .bc-status.draft { background: hsl(var(--reach-muted)); color: hsl(var(--reach-muted-foreground)); }
+
+  /* Template preview modal */
+  .tmpl-modal { background: #fff; border-radius: 16px; width: 100%; max-width: 620px; max-height: 88%; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+  .tm-head { padding: 20px 24px; border-bottom: 1px solid hsl(var(--reach-border)); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .tm-title { font-family: var(--reach-font-heading); font-size: 19px; font-weight: 800; margin: 8px 0 0; }
+  .tm-body { padding: 20px 24px; overflow-y: auto; }
+  .tm-channel-tabs { display: inline-flex; gap: 3px; background: hsl(var(--reach-muted)); border-radius: 8px; padding: 3px; margin-bottom: 18px; }
+  .tmc { border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; color: hsl(var(--reach-muted-foreground)); }
+  .tmc[data-on] { background: #fff; color: hsl(var(--reach-foreground)); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+  .tm-field { margin-bottom: 16px; }
+  .tm-flabel { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: hsl(var(--reach-muted-foreground)); display: block; margin-bottom: 6px; }
+  .tm-subject { font-size: 15px; font-weight: 600; padding: 10px 12px; background: hsl(var(--reach-muted)); border-radius: 8px; }
+  .tm-email { font-size: 13.5px; line-height: 1.6; border: 1px solid hsl(var(--reach-border)); border-radius: 8px; padding: 16px; color: hsl(var(--reach-foreground)); }
+  .tm-email p { margin: 0 0 12px; } .tm-email p:last-child { margin-bottom: 0; }
+  .tm-email .cta { display: inline-block; background: hsl(var(--reach-primary)); color: #fff; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; margin-top: 4px; }
+  .tm-note { font-size: 12px; color: hsl(var(--reach-muted-foreground)); margin: 16px 0 0; line-height: 1.5; }
+  .tm-note code { background: hsl(var(--reach-muted)); padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
+  .tm-foot { border-top: 1px solid hsl(var(--reach-border)); padding: 14px 24px; display: flex; justify-content: flex-end; gap: 10px; }
+
   /* Guide banner */
   .guide { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: hsl(var(--reach-primary)); color: #fff; font-size: 12.5px; padding: 8px 16px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); z-index: 50; max-width: 90%; }
 </style>
@@ -276,9 +321,70 @@
         <p class="partner-note">People includes everyone Reach can message — imported contacts, pixel-captured leads, and contacts synced from your CRM. Click anyone to see consent, tags, and message activity.</p>
       </section>
 
+      <!-- BROADCASTS -->
+      <section class="tabview" data-view="broadcasts">
+        <div class="tmpl-section">
+          <div class="tmpl-head">
+            <div>
+              <h2 class="tmpl-title">Start from a template</h2>
+              <p class="tmpl-sub">Ready-to-send campaign ideas written for pet care businesses. Pick one, tweak it, send it.</p>
+            </div>
+            <div class="tmpl-filters">
+              <button class="tf" data-on>All</button>
+              <button class="tf">Seasonal</button>
+              <button class="tf">Promotions</button>
+              <button class="tf">Re-engagement</button>
+              <button class="tf">Announcements</button>
+            </div>
+          </div>
+          <div class="tmpl-strip" id="tmplStrip">
+            <button class="tmpl-card" data-tmpl="slow-season">
+              <div class="tc-cat" data-cat="seasonal">Seasonal</div>
+              <div class="tc-title">Fill your slow-season boarding calendar</div>
+              <div class="tc-snippet">"Planning a winter getaway? Book Bella's stay now and save 15% on boarding through February…"</div>
+              <div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div>
+            </button>
+            <button class="tmpl-card" data-tmpl="lapsed">
+              <div class="tc-cat" data-cat="reengage">Re-engagement</div>
+              <div class="tc-title">We miss your pup — come back offer</div>
+              <div class="tc-snippet">"It's been a while since Max's last visit! Here's 20% off your next grooming to welcome you both back…"</div>
+              <div class="tc-foot"><span class="tc-ch">✉ Email</span></div>
+            </button>
+            <button class="tmpl-card" data-tmpl="review">
+              <div class="tc-cat" data-cat="announce">Announcement</div>
+              <div class="tc-title">New service launch — enrichment daycare</div>
+              <div class="tc-snippet">"Introducing enrichment daycare: structured play, training, and naps. Now booking for spring…"</div>
+              <div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div>
+            </button>
+            <button class="tmpl-card" data-tmpl="holiday">
+              <div class="tc-cat" data-cat="seasonal">Seasonal</div>
+              <div class="tc-title">Holiday boarding — book early</div>
+              <div class="tc-snippet">"Our holiday spots fill fast. Reserve Luna's suite for the season and get a free bath before pickup…"</div>
+              <div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div>
+            </button>
+            <button class="tmpl-card" data-tmpl="referral">
+              <div class="tc-cat" data-cat="promo">Promotion</div>
+              <div class="tc-title">Refer a friend, both get a free day</div>
+              <div class="tc-snippet">"Love us? Tell a friend. When they book their first stay, you both get a free day of daycare…"</div>
+              <div class="tc-foot"><span class="tc-ch">✉ Email</span></div>
+            </button>
+          </div>
+        </div>
+
+        <div class="bc-list-head">
+          <h3>Your broadcasts</h3>
+          <button class="btn-primary-sm" id="btnNewBroadcastList">＋ New Broadcast</button>
+        </div>
+        <div class="card">
+          <div class="thead" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr;"><div>Name</div><div>Status</div><div>Sent</div><div>Opened</div><div>Date</div></div>
+          <div class="trow" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr; cursor:default;"><div class="person"><span class="nm">July 4th grooming special</span></div><span class="bc-status sent">Sent</span><span class="seg-mut">1,204</span><span class="seg-mut">38%</span><span class="seg-mut">Jul 3</span></div>
+          <div class="trow" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr; cursor:default;"><div class="person"><span class="nm">Summer wellness promo</span></div><span class="bc-status sent">Sent</span><span class="seg-mut">2,940</span><span class="seg-mut">41%</span><span class="seg-mut">Jul 14</span></div>
+          <div class="trow" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr; cursor:default;"><div class="person"><span class="nm">Broadcast July 15 01:44 PM</span></div><span class="bc-status draft">Draft</span><span class="seg-mut">—</span><span class="seg-mut">—</span><span class="seg-mut">Jul 15</span></div>
+        </div>
+      </section>
+
       <!-- other tabs placeholder -->
       <section class="tabview" data-view="automations"><p class="partner-note">Automations list… (not part of this walkthrough)</p></section>
-      <section class="tabview" data-view="broadcasts"><p class="partner-note">Broadcasts list… (not part of this walkthrough)</p></section>
       <section class="tabview" data-view="insights"><p class="partner-note">Insights… (not part of this walkthrough)</p></section>
     </div>
 
@@ -354,6 +460,28 @@
         </div>
       </aside>
     </div>
+
+    <!-- ============ TEMPLATE PREVIEW ============ -->
+    <div class="scrim" id="tmplScrim">
+      <div class="tmpl-modal">
+        <div class="tm-head">
+          <div><span class="tc-cat" id="tmCat" data-cat="seasonal">Seasonal</span><h2 class="tm-title" id="tmTitle">Fill your slow-season boarding calendar</h2></div>
+          <button class="xbtn" id="tmClose">×</button>
+        </div>
+        <div class="tm-body">
+          <div class="tm-channel-tabs"><button class="tmc" data-on>✉ Email</button><button class="tmc">💬 SMS</button></div>
+          <div class="tm-preview">
+            <div class="tm-field"><span class="tm-flabel">Subject</span><div class="tm-subject" id="tmSubject">Book Bella's winter stay and save 15%</div></div>
+            <div class="tm-field"><span class="tm-flabel">Body</span><div class="tm-email" id="tmBody"></div></div>
+          </div>
+          <p class="tm-note">Everything's written for you — <code>{{first_name}}</code> and <code>{{pet_name}}</code> fill in automatically. Edit anything after you pick it.</p>
+        </div>
+        <div class="tm-foot">
+          <button class="btn btn-ghost" id="tmCancel">Cancel</button>
+          <button class="btn btn-primary" id="tmUse">Use this template →</button>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -378,9 +506,12 @@
     if (imp) imp.onclick = openImport;
     const newSeg = $("#btnNewSegment");
     if (newSeg) newSeg.onclick = () => openSegmentBuilder("blank");
-    setGuide(tab==="segments"||tab==="people"
-      ? '👋 Click <strong>Import contacts</strong> to walk the flow — or click a row.'
-      : 'This tab is a placeholder — the walkthrough lives in Segments &amp; People.');
+    const guides = {
+      segments: '👋 Click <strong>Import contacts</strong> to walk the flow — or click a row.',
+      people: '👋 Click any person to see their consent, tags, and message activity.',
+      broadcasts: '👋 Click a <strong>template card</strong> to preview a ready-to-send campaign, then use it.',
+    };
+    setGuide(guides[tab] || 'This tab is a placeholder — the walkthrough lives in Segments, People &amp; Broadcasts.');
   }
   $$(".engage-tab").forEach(t=>t.onclick=()=>setTab(t.dataset.tab));
   function setGuide(html){ $("#guide").innerHTML = html; }
@@ -461,7 +592,50 @@
   $("#drawerScrim").onclick=e=>{ if(e.target===$("#drawerScrim")) $("#drawerScrim").removeAttribute("data-open"); };
   $$("#drawerScrim .tag-e .x2").forEach(x=>x.onclick=e=>{ e.stopPropagation(); x.closest(".tag-e").remove(); });
 
+  // ---- Broadcast templates ----
+  const tmplData = {
+    "slow-season": { cat:"Seasonal", catKey:"seasonal", title:"Fill your slow-season boarding calendar",
+      subject:"Book Bella's winter stay and save 15%",
+      body:`<p>Hi {{first_name}},</p><p>Planning a winter getaway? Don't leave {{pet_name}}'s stay to the last minute. Book now and save <strong>15% on boarding</strong> through February.</p><p>Our suites fill up fast once the holidays hit — reserve early and travel worry-free.</p><span class="cta">Book {{pet_name}}'s stay →</span>`,
+      sms:`Hi {{first_name}}! Book {{pet_name}}'s winter boarding now & save 15% through Feb. Spots fill fast — reserve today: [link]` },
+    "lapsed": { cat:"Re-engagement", catKey:"reengage", title:"We miss your pup — come back offer",
+      subject:"It's been a while, {{first_name}} — here's 20% off",
+      body:`<p>Hi {{first_name}},</p><p>We haven't seen {{pet_name}} in a while and we miss those tail wags! Come back and enjoy <strong>20% off your next grooming</strong>.</p><p>Whether it's a full groom or just a bath and nails, we'd love to pamper {{pet_name}} again.</p><span class="cta">Claim 20% off →</span>`,
+      sms:`Hi {{first_name}}! We miss {{pet_name}} 🐾 Enjoy 20% off your next grooming when you book this month: [link]` },
+    "review": { cat:"Announcement", catKey:"announce", title:"New service launch — enrichment daycare",
+      subject:"Introducing enrichment daycare at Pampered Paws",
+      body:`<p>Hi {{first_name}},</p><p>Big news — we're launching <strong>enrichment daycare</strong>: structured play, light training, socialization, and plenty of naps.</p><p>It's daycare with a purpose, designed to keep {{pet_name}} happy, tired, and thriving. Now booking for spring.</p><span class="cta">Reserve a spot →</span>`,
+      sms:`Hi {{first_name}}! New at Pampered Paws: enrichment daycare — play, training & naps for {{pet_name}}. Now booking: [link]` },
+    "holiday": { cat:"Seasonal", catKey:"seasonal", title:"Holiday boarding — book early",
+      subject:"Holiday spots are filling fast",
+      body:`<p>Hi {{first_name}},</p><p>The holidays are our busiest season and spots go quickly. Reserve {{pet_name}}'s suite now and get a <strong>free bath before pickup</strong>.</p><p>Travel with peace of mind knowing {{pet_name}} is in great hands.</p><span class="cta">Reserve the holiday suite →</span>`,
+      sms:`Hi {{first_name}}! Holiday boarding fills fast. Reserve {{pet_name}}'s suite now + get a free bath before pickup: [link]` },
+    "referral": { cat:"Promotion", catKey:"promo", title:"Refer a friend, both get a free day",
+      subject:"Give a free day, get a free day",
+      body:`<p>Hi {{first_name}},</p><p>Love bringing {{pet_name}} to us? Tell a friend! When they book their first stay, <strong>you both get a free day of daycare</strong>.</p><p>There's no limit — refer as many friends as you like.</p><span class="cta">Share your referral link →</span>`,
+      sms:`Hi {{first_name}}! Refer a friend to Pampered Paws — when they book, you BOTH get a free daycare day 🐾 [link]` },
+  };
+  let curTmpl = null, curChannel = "email";
+  function renderTmplPreview(){
+    const t = tmplData[curTmpl]; if(!t) return;
+    $("#tmCat").textContent = t.cat; $("#tmCat").dataset.cat = t.catKey;
+    $("#tmTitle").textContent = t.title;
+    if(curChannel==="email"){ $("#tmSubject").parentElement.style.display="block"; $("#tmSubject").textContent = t.subject; $("#tmBody").innerHTML = t.body; }
+    else { $("#tmSubject").parentElement.style.display="none"; $("#tmBody").innerHTML = `<p>${t.sms}</p>`; }
+  }
+  function bindTemplates(){
+    $$(".tmpl-card").forEach(c=>c.onclick=()=>{ curTmpl=c.dataset.tmpl; curChannel="email"; $$(".tmc").forEach((x,i)=>x.toggleAttribute("data-on",i===0)); renderTmplPreview(); $("#tmplScrim").setAttribute("data-open",""); });
+    $$(".tmc").forEach(b=>b.onclick=()=>{ $$(".tmc").forEach(x=>x.removeAttribute("data-on")); b.setAttribute("data-on",""); curChannel = b.textContent.includes("SMS")?"sms":"email"; renderTmplPreview(); });
+    const filterKey = { All:null, Seasonal:"seasonal", Promotions:"promo", "Re-engagement":"reengage", Announcements:"announce" };
+    $$(".tf").forEach(f=>f.onclick=()=>{ $$(".tf").forEach(x=>x.removeAttribute("data-on")); f.setAttribute("data-on",""); const key=filterKey[f.textContent]; $$(".tmpl-card").forEach(c=>{ const t=tmplData[c.dataset.tmpl]; c.style.display = (!key||t.catKey===key)?"flex":"none"; }); });
+  }
+  $("#tmClose").onclick=()=>$("#tmplScrim").removeAttribute("data-open");
+  $("#tmCancel").onclick=()=>$("#tmplScrim").removeAttribute("data-open");
+  $("#tmplScrim").onclick=e=>{ if(e.target===$("#tmplScrim")) $("#tmplScrim").removeAttribute("data-open"); };
+  $("#tmUse").onclick=()=>{ $("#tmplScrim").removeAttribute("data-open"); setGuide('✅ Opening the broadcast builder pre-filled with this template — tweak the copy, pick your audience, and send.'); };
+
   // init
+  bindTemplates();
   setTab("segments");
 </script>
 </body>
