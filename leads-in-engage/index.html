@@ -274,6 +274,34 @@
   .tm-note code { background: hsl(var(--reach-muted)); padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
   .tm-foot { border-top: 1px solid hsl(var(--reach-border)); padding: 14px 24px; display: flex; justify-content: flex-end; gap: 10px; }
 
+  /* Template library — full-page takeover over Engage content (not the Goose rail) */
+  .library { position: absolute; inset: 0; background: hsl(210 20% 98%); z-index: 30; display: none; flex-direction: column; overflow: hidden; }
+  .library[data-open] { display: flex; }
+  .lib-topbar { display: flex; justify-content: space-between; align-items: flex-start; padding: 24px 40px 18px; border-bottom: 1px solid hsl(var(--reach-border)); background: #fff; }
+  .lib-title { font-family: var(--reach-font-heading); font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 3px; }
+  .lib-sub { font-size: 13.5px; color: hsl(var(--reach-muted-foreground)); margin: 0; }
+  .lib-close { border: 1px solid hsl(var(--reach-border)); background: #fff; border-radius: 8px; padding: 9px 16px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; color: hsl(var(--reach-foreground)); }
+  .lib-chips { display: flex; gap: 8px; padding: 16px 40px; overflow-x: auto; background: #fff; border-bottom: 1px solid hsl(var(--reach-border)); }
+  .lc { border: 0; background: hsl(var(--reach-muted)); border-radius: 999px; padding: 8px 16px; font-size: 13.5px; font-family: inherit; color: hsl(var(--reach-foreground)); cursor: pointer; display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
+  .lc[data-on] { background: hsl(var(--reach-primary)); color: #fff; }
+  .lc-n { font-size: 11.5px; opacity: 0.7; }
+  .lib-grid { flex: 1; overflow-y: auto; padding: 24px 40px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; align-content: start; }
+  .lib-card { text-align: left; background: #fff; border: 1px solid hsl(var(--reach-border)); border-radius: 12px; padding: 0; overflow: hidden; cursor: pointer; font-family: inherit; transition: box-shadow 120ms, transform 120ms; display: flex; flex-direction: column; }
+  .lib-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); transform: translateY(-3px); }
+  .lib-meta { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px 4px; }
+  .lib-ch { font-size: 12px; color: hsl(var(--reach-muted-foreground)); }
+  .lib-name { font-family: var(--reach-font-heading); font-size: 15px; font-weight: 700; padding: 0 14px 16px; line-height: 1.3; }
+  /* mini rendered email */
+  .mini { background: #fff; border-bottom: 1px solid hsl(var(--reach-border)); aspect-ratio: 4/3; overflow: hidden; display: flex; flex-direction: column; }
+  .mini-bar { background: hsl(var(--goose-accent)); padding: 8px 12px; }
+  .mini-logo { color: #fff; font-size: 11px; font-weight: 700; }
+  .mini-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; }
+  .mini-h { font-family: var(--reach-font-heading); font-size: 13px; font-weight: 700; line-height: 1.25; color: hsl(var(--reach-foreground)); }
+  .mini-img { height: 46px; border-radius: 4px; background: linear-gradient(135deg, hsl(210 30% 88%), hsl(210 20% 80%)); }
+  .mini-p { height: 5px; border-radius: 3px; background: hsl(210 15% 88%); }
+  .mini-p.short { width: 60%; }
+  .mini-cta { align-self: flex-start; margin-top: 2px; background: hsl(var(--reach-primary)); color: #fff; font-size: 9px; font-weight: 600; padding: 4px 10px; border-radius: 5px; }
+
   /* Guide banner */
   .guide { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: hsl(var(--reach-primary)); color: #fff; font-size: 12.5px; padding: 8px 16px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); z-index: 50; max-width: 90%; }
 </style>
@@ -337,6 +365,7 @@
       <section class="tabview" data-view="broadcasts">
         <div class="bc-list-head">
           <h3>Your broadcasts</h3>
+          <button class="btn-import" id="btnBrowseTemplates">🗂 Browse templates</button>
         </div>
         <div class="card">
           <div class="thead" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr;"><div>Name</div><div>Status</div><div>Sent</div><div>Opened</div><div>Date</div></div>
@@ -495,6 +524,57 @@
           <button class="btn btn-ghost" id="tmCancel">Cancel</button>
           <button class="btn btn-primary" id="tmUse">Use this template →</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ============ TEMPLATE LIBRARY (full-page takeover over Engage content) ============ -->
+    <div class="library" id="library">
+      <div class="lib-topbar">
+        <div>
+          <h2 class="lib-title">Template library</h2>
+          <p class="lib-sub">Ready-to-send campaigns written for pet care businesses. Pick one to start a broadcast.</p>
+        </div>
+        <button class="lib-close" id="libClose">✕ Close</button>
+      </div>
+      <div class="lib-chips">
+        <button class="lc" data-on>All <span class="lc-n">12</span></button>
+        <button class="lc">Seasonal <span class="lc-n">4</span></button>
+        <button class="lc">Promotions <span class="lc-n">3</span></button>
+        <button class="lc">Re-engagement <span class="lc-n">3</span></button>
+        <button class="lc">Announcements <span class="lc-n">2</span></button>
+      </div>
+      <div class="lib-grid" id="libGrid">
+        <!-- rendered mini-email preview cards -->
+        <button class="lib-card" data-tmpl="slow-season" data-catkey="seasonal">
+          <div class="mini"><div class="mini-bar"><span class="mini-logo">🐾 Pampered Paws</span></div><div class="mini-body"><div class="mini-h">Book Bella's winter stay and save 15%</div><div class="mini-img"></div><div class="mini-p"></div><div class="mini-p short"></div><div class="mini-cta">Book now</div></div></div>
+          <div class="lib-meta"><span class="tc-cat" data-cat="seasonal">Seasonal</span><span class="lib-ch">✉ 💬</span></div>
+          <div class="lib-name">Fill your slow-season boarding calendar</div>
+        </button>
+        <button class="lib-card" data-tmpl="lapsed" data-catkey="reengage">
+          <div class="mini"><div class="mini-bar"><span class="mini-logo">🐾 Pampered Paws</span></div><div class="mini-body"><div class="mini-h">It's been a while — here's 20% off</div><div class="mini-p"></div><div class="mini-p"></div><div class="mini-p short"></div><div class="mini-cta">Claim 20% off</div></div></div>
+          <div class="lib-meta"><span class="tc-cat" data-cat="reengage">Re-engagement</span><span class="lib-ch">✉</span></div>
+          <div class="lib-name">We miss your pup — come back offer</div>
+        </button>
+        <button class="lib-card" data-tmpl="review" data-catkey="announce">
+          <div class="mini"><div class="mini-bar"><span class="mini-logo">🐾 Pampered Paws</span></div><div class="mini-body"><div class="mini-h">Introducing enrichment daycare</div><div class="mini-img"></div><div class="mini-p"></div><div class="mini-cta">Reserve a spot</div></div></div>
+          <div class="lib-meta"><span class="tc-cat" data-cat="announce">Announcement</span><span class="lib-ch">✉ 💬</span></div>
+          <div class="lib-name">New service launch — enrichment daycare</div>
+        </button>
+        <button class="lib-card" data-tmpl="holiday" data-catkey="seasonal">
+          <div class="mini"><div class="mini-bar"><span class="mini-logo">🐾 Pampered Paws</span></div><div class="mini-body"><div class="mini-h">Holiday spots are filling fast</div><div class="mini-img"></div><div class="mini-p short"></div><div class="mini-cta">Reserve the suite</div></div></div>
+          <div class="lib-meta"><span class="tc-cat" data-cat="seasonal">Seasonal</span><span class="lib-ch">✉ 💬</span></div>
+          <div class="lib-name">Holiday boarding — book early</div>
+        </button>
+        <button class="lib-card" data-tmpl="referral" data-catkey="promo">
+          <div class="mini"><div class="mini-bar"><span class="mini-logo">🐾 Pampered Paws</span></div><div class="mini-body"><div class="mini-h">Give a free day, get a free day</div><div class="mini-p"></div><div class="mini-p short"></div><div class="mini-cta">Share your link</div></div></div>
+          <div class="lib-meta"><span class="tc-cat" data-cat="promo">Promotion</span><span class="lib-ch">✉</span></div>
+          <div class="lib-name">Refer a friend, both get a free day</div>
+        </button>
+        <button class="lib-card" data-tmpl="slow-season" data-catkey="promo">
+          <div class="mini"><div class="mini-bar"><span class="mini-logo">🐾 Pampered Paws</span></div><div class="mini-body"><div class="mini-h">Midweek grooming — 10% off Tue–Thu</div><div class="mini-img"></div><div class="mini-p short"></div><div class="mini-cta">Book midweek</div></div></div>
+          <div class="lib-meta"><span class="tc-cat" data-cat="promo">Promotion</span><span class="lib-ch">✉ 💬</span></div>
+          <div class="lib-name">Midweek grooming discount</div>
+        </button>
       </div>
     </div>
   </main>
@@ -727,6 +807,29 @@
   };
   $("#bcBack").onclick=()=>{ if(bcStep>0){ bcStep--; renderBc(); } };
   $("#bcCancel").onclick=()=>$("#bcScrim").removeAttribute("data-open");
+
+  // ---- Template library (full-page takeover) ----
+  function openLibrary(){ $("#library").setAttribute("data-open",""); setGuide('Browse the full library — pick any template to start a broadcast pre-filled.'); }
+  function bindLibrary(){
+    const newBrowse = $("#btnBrowseTemplates"); if(newBrowse) newBrowse.onclick = openLibrary;
+    $("#libClose").onclick = ()=>$("#library").removeAttribute("data-open");
+    const libFilter = { All:null, Seasonal:"seasonal", Promotions:"promo", "Re-engagement":"reengage", Announcements:"announce" };
+    $$(".lc").forEach(chip=>chip.onclick=()=>{ $$(".lc").forEach(x=>x.removeAttribute("data-on")); chip.setAttribute("data-on",""); const key=libFilter[chip.firstChild.textContent.trim()]; $$(".lib-card").forEach(c=>{ c.style.display = (!key || c.dataset.catkey===key) ? "flex" : "none"; }); });
+    // pick a library card → launch broadcast pre-filled, land on Content
+    $$(".lib-card").forEach(c=>c.onclick=()=>{
+      const tmpl = c.dataset.tmpl, chs = tmplChannels[tmpl];
+      $("#library").removeAttribute("data-open");
+      // seed wizard state
+      bcChannels = chs.slice(); bcStyle = "template"; bcTmpl = tmpl;
+      $$(".choice-card").forEach(x=>x.toggleAttribute("data-on", bcChannels.includes(x.dataset.ch)));
+      $$(".style-card").forEach(x=>x.toggleAttribute("data-on", x.dataset.style==="template"));
+      fillContentFromTemplate();
+      $("#bcScrim").setAttribute("data-open","");
+      goToStep("content");
+      setGuide('✅ Started from a template. Channels & content are set — edit and continue to Audience.');
+    });
+  }
+  bindLibrary();
 
   // init
   setTab("segments");
