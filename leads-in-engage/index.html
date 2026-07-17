@@ -99,6 +99,7 @@
   .rail-step[data-state="complete"] .rm { color: hsl(var(--success)); }
   .content-card { background: #fff; border: 1px solid hsl(var(--reach-border)); border-radius: 12px; padding: 28px 32px; overflow-y: auto; min-height: 0; }
   .panel { display: none; } .panel[data-active] { display: block; }
+  .bpanel { display: none; } .bpanel[data-active] { display: block; }
   .p-head h3 { font-family: var(--reach-font-heading); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 8px; }
   .p-head p { font-size: 14px; color: hsl(var(--reach-muted-foreground)); line-height: 1.55; max-width: 520px; margin: 0 0 20px; }
   .help-link { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: hsl(var(--reach-primary)); cursor: pointer; margin-bottom: 18px; }
@@ -336,7 +337,6 @@
       <section class="tabview" data-view="broadcasts">
         <div class="bc-list-head">
           <h3>Your broadcasts</h3>
-          <button class="btn-primary-sm" id="btnNewBroadcastList">＋ New Broadcast</button>
         </div>
         <div class="card">
           <div class="thead" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr;"><div>Name</div><div>Status</div><div>Sent</div><div>Opened</div><div>Date</div></div>
@@ -523,8 +523,6 @@
     if (newSeg) newSeg.onclick = () => openSegmentBuilder("blank");
     const newBcTop = $("#btnNewBroadcastTop");
     if (newBcTop) newBcTop.onclick = openBroadcast;
-    const newBcList = $("#btnNewBroadcastList");
-    if (newBcList) newBcList.onclick = openBroadcast;
     const guides = {
       segments: '👋 Click <strong>Import contacts</strong> to walk the flow — or click a row.',
       people: '👋 Click any person to see their consent, tags, and message activity.',
