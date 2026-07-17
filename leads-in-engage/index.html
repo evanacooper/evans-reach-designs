@@ -429,25 +429,17 @@
       <div class="modal">
         <div class="modal-head"><h2>Broadcast — July 17</h2><span class="draft-pill">Draft</span></div>
         <div class="modal-body">
-          <nav class="rail" id="bcRail">
-            <div class="rail-step" data-bstep="0"><span class="rm">○</span>Message Channels</div>
-            <div class="rail-step" data-bstep="1"><span class="rm">○</span>Content Builder Style</div>
-            <div class="rail-step" data-bstep="2"><span class="rm">○</span>Content</div>
-            <div class="rail-step" data-bstep="3"><span class="rm">○</span>Audience</div>
-            <div class="rail-step" data-bstep="4"><span class="rm">○</span>Schedule</div>
-            <div class="rail-step" data-bstep="5"><span class="rm">○</span>Send</div>
-          </nav>
+          <nav class="rail" id="bcRail"><!-- rendered dynamically from the active step path --></nav>
           <div class="content-card">
             <!-- b0: Channels -->
-            <section class="bpanel" data-bpanel="0">
+            <section class="bpanel" data-bpanel="channels">
               <div class="p-head" style="text-align:center;"><h3 style="text-align:center;">Message Channels</h3><p style="margin:0 auto 24px;">Select the channels you want to use in this broadcast.</p></div>
               <div class="choice-2">
                 <button class="choice-card" data-ch="email" data-on><div class="cc-check">✓</div><div class="cc-ico">✉</div><div class="cc-name">Email</div><div class="cc-desc">Send rich content via email</div></button>
                 <button class="choice-card" data-ch="sms"><div class="cc-check">✓</div><div class="cc-ico">📱</div><div class="cc-name">SMS</div><div class="cc-desc">Send quick messages via text</div></button>
               </div>
             </section>
-            <!-- b1: Content Builder Style — NOW 3 cards -->
-            <section class="bpanel" data-bpanel="1">
+            <section class="bpanel" data-bpanel="style">
               <div class="p-head" style="text-align:center;"><h3 style="text-align:center;">Content Builder Style</h3><p style="margin:0 auto 24px;">Choose how you want to create your content.</p></div>
               <div class="choice-3">
                 <button class="style-card" data-style="ai"><div class="sc-badge">BETA</div><div class="cc-ico">✦</div><div class="cc-name">Build with AI</div><div class="cc-desc">Describe your message in plain language and let AI create the content.</div></button>
@@ -455,34 +447,29 @@
                 <button class="style-card" data-style="manual"><div class="cc-ico">⚙</div><div class="cc-name">Build manually</div><div class="cc-desc">Create your content by configuring email and SMS messages directly.</div></button>
               </div>
             </section>
-            <!-- b2: Content (template gallery lives here when template style chosen) -->
-            <section class="bpanel" data-bpanel="2">
-              <!-- template gallery view -->
-              <div id="galleryView">
-                <div class="p-head"><h3>Pick a template</h3><p id="galleryFilterNote">Showing templates for Email + SMS.</p></div>
-                <div class="tmpl-filters" style="margin-bottom:16px;">
-                  <button class="tf" data-on>All</button><button class="tf">Seasonal</button><button class="tf">Promotions</button><button class="tf">Re-engagement</button><button class="tf">Announcements</button>
-                </div>
-                <div class="tmpl-grid" id="tmplGrid">
-                  <button class="tmpl-card" data-tmpl="slow-season"><div class="tc-cat" data-cat="seasonal">Seasonal</div><div class="tc-title">Fill your slow-season boarding calendar</div><div class="tc-snippet">"Planning a winter getaway? Book Bella's stay now and save 15%…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
-                  <button class="tmpl-card" data-tmpl="lapsed"><div class="tc-cat" data-cat="reengage">Re-engagement</div><div class="tc-title">We miss your pup — come back offer</div><div class="tc-snippet">"It's been a while since Max's last visit! Here's 20% off…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span></div></button>
-                  <button class="tmpl-card" data-tmpl="review"><div class="tc-cat" data-cat="announce">Announcement</div><div class="tc-title">New service launch — enrichment daycare</div><div class="tc-snippet">"Introducing enrichment daycare: structured play, training, naps…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
-                  <button class="tmpl-card" data-tmpl="holiday"><div class="tc-cat" data-cat="seasonal">Seasonal</div><div class="tc-title">Holiday boarding — book early</div><div class="tc-snippet">"Our holiday spots fill fast. Reserve Luna's suite…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
-                  <button class="tmpl-card" data-tmpl="referral"><div class="tc-cat" data-cat="promo">Promotion</div><div class="tc-title">Refer a friend, both get a free day</div><div class="tc-snippet">"Love us? Tell a friend. When they book, you both get a free day…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span></div></button>
-                </div>
+            <!-- Choose Template — its own step, only in the template path -->
+            <section class="bpanel" data-bpanel="template">
+              <div class="p-head"><h3>Choose a template</h3><p id="galleryFilterNote">Showing templates for Email + SMS.</p></div>
+              <div class="tmpl-filters" style="margin-bottom:16px;">
+                <button class="tf" data-on>All</button><button class="tf">Seasonal</button><button class="tf">Promotions</button><button class="tf">Re-engagement</button><button class="tf">Announcements</button>
               </div>
-              <!-- filled content view (after a template is chosen, or manual/AI) -->
-              <div id="contentView" style="display:none;">
-                <div class="p-head"><h3 id="contentHeading">Email content</h3><p>Everything's pre-filled from your template. Edit anything, then continue.</p></div>
-                <div class="tm-field"><span class="tm-flabel">Subject</span><input class="inp" id="contentSubject" /></div>
-                <div class="tm-field"><span class="tm-flabel">Body</span><div class="tm-email" id="contentBody"></div></div>
-                <button class="ghost-inline" id="backToGallery" style="margin-top:12px;">← Pick a different template</button>
+              <div class="tmpl-grid" id="tmplGrid">
+                <button class="tmpl-card" data-tmpl="slow-season"><div class="tc-cat" data-cat="seasonal">Seasonal</div><div class="tc-title">Fill your slow-season boarding calendar</div><div class="tc-snippet">"Planning a winter getaway? Book Bella's stay now and save 15%…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
+                <button class="tmpl-card" data-tmpl="lapsed"><div class="tc-cat" data-cat="reengage">Re-engagement</div><div class="tc-title">We miss your pup — come back offer</div><div class="tc-snippet">"It's been a while since Max's last visit! Here's 20% off…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span></div></button>
+                <button class="tmpl-card" data-tmpl="review"><div class="tc-cat" data-cat="announce">Announcement</div><div class="tc-title">New service launch — enrichment daycare</div><div class="tc-snippet">"Introducing enrichment daycare: structured play, training, naps…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
+                <button class="tmpl-card" data-tmpl="holiday"><div class="tc-cat" data-cat="seasonal">Seasonal</div><div class="tc-title">Holiday boarding — book early</div><div class="tc-snippet">"Our holiday spots fill fast. Reserve Luna's suite…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
+                <button class="tmpl-card" data-tmpl="referral"><div class="tc-cat" data-cat="promo">Promotion</div><div class="tc-title">Refer a friend, both get a free day</div><div class="tc-snippet">"Love us? Tell a friend. When they book, you both get a free day…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span></div></button>
               </div>
             </section>
-            <!-- b3-5 placeholders -->
-            <section class="bpanel" data-bpanel="3"><div class="p-head"><h3>Audience</h3><p>Select who receives this broadcast (Leads / Customers / Both, segments…). Not the focus of this walkthrough.</p></div></section>
-            <section class="bpanel" data-bpanel="4"><div class="p-head"><h3>Schedule</h3><p>Send now or schedule for later.</p></div></section>
-            <section class="bpanel" data-bpanel="5"><div class="p-head"><h3>Send</h3><p>Review and send.</p></div></section>
+            <!-- Content — its own step (pre-filled if a template was chosen) -->
+            <section class="bpanel" data-bpanel="content">
+              <div class="p-head"><h3 id="contentHeading">Email content</h3><p id="contentSub">Everything's pre-filled from your template. Edit anything, then continue.</p></div>
+              <div class="tm-field" id="contentSubjectField"><span class="tm-flabel">Subject</span><input class="inp" id="contentSubject" /></div>
+              <div class="tm-field"><span class="tm-flabel">Body</span><div class="tm-email" id="contentBody"></div></div>
+            </section>
+            <section class="bpanel" data-bpanel="audience"><div class="p-head"><h3>Audience</h3><p>Select who receives this broadcast (Leads / Customers / Both, segments…). Not the focus of this walkthrough.</p></div></section>
+            <section class="bpanel" data-bpanel="schedule"><div class="p-head"><h3>Schedule</h3><p>Send now or schedule for later.</p></div></section>
+            <section class="bpanel" data-bpanel="send"><div class="p-head"><h3>Send</h3><p>Review and send.</p></div></section>
           </div>
         </div>
         <div class="modal-foot"><span class="foot-hint" id="bcHint"></span><button class="btn btn-soft" id="bcCancel">Cancel</button><button class="btn btn-ghost" id="bcBack" style="display:none;">← Back</button><button class="btn btn-primary" id="bcNext">Next</button></div>
@@ -650,34 +637,44 @@
   // which template channels exist
   const tmplChannels = { "slow-season":["email","sms"], "lapsed":["email"], "review":["email","sms"], "holiday":["email","sms"], "referral":["email"] };
 
-  // ---- Broadcast wizard ----
+  // ---- Broadcast wizard (dynamic step path) ----
   let bcStep = 0, bcChannels = ["email"], bcStyle = null, bcTmpl = null;
   let curTmpl = null, curChannel = "email";
-  const bcSteps = [
-    { hint:"Pick at least one channel", label:"Message Channels" },
-    { hint:"Choose how to build your content", label:"Content Builder Style" },
-    { hint:"", label:"Content" },
-    { hint:"", label:"Audience" },
-    { hint:"", label:"Schedule" },
-    { hint:"", label:"Send" },
-  ];
+  const STEP_META = {
+    channels: { label:"Message Channels", hint:"Pick at least one channel" },
+    style:    { label:"Content Builder Style", hint:"Choose how to build your content" },
+    template: { label:"Choose Template", hint:"Pick a template to continue" },
+    content:  { label:"Content", hint:"" },
+    audience: { label:"Audience", hint:"" },
+    schedule: { label:"Schedule", hint:"" },
+    send:     { label:"Send", hint:"" },
+  };
+  // Path adapts to the builder style — the template step only exists in the template path.
+  function bcPath(){
+    const mid = bcStyle==="template" ? ["template","content"] : ["content"];
+    return ["channels","style",...mid,"audience","schedule","send"];
+  }
   function channelLabel(){ const has=(c)=>bcChannels.includes(c); if(has("email")&&has("sms")) return "Email + SMS"; if(has("email")) return "Email"; if(has("sms")) return "SMS"; return "no channel"; }
   function renderBc(){
-    $$(".rail-step[data-bstep]").forEach((el,i)=>{ el.dataset.state=i<bcStep?"complete":i===bcStep?"active":""; $(".rm",el).textContent=i<bcStep?"✓":i===bcStep?"●":"○"; });
-    $$(".bpanel").forEach((el,i)=>i===bcStep?el.setAttribute("data-active",""):el.removeAttribute("data-active"));
+    const path = bcPath();
+    if(bcStep >= path.length) bcStep = path.length - 1;
+    const key = path[bcStep];
+    // rail rebuilt from the path
+    $("#bcRail").innerHTML = path.map((k,i)=>{
+      const st = i<bcStep?"complete":i===bcStep?"active":"";
+      const mk = i<bcStep?"✓":i===bcStep?"●":"○";
+      return `<div class="rail-step" data-state="${st}"><span class="rm">${mk}</span>${STEP_META[k].label}</div>`;
+    }).join("");
+    // panels
+    $$(".bpanel").forEach(el=>el.toggleAttribute("data-active", el.dataset.bpanel===key));
     $("#bcBack").style.display = bcStep===0?"none":"inline-block";
-    // step 2 shows gallery (template style, no template picked yet) or content
-    if(bcStep===2){ const showGallery = bcStyle==="template" && !bcTmpl; $("#galleryView").style.display=showGallery?"block":"none"; $("#contentView").style.display=showGallery?"none":"block"; }
-    // next button + validity
-    let disabled=false, nextText="Next";
-    if(bcStep===0) disabled = bcChannels.length===0;
-    if(bcStep===1) disabled = !bcStyle;
-    if(bcStep===2 && bcStyle==="template" && !bcTmpl){ disabled=true; nextText="Next"; }
-    if(bcStep===5) nextText="Send";
+    // next validity + label
+    let disabled=false, nextText = key==="send" ? "Send" : "Next";
+    if(key==="channels") disabled = bcChannels.length===0;
+    if(key==="style") disabled = !bcStyle;
+    if(key==="template") disabled = !bcTmpl;
     $("#bcNext").textContent=nextText; $("#bcNext").disabled=disabled;
-    let hint = bcSteps[bcStep].hint;
-    if(bcStep===2 && bcStyle==="template" && !bcTmpl) hint="Pick a template to continue";
-    $("#bcHint").textContent = hint;
+    $("#bcHint").textContent = disabled ? STEP_META[key].hint : "";
   }
   function openBroadcast(){ bcStep=0; bcChannels=["email"]; bcStyle=null; bcTmpl=null;
     $$(".choice-card").forEach(c=>c.toggleAttribute("data-on", c.dataset.ch==="email"));
@@ -687,16 +684,16 @@
   }
   // channel multi-select
   $$(".choice-card").forEach(c=>c.onclick=()=>{ c.toggleAttribute("data-on"); bcChannels=$$(".choice-card[data-on]").map(x=>x.dataset.ch); renderBc(); });
-  // style pick
-  $$(".style-card").forEach(c=>c.onclick=()=>{ $$(".style-card").forEach(x=>x.removeAttribute("data-on")); c.setAttribute("data-on",""); bcStyle=c.dataset.style; renderBc(); });
-  // gallery: channel-filter + populate note
+  // style pick (changes the path)
+  $$(".style-card").forEach(c=>c.onclick=()=>{ $$(".style-card").forEach(x=>x.removeAttribute("data-on")); c.setAttribute("data-on",""); bcStyle=c.dataset.style; bcTmpl=null; renderBc(); });
+  // gallery channel-filter + note
   function applyGalleryChannelFilter(){
     $("#galleryFilterNote").textContent = `Showing templates for ${channelLabel()}.`;
     $$("#tmplGrid .tmpl-card").forEach(c=>{ const chs=tmplChannels[c.dataset.tmpl]; const ok = bcChannels.every(bc=>chs.includes(bc)); c.dataset.chhide = ok?"":"1"; c.style.display = ok?"flex":"none"; });
   }
   // category filter (respects channel filter)
   const filterKey = { All:null, Seasonal:"seasonal", Promotions:"promo", "Re-engagement":"reengage", Announcements:"announce" };
-  $$("#galleryView .tf").forEach(f=>f.onclick=()=>{ $$("#galleryView .tf").forEach(x=>x.removeAttribute("data-on")); f.setAttribute("data-on",""); const key=filterKey[f.textContent]; $$("#tmplGrid .tmpl-card").forEach(c=>{ if(c.dataset.chhide==="1"){ c.style.display="none"; return; } const t=tmplData[c.dataset.tmpl]; c.style.display=(!key||t.catKey===key)?"flex":"none"; }); });
+  $$('[data-bpanel="template"] .tf').forEach(f=>f.onclick=()=>{ $$('[data-bpanel="template"] .tf').forEach(x=>x.removeAttribute("data-on")); f.setAttribute("data-on",""); const key=filterKey[f.textContent]; $$("#tmplGrid .tmpl-card").forEach(c=>{ if(c.dataset.chhide==="1"){ c.style.display="none"; return; } const t=tmplData[c.dataset.tmpl]; c.style.display=(!key||t.catKey===key)?"flex":"none"; }); });
   // template pick → preview modal
   $$("#tmplGrid .tmpl-card").forEach(c=>c.onclick=()=>{ curTmpl=c.dataset.tmpl; curChannel = bcChannels.includes("email")?"email":"sms"; $$(".tmc").forEach(x=>{ const isEmail=x.textContent.includes("Email"); x.style.display = tmplChannels[curTmpl].includes(isEmail?"email":"sms")?"inline-block":"none"; x.toggleAttribute("data-on", (isEmail?"email":"sms")===curChannel); }); renderTmplPreview(); $("#tmplScrim").setAttribute("data-open",""); });
 
@@ -707,25 +704,30 @@
   $("#tmClose").onclick=()=>$("#tmplScrim").removeAttribute("data-open");
   $("#tmCancel").onclick=()=>$("#tmplScrim").removeAttribute("data-open");
   $("#tmplScrim").onclick=e=>{ if(e.target===$("#tmplScrim")) $("#tmplScrim").removeAttribute("data-open"); };
-  // Use template → fill content view inside the wizard, advance to Content step
-  $("#tmUse").onclick=()=>{ $("#tmplScrim").removeAttribute("data-open"); const t=tmplData[curTmpl]; bcTmpl=curTmpl;
+  function goToStep(key){ const path=bcPath(); const i=path.indexOf(key); if(i>=0){ bcStep=i; renderBc(); } }
+  function fillContentFromTemplate(){ const t=tmplData[bcTmpl]; if(!t) return;
     $("#contentHeading").textContent = bcChannels.includes("email") ? "Email content" : "SMS content";
+    $("#contentSub").textContent = "Pre-filled from your template. Edit anything, then continue.";
     $("#contentSubject").value = t.subject;
     $("#contentBody").innerHTML = bcChannels.includes("email") ? t.body : `<p>${t.sms}</p>`;
-    $("#contentSubject").parentElement.style.display = bcChannels.includes("email") ? "block" : "none";
-    bcStep=2; renderBc(); setGuide('✅ Content pre-filled from the template. Edit anything, then continue to Audience.');
-  };
-  $("#backToGallery").onclick=()=>{ bcTmpl=null; renderBc(); };
-  // wizard nav
+    $("#contentSubjectField").style.display = bcChannels.includes("email") ? "block" : "none";
+  }
+  function fillContentBlank(){
+    $("#contentHeading").textContent = bcStyle==="ai" ? "Describe your message" : "Email content";
+    $("#contentSub").textContent = bcStyle==="ai" ? "Tell AI what to say and it drafts the content." : "Build your content below.";
+    $("#contentSubject").value=""; $("#contentBody").innerHTML="<p style='color:hsl(var(--reach-muted-foreground))'>Empty — build your content here.</p>";
+    $("#contentSubjectField").style.display = "block";
+  }
+  // Use template → advance to the Content step, pre-filled
+  $("#tmUse").onclick=()=>{ $("#tmplScrim").removeAttribute("data-open"); bcTmpl=curTmpl; fillContentFromTemplate(); goToStep("content"); setGuide('✅ Content pre-filled from the template. Edit anything, then continue to Audience.'); };
+  // wizard nav (path-based)
   $("#bcNext").onclick=()=>{
-    if(bcStep===1 && bcStyle==="template"){ bcStep=2; applyGalleryChannelFilter(); renderBc(); return; }
-    if(bcStep===1 && bcStyle!=="template"){ // manual/ai → content view directly
-      bcTmpl="_none"; $("#contentHeading").textContent = bcStyle==="ai" ? "Describe your message" : "Email content";
-      $("#contentSubject").value=""; $("#contentBody").innerHTML="<p style='color:hsl(var(--reach-muted-foreground))'>Empty — build your content here.</p>"; bcStep=2; renderBc(); return;
-    }
-    if(bcStep<5){ bcStep++; renderBc(); }
+    const path=bcPath(); const key=path[bcStep];
+    // leaving Content Builder Style on a non-template path → prep blank content
+    if(key==="style" && bcStyle!=="template") fillContentBlank();
+    if(bcStep < path.length-1){ bcStep++; renderBc(); const nk=bcPath()[bcStep]; if(nk==="template") applyGalleryChannelFilter(); }
   };
-  $("#bcBack").onclick=()=>{ if(bcStep===2 && bcStyle==="template" && bcTmpl){ bcTmpl=null; renderBc(); return; } if(bcStep>0){ bcStep--; renderBc(); } };
+  $("#bcBack").onclick=()=>{ if(bcStep>0){ bcStep--; renderBc(); } };
   $("#bcCancel").onclick=()=>$("#bcScrim").removeAttribute("data-open");
 
   // init
