@@ -365,7 +365,6 @@
       <section class="tabview" data-view="broadcasts">
         <div class="bc-list-head">
           <h3>Your broadcasts</h3>
-          <button class="btn-import" id="btnBrowseTemplates">🗂 Browse templates</button>
         </div>
         <div class="card">
           <div class="thead" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr;"><div>Name</div><div>Status</div><div>Sent</div><div>Opened</div><div>Date</div></div>
@@ -590,7 +589,7 @@
     segments: '<button class="btn-import" id="btnImportSeg">↧ Import contacts</button><button class="btn-primary-sm" id="btnNewSegment">＋ New Segment</button>',
     people:   '<button class="btn-import" id="btnImportPpl">↧ Import contacts</button>',
     automations: '<button class="btn-primary-sm">＋ New Automation</button>',
-    broadcasts:  '<button class="btn-primary-sm" id="btnNewBroadcastTop">＋ New Broadcast</button>',
+    broadcasts:  '<button class="btn-import" id="btnBrowseTemplates">🗂 Browse templates</button><button class="btn-primary-sm" id="btnNewBroadcastTop">＋ New Broadcast</button>',
     insights: '',
   };
   function setTab(tab){
@@ -603,6 +602,8 @@
     if (newSeg) newSeg.onclick = () => openSegmentBuilder("blank");
     const newBcTop = $("#btnNewBroadcastTop");
     if (newBcTop) newBcTop.onclick = openBroadcast;
+    const browseTpl = $("#btnBrowseTemplates");
+    if (browseTpl) browseTpl.onclick = openLibrary;
     const guides = {
       segments: '👋 Click <strong>Import contacts</strong> to walk the flow — or click a row.',
       people: '👋 Click any person to see their consent, tags, and message activity.',
@@ -811,7 +812,7 @@
   // ---- Template library (full-page takeover) ----
   function openLibrary(){ $("#library").setAttribute("data-open",""); setGuide('Browse the full library — pick any template to start a broadcast pre-filled.'); }
   function bindLibrary(){
-    const newBrowse = $("#btnBrowseTemplates"); if(newBrowse) newBrowse.onclick = openLibrary;
+    // #btnBrowseTemplates is bound in setTab (it's re-created per tab render)
     $("#libClose").onclick = ()=>$("#library").removeAttribute("data-open");
     const libFilter = { All:null, Seasonal:"seasonal", Promotions:"promo", "Re-engagement":"reengage", Announcements:"announce" };
     $$(".lc").forEach(chip=>chip.onclick=()=>{ $$(".lc").forEach(x=>x.removeAttribute("data-on")); chip.setAttribute("data-on",""); const key=libFilter[chip.firstChild.textContent.trim()]; $$(".lib-card").forEach(c=>{ c.style.display = (!key || c.dataset.catkey===key) ? "flex" : "none"; }); });
