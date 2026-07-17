@@ -217,11 +217,22 @@
   .act-badge { font-size: 11px; padding: 2px 7px; border-radius: 999px; } .act-badge.open { background: hsl(var(--success-bg)); color: hsl(var(--success)); }
   .deeplink { display: inline-flex; gap: 7px; align-items: center; font-size: 13px; font-weight: 600; color: hsl(var(--reach-primary)); cursor: pointer; }
 
-  /* Broadcast templates */
-  .tmpl-section { border: 1px solid hsl(var(--reach-border)); border-radius: 14px; padding: 20px 22px; margin-bottom: 26px; background: linear-gradient(180deg, hsl(210 40% 98%), hsl(0 0% 100%)); }
-  .tmpl-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 16px; flex-wrap: wrap; }
-  .tmpl-title { font-family: var(--reach-font-heading); font-size: 18px; font-weight: 800; margin: 0 0 3px; }
-  .tmpl-sub { font-size: 13px; color: hsl(var(--reach-muted-foreground)); margin: 0; max-width: 460px; }
+  /* Broadcast wizard choice cards */
+  .choice-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 620px; margin: 0 auto; }
+  .choice-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .choice-card, .style-card { position: relative; background: #fff; border: 1.5px solid hsl(var(--reach-border)); border-radius: 12px; padding: 24px 18px; text-align: center; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: border-color 120ms, box-shadow 120ms; }
+  .choice-card:hover, .style-card:hover { border-color: hsl(var(--reach-primary)); }
+  .choice-card[data-on] { border-color: hsl(var(--reach-primary)); box-shadow: 0 0 0 3px hsl(210 30% 25% / 0.08); }
+  .style-card[data-on] { border-color: hsl(var(--reach-primary)); box-shadow: 0 0 0 3px hsl(210 30% 25% / 0.08); }
+  .cc-check { position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 999px; background: hsl(var(--reach-primary)); color: #fff; font-size: 11px; display: none; align-items: center; justify-content: center; }
+  .choice-card[data-on] .cc-check { display: inline-flex; }
+  .cc-ico { width: 48px; height: 48px; border-radius: 999px; background: hsl(var(--reach-muted)); display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 6px; }
+  .cc-name { font-family: var(--reach-font-heading); font-size: 16px; font-weight: 700; }
+  .cc-desc { font-size: 12.5px; color: hsl(var(--reach-muted-foreground)); line-height: 1.45; }
+  .sc-badge { position: absolute; top: 12px; left: 12px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; background: hsl(var(--reach-secondary)); color: hsl(var(--reach-secondary-foreground)); padding: 2px 7px; border-radius: 999px; }
+
+  /* Template gallery inside wizard */
+  .tmpl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .tmpl-filters { display: flex; gap: 6px; flex-wrap: wrap; }
   .tf { border: 1px solid hsl(var(--reach-border)); background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12.5px; font-family: inherit; color: hsl(var(--reach-muted-foreground)); cursor: pointer; }
   .tf[data-on] { background: hsl(var(--reach-primary)); color: #fff; border-color: hsl(var(--reach-primary)); }
@@ -323,54 +334,6 @@
 
       <!-- BROADCASTS -->
       <section class="tabview" data-view="broadcasts">
-        <div class="tmpl-section">
-          <div class="tmpl-head">
-            <div>
-              <h2 class="tmpl-title">Start from a template</h2>
-              <p class="tmpl-sub">Ready-to-send campaign ideas written for pet care businesses. Pick one, tweak it, send it.</p>
-            </div>
-            <div class="tmpl-filters">
-              <button class="tf" data-on>All</button>
-              <button class="tf">Seasonal</button>
-              <button class="tf">Promotions</button>
-              <button class="tf">Re-engagement</button>
-              <button class="tf">Announcements</button>
-            </div>
-          </div>
-          <div class="tmpl-strip" id="tmplStrip">
-            <button class="tmpl-card" data-tmpl="slow-season">
-              <div class="tc-cat" data-cat="seasonal">Seasonal</div>
-              <div class="tc-title">Fill your slow-season boarding calendar</div>
-              <div class="tc-snippet">"Planning a winter getaway? Book Bella's stay now and save 15% on boarding through February…"</div>
-              <div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div>
-            </button>
-            <button class="tmpl-card" data-tmpl="lapsed">
-              <div class="tc-cat" data-cat="reengage">Re-engagement</div>
-              <div class="tc-title">We miss your pup — come back offer</div>
-              <div class="tc-snippet">"It's been a while since Max's last visit! Here's 20% off your next grooming to welcome you both back…"</div>
-              <div class="tc-foot"><span class="tc-ch">✉ Email</span></div>
-            </button>
-            <button class="tmpl-card" data-tmpl="review">
-              <div class="tc-cat" data-cat="announce">Announcement</div>
-              <div class="tc-title">New service launch — enrichment daycare</div>
-              <div class="tc-snippet">"Introducing enrichment daycare: structured play, training, and naps. Now booking for spring…"</div>
-              <div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div>
-            </button>
-            <button class="tmpl-card" data-tmpl="holiday">
-              <div class="tc-cat" data-cat="seasonal">Seasonal</div>
-              <div class="tc-title">Holiday boarding — book early</div>
-              <div class="tc-snippet">"Our holiday spots fill fast. Reserve Luna's suite for the season and get a free bath before pickup…"</div>
-              <div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div>
-            </button>
-            <button class="tmpl-card" data-tmpl="referral">
-              <div class="tc-cat" data-cat="promo">Promotion</div>
-              <div class="tc-title">Refer a friend, both get a free day</div>
-              <div class="tc-snippet">"Love us? Tell a friend. When they book their first stay, you both get a free day of daycare…"</div>
-              <div class="tc-foot"><span class="tc-ch">✉ Email</span></div>
-            </button>
-          </div>
-        </div>
-
         <div class="bc-list-head">
           <h3>Your broadcasts</h3>
           <button class="btn-primary-sm" id="btnNewBroadcastList">＋ New Broadcast</button>
@@ -461,6 +424,71 @@
       </aside>
     </div>
 
+    <!-- ============ BROADCAST WIZARD ============ -->
+    <div class="scrim" id="bcScrim">
+      <div class="modal">
+        <div class="modal-head"><h2>Broadcast — July 17</h2><span class="draft-pill">Draft</span></div>
+        <div class="modal-body">
+          <nav class="rail" id="bcRail">
+            <div class="rail-step" data-bstep="0"><span class="rm">○</span>Message Channels</div>
+            <div class="rail-step" data-bstep="1"><span class="rm">○</span>Content Builder Style</div>
+            <div class="rail-step" data-bstep="2"><span class="rm">○</span>Content</div>
+            <div class="rail-step" data-bstep="3"><span class="rm">○</span>Audience</div>
+            <div class="rail-step" data-bstep="4"><span class="rm">○</span>Schedule</div>
+            <div class="rail-step" data-bstep="5"><span class="rm">○</span>Send</div>
+          </nav>
+          <div class="content-card">
+            <!-- b0: Channels -->
+            <section class="bpanel" data-bpanel="0">
+              <div class="p-head" style="text-align:center;"><h3 style="text-align:center;">Message Channels</h3><p style="margin:0 auto 24px;">Select the channels you want to use in this broadcast.</p></div>
+              <div class="choice-2">
+                <button class="choice-card" data-ch="email" data-on><div class="cc-check">✓</div><div class="cc-ico">✉</div><div class="cc-name">Email</div><div class="cc-desc">Send rich content via email</div></button>
+                <button class="choice-card" data-ch="sms"><div class="cc-check">✓</div><div class="cc-ico">📱</div><div class="cc-name">SMS</div><div class="cc-desc">Send quick messages via text</div></button>
+              </div>
+            </section>
+            <!-- b1: Content Builder Style — NOW 3 cards -->
+            <section class="bpanel" data-bpanel="1">
+              <div class="p-head" style="text-align:center;"><h3 style="text-align:center;">Content Builder Style</h3><p style="margin:0 auto 24px;">Choose how you want to create your content.</p></div>
+              <div class="choice-3">
+                <button class="style-card" data-style="ai"><div class="sc-badge">BETA</div><div class="cc-ico">✦</div><div class="cc-name">Build with AI</div><div class="cc-desc">Describe your message in plain language and let AI create the content.</div></button>
+                <button class="style-card" data-style="template"><div class="cc-ico">🗂</div><div class="cc-name">Start from a template</div><div class="cc-desc">Pick a ready-to-send campaign written for your business — tweak and go.</div></button>
+                <button class="style-card" data-style="manual"><div class="cc-ico">⚙</div><div class="cc-name">Build manually</div><div class="cc-desc">Create your content by configuring email and SMS messages directly.</div></button>
+              </div>
+            </section>
+            <!-- b2: Content (template gallery lives here when template style chosen) -->
+            <section class="bpanel" data-bpanel="2">
+              <!-- template gallery view -->
+              <div id="galleryView">
+                <div class="p-head"><h3>Pick a template</h3><p id="galleryFilterNote">Showing templates for Email + SMS.</p></div>
+                <div class="tmpl-filters" style="margin-bottom:16px;">
+                  <button class="tf" data-on>All</button><button class="tf">Seasonal</button><button class="tf">Promotions</button><button class="tf">Re-engagement</button><button class="tf">Announcements</button>
+                </div>
+                <div class="tmpl-grid" id="tmplGrid">
+                  <button class="tmpl-card" data-tmpl="slow-season"><div class="tc-cat" data-cat="seasonal">Seasonal</div><div class="tc-title">Fill your slow-season boarding calendar</div><div class="tc-snippet">"Planning a winter getaway? Book Bella's stay now and save 15%…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
+                  <button class="tmpl-card" data-tmpl="lapsed"><div class="tc-cat" data-cat="reengage">Re-engagement</div><div class="tc-title">We miss your pup — come back offer</div><div class="tc-snippet">"It's been a while since Max's last visit! Here's 20% off…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span></div></button>
+                  <button class="tmpl-card" data-tmpl="review"><div class="tc-cat" data-cat="announce">Announcement</div><div class="tc-title">New service launch — enrichment daycare</div><div class="tc-snippet">"Introducing enrichment daycare: structured play, training, naps…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
+                  <button class="tmpl-card" data-tmpl="holiday"><div class="tc-cat" data-cat="seasonal">Seasonal</div><div class="tc-title">Holiday boarding — book early</div><div class="tc-snippet">"Our holiday spots fill fast. Reserve Luna's suite…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span><span class="tc-ch">💬 SMS</span></div></button>
+                  <button class="tmpl-card" data-tmpl="referral"><div class="tc-cat" data-cat="promo">Promotion</div><div class="tc-title">Refer a friend, both get a free day</div><div class="tc-snippet">"Love us? Tell a friend. When they book, you both get a free day…"</div><div class="tc-foot"><span class="tc-ch">✉ Email</span></div></button>
+                </div>
+              </div>
+              <!-- filled content view (after a template is chosen, or manual/AI) -->
+              <div id="contentView" style="display:none;">
+                <div class="p-head"><h3 id="contentHeading">Email content</h3><p>Everything's pre-filled from your template. Edit anything, then continue.</p></div>
+                <div class="tm-field"><span class="tm-flabel">Subject</span><input class="inp" id="contentSubject" /></div>
+                <div class="tm-field"><span class="tm-flabel">Body</span><div class="tm-email" id="contentBody"></div></div>
+                <button class="ghost-inline" id="backToGallery" style="margin-top:12px;">← Pick a different template</button>
+              </div>
+            </section>
+            <!-- b3-5 placeholders -->
+            <section class="bpanel" data-bpanel="3"><div class="p-head"><h3>Audience</h3><p>Select who receives this broadcast (Leads / Customers / Both, segments…). Not the focus of this walkthrough.</p></div></section>
+            <section class="bpanel" data-bpanel="4"><div class="p-head"><h3>Schedule</h3><p>Send now or schedule for later.</p></div></section>
+            <section class="bpanel" data-bpanel="5"><div class="p-head"><h3>Send</h3><p>Review and send.</p></div></section>
+          </div>
+        </div>
+        <div class="modal-foot"><span class="foot-hint" id="bcHint"></span><button class="btn btn-soft" id="bcCancel">Cancel</button><button class="btn btn-ghost" id="bcBack" style="display:none;">← Back</button><button class="btn btn-primary" id="bcNext">Next</button></div>
+      </div>
+    </div>
+
     <!-- ============ TEMPLATE PREVIEW ============ -->
     <div class="scrim" id="tmplScrim">
       <div class="tmpl-modal">
@@ -495,7 +523,7 @@
     segments: '<button class="btn-import" id="btnImportSeg">↧ Import contacts</button><button class="btn-primary-sm" id="btnNewSegment">＋ New Segment</button>',
     people:   '<button class="btn-import" id="btnImportPpl">↧ Import contacts</button>',
     automations: '<button class="btn-primary-sm">＋ New Automation</button>',
-    broadcasts:  '<button class="btn-primary-sm">＋ New Broadcast</button>',
+    broadcasts:  '<button class="btn-primary-sm" id="btnNewBroadcastTop">＋ New Broadcast</button>',
     insights: '',
   };
   function setTab(tab){
@@ -506,6 +534,10 @@
     if (imp) imp.onclick = openImport;
     const newSeg = $("#btnNewSegment");
     if (newSeg) newSeg.onclick = () => openSegmentBuilder("blank");
+    const newBcTop = $("#btnNewBroadcastTop");
+    if (newBcTop) newBcTop.onclick = openBroadcast;
+    const newBcList = $("#btnNewBroadcastList");
+    if (newBcList) newBcList.onclick = openBroadcast;
     const guides = {
       segments: '👋 Click <strong>Import contacts</strong> to walk the flow — or click a row.',
       people: '👋 Click any person to see their consent, tags, and message activity.',
@@ -615,27 +647,88 @@
       body:`<p>Hi {{first_name}},</p><p>Love bringing {{pet_name}} to us? Tell a friend! When they book their first stay, <strong>you both get a free day of daycare</strong>.</p><p>There's no limit — refer as many friends as you like.</p><span class="cta">Share your referral link →</span>`,
       sms:`Hi {{first_name}}! Refer a friend to Pampered Paws — when they book, you BOTH get a free daycare day 🐾 [link]` },
   };
+  // which template channels exist
+  const tmplChannels = { "slow-season":["email","sms"], "lapsed":["email"], "review":["email","sms"], "holiday":["email","sms"], "referral":["email"] };
+
+  // ---- Broadcast wizard ----
+  let bcStep = 0, bcChannels = ["email"], bcStyle = null, bcTmpl = null;
   let curTmpl = null, curChannel = "email";
-  function renderTmplPreview(){
-    const t = tmplData[curTmpl]; if(!t) return;
-    $("#tmCat").textContent = t.cat; $("#tmCat").dataset.cat = t.catKey;
-    $("#tmTitle").textContent = t.title;
-    if(curChannel==="email"){ $("#tmSubject").parentElement.style.display="block"; $("#tmSubject").textContent = t.subject; $("#tmBody").innerHTML = t.body; }
-    else { $("#tmSubject").parentElement.style.display="none"; $("#tmBody").innerHTML = `<p>${t.sms}</p>`; }
+  const bcSteps = [
+    { hint:"Pick at least one channel", label:"Message Channels" },
+    { hint:"Choose how to build your content", label:"Content Builder Style" },
+    { hint:"", label:"Content" },
+    { hint:"", label:"Audience" },
+    { hint:"", label:"Schedule" },
+    { hint:"", label:"Send" },
+  ];
+  function channelLabel(){ const has=(c)=>bcChannels.includes(c); if(has("email")&&has("sms")) return "Email + SMS"; if(has("email")) return "Email"; if(has("sms")) return "SMS"; return "no channel"; }
+  function renderBc(){
+    $$(".rail-step[data-bstep]").forEach((el,i)=>{ el.dataset.state=i<bcStep?"complete":i===bcStep?"active":""; $(".rm",el).textContent=i<bcStep?"✓":i===bcStep?"●":"○"; });
+    $$(".bpanel").forEach((el,i)=>i===bcStep?el.setAttribute("data-active",""):el.removeAttribute("data-active"));
+    $("#bcBack").style.display = bcStep===0?"none":"inline-block";
+    // step 2 shows gallery (template style, no template picked yet) or content
+    if(bcStep===2){ const showGallery = bcStyle==="template" && !bcTmpl; $("#galleryView").style.display=showGallery?"block":"none"; $("#contentView").style.display=showGallery?"none":"block"; }
+    // next button + validity
+    let disabled=false, nextText="Next";
+    if(bcStep===0) disabled = bcChannels.length===0;
+    if(bcStep===1) disabled = !bcStyle;
+    if(bcStep===2 && bcStyle==="template" && !bcTmpl){ disabled=true; nextText="Next"; }
+    if(bcStep===5) nextText="Send";
+    $("#bcNext").textContent=nextText; $("#bcNext").disabled=disabled;
+    let hint = bcSteps[bcStep].hint;
+    if(bcStep===2 && bcStyle==="template" && !bcTmpl) hint="Pick a template to continue";
+    $("#bcHint").textContent = hint;
   }
-  function bindTemplates(){
-    $$(".tmpl-card").forEach(c=>c.onclick=()=>{ curTmpl=c.dataset.tmpl; curChannel="email"; $$(".tmc").forEach((x,i)=>x.toggleAttribute("data-on",i===0)); renderTmplPreview(); $("#tmplScrim").setAttribute("data-open",""); });
-    $$(".tmc").forEach(b=>b.onclick=()=>{ $$(".tmc").forEach(x=>x.removeAttribute("data-on")); b.setAttribute("data-on",""); curChannel = b.textContent.includes("SMS")?"sms":"email"; renderTmplPreview(); });
-    const filterKey = { All:null, Seasonal:"seasonal", Promotions:"promo", "Re-engagement":"reengage", Announcements:"announce" };
-    $$(".tf").forEach(f=>f.onclick=()=>{ $$(".tf").forEach(x=>x.removeAttribute("data-on")); f.setAttribute("data-on",""); const key=filterKey[f.textContent]; $$(".tmpl-card").forEach(c=>{ const t=tmplData[c.dataset.tmpl]; c.style.display = (!key||t.catKey===key)?"flex":"none"; }); });
+  function openBroadcast(){ bcStep=0; bcChannels=["email"]; bcStyle=null; bcTmpl=null;
+    $$(".choice-card").forEach(c=>c.toggleAttribute("data-on", c.dataset.ch==="email"));
+    $$(".style-card").forEach(c=>c.removeAttribute("data-on"));
+    $("#bcScrim").setAttribute("data-open",""); renderBc();
+    setGuide('New Broadcast → pick channels, then on <strong>Content Builder Style</strong> choose <strong>Start from a template</strong>.');
   }
+  // channel multi-select
+  $$(".choice-card").forEach(c=>c.onclick=()=>{ c.toggleAttribute("data-on"); bcChannels=$$(".choice-card[data-on]").map(x=>x.dataset.ch); renderBc(); });
+  // style pick
+  $$(".style-card").forEach(c=>c.onclick=()=>{ $$(".style-card").forEach(x=>x.removeAttribute("data-on")); c.setAttribute("data-on",""); bcStyle=c.dataset.style; renderBc(); });
+  // gallery: channel-filter + populate note
+  function applyGalleryChannelFilter(){
+    $("#galleryFilterNote").textContent = `Showing templates for ${channelLabel()}.`;
+    $$("#tmplGrid .tmpl-card").forEach(c=>{ const chs=tmplChannels[c.dataset.tmpl]; const ok = bcChannels.every(bc=>chs.includes(bc)); c.dataset.chhide = ok?"":"1"; c.style.display = ok?"flex":"none"; });
+  }
+  // category filter (respects channel filter)
+  const filterKey = { All:null, Seasonal:"seasonal", Promotions:"promo", "Re-engagement":"reengage", Announcements:"announce" };
+  $$("#galleryView .tf").forEach(f=>f.onclick=()=>{ $$("#galleryView .tf").forEach(x=>x.removeAttribute("data-on")); f.setAttribute("data-on",""); const key=filterKey[f.textContent]; $$("#tmplGrid .tmpl-card").forEach(c=>{ if(c.dataset.chhide==="1"){ c.style.display="none"; return; } const t=tmplData[c.dataset.tmpl]; c.style.display=(!key||t.catKey===key)?"flex":"none"; }); });
+  // template pick → preview modal
+  $$("#tmplGrid .tmpl-card").forEach(c=>c.onclick=()=>{ curTmpl=c.dataset.tmpl; curChannel = bcChannels.includes("email")?"email":"sms"; $$(".tmc").forEach(x=>{ const isEmail=x.textContent.includes("Email"); x.style.display = tmplChannels[curTmpl].includes(isEmail?"email":"sms")?"inline-block":"none"; x.toggleAttribute("data-on", (isEmail?"email":"sms")===curChannel); }); renderTmplPreview(); $("#tmplScrim").setAttribute("data-open",""); });
+
+  function renderTmplPreview(){ const t=tmplData[curTmpl]; if(!t) return; $("#tmCat").textContent=t.cat; $("#tmCat").dataset.cat=t.catKey; $("#tmTitle").textContent=t.title;
+    if(curChannel==="email"){ $("#tmSubject").parentElement.style.display="block"; $("#tmSubject").textContent=t.subject; $("#tmBody").innerHTML=t.body; }
+    else { $("#tmSubject").parentElement.style.display="none"; $("#tmBody").innerHTML=`<p>${t.sms}</p>`; } }
+  $$(".tmc").forEach(b=>b.onclick=()=>{ $$(".tmc").forEach(x=>x.removeAttribute("data-on")); b.setAttribute("data-on",""); curChannel=b.textContent.includes("SMS")?"sms":"email"; renderTmplPreview(); });
   $("#tmClose").onclick=()=>$("#tmplScrim").removeAttribute("data-open");
   $("#tmCancel").onclick=()=>$("#tmplScrim").removeAttribute("data-open");
   $("#tmplScrim").onclick=e=>{ if(e.target===$("#tmplScrim")) $("#tmplScrim").removeAttribute("data-open"); };
-  $("#tmUse").onclick=()=>{ $("#tmplScrim").removeAttribute("data-open"); setGuide('✅ Opening the broadcast builder pre-filled with this template — tweak the copy, pick your audience, and send.'); };
+  // Use template → fill content view inside the wizard, advance to Content step
+  $("#tmUse").onclick=()=>{ $("#tmplScrim").removeAttribute("data-open"); const t=tmplData[curTmpl]; bcTmpl=curTmpl;
+    $("#contentHeading").textContent = bcChannels.includes("email") ? "Email content" : "SMS content";
+    $("#contentSubject").value = t.subject;
+    $("#contentBody").innerHTML = bcChannels.includes("email") ? t.body : `<p>${t.sms}</p>`;
+    $("#contentSubject").parentElement.style.display = bcChannels.includes("email") ? "block" : "none";
+    bcStep=2; renderBc(); setGuide('✅ Content pre-filled from the template. Edit anything, then continue to Audience.');
+  };
+  $("#backToGallery").onclick=()=>{ bcTmpl=null; renderBc(); };
+  // wizard nav
+  $("#bcNext").onclick=()=>{
+    if(bcStep===1 && bcStyle==="template"){ bcStep=2; applyGalleryChannelFilter(); renderBc(); return; }
+    if(bcStep===1 && bcStyle!=="template"){ // manual/ai → content view directly
+      bcTmpl="_none"; $("#contentHeading").textContent = bcStyle==="ai" ? "Describe your message" : "Email content";
+      $("#contentSubject").value=""; $("#contentBody").innerHTML="<p style='color:hsl(var(--reach-muted-foreground))'>Empty — build your content here.</p>"; bcStep=2; renderBc(); return;
+    }
+    if(bcStep<5){ bcStep++; renderBc(); }
+  };
+  $("#bcBack").onclick=()=>{ if(bcStep===2 && bcStyle==="template" && bcTmpl){ bcTmpl=null; renderBc(); return; } if(bcStep>0){ bcStep--; renderBc(); } };
+  $("#bcCancel").onclick=()=>$("#bcScrim").removeAttribute("data-open");
 
   // init
-  bindTemplates();
   setTab("segments");
 </script>
 </body>
