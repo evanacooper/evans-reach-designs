@@ -341,6 +341,7 @@
 
   /* ============ SEGMENT BUILDER (A6 / A6b) ============ */
   .sb-notice { flex: none; padding: 12px 28px; background: #FFFBF8; border-bottom: 1px solid #F2E0D4; display: flex; align-items: center; gap: 12px; }
+  .sb-notice[hidden] { display: none; }
   .sb-notice .sp { color: var(--accent-deep); font-size: 13px; }
   .sb-notice .t { flex: 1; font-size: 13.5px; color: #7A5B49; }
   .sb-notice .t strong { color: var(--ink); font-weight: 700; }
@@ -350,8 +351,14 @@
   .sb-titlerow { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
   .sb-title h2 { margin: 0 0 6px; font-size: 23px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
   .sb-title .meta { font-size: 13.5px; color: var(--muted); }
-  .sb-title input.name { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); border: 0; border-bottom: 2px dashed var(--line-3); padding: 0 0 4px; font-family: inherit; outline: none; width: 100%; max-width: 420px; }
+  .sb-title { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .sb-title input.name { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); border: 0; border-bottom: 2px dashed transparent; padding: 0 0 4px; font-family: inherit; outline: none; width: 100%; max-width: 460px; background: transparent; border-radius: 2px; }
+  .sb-title input.name:hover { border-bottom-color: var(--line-3); }
   .sb-title input.name:focus { border-bottom-color: var(--accent); }
+  .sb-title input.desc { font-size: 14px; color: var(--slate); border: 0; border-bottom: 1px dashed transparent; padding: 0 0 3px; font-family: inherit; outline: none; width: 100%; max-width: 520px; background: transparent; }
+  .sb-title input.desc::placeholder { color: var(--faint); }
+  .sb-title input.desc:hover { border-bottom-color: var(--line-3); }
+  .sb-title input.desc:focus { border-bottom-color: var(--accent); color: var(--ink); }
   .sb-headactions { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; flex: none; }
   .sb-headactions .row { display: flex; align-items: center; gap: 9px; }
   .sb-matchrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; color: var(--slate); }
@@ -395,6 +402,110 @@
   /* segment chat overlay (A6b) */
   .sb-chat { position: absolute; top: 0; right: 0; bottom: 0; width: 356px; border-left: 1px solid var(--line); background: var(--subtle); display: none; flex-direction: column; box-shadow: -18px 0 40px -24px rgba(22,36,46,.45); z-index: 12; }
   .sb-chat[data-open] { display: flex; }
+
+  /* ============ BROADCAST WIZARD (existing product flow) ============ */
+  .bw { position: absolute; inset: 0; background: #FAFAF9; display: none; z-index: 45; }
+  .bw[data-open] { display: block; }
+  .bw-shell { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; background: #FAFAF9; }
+  .bw-header { padding: 22px 40px 14px; display: flex; align-items: center; justify-content: space-between; }
+  .bw-title { display: flex; align-items: center; gap: 12px; }
+  .bw-title h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.01em; color: var(--ink); }
+  .bw-title input { font-size: 22px; font-weight: 800; letter-spacing: -.01em; color: var(--ink); border: 0; border-bottom: 2px dashed var(--accent); background: transparent; font-family: inherit; outline: none; padding: 0 0 2px; }
+  .bw-pen { font-size: 14px; color: var(--faint); cursor: pointer; }
+  .bw-draft { font-size: 12.5px; font-weight: 600; color: var(--muted); background: #EFF0F1; padding: 5px 12px; border-radius: 7px; }
+  .bw-draft.sched { color: #9A6B00; background: #FCEFCB; }
+  .bw-x { font-size: 19px; color: #9AA6AE; cursor: pointer; }
+  .bw-body { display: grid; grid-template-columns: 250px 1fr; min-height: 0; padding: 0 40px; gap: 24px; }
+  .bw-rail { display: flex; flex-direction: column; gap: 4px; padding-top: 8px; }
+  .bw-step { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 8px; font-size: 15px; color: rgba(110,127,139,.6); }
+  .bw-step .mk { flex: none; width: 18px; text-align: center; font-size: 15px; color: #C3CBD0; }
+  .bw-step[data-state="active"] { color: var(--ink); font-weight: 700; }
+  .bw-step[data-state="active"] .mk { color: var(--ink); }
+  .bw-step[data-state="done"] { color: var(--muted); }
+  .bw-step[data-state="done"] .mk { color: var(--green); }
+  .bw-content { min-height: 0; overflow-y: auto; padding-bottom: 20px; }
+  .bw-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 44px 48px; min-height: 380px; }
+  .bw-center { text-align: center; }
+  .bw-h { margin: 0 0 8px; font-size: 30px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+  .bw-h.dark { color: #16323f; }
+  .bw-sub { margin: 0 auto 30px; font-size: 15px; color: var(--muted); max-width: 620px; }
+  .bw-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 760px; margin: 0 auto; }
+  .bw-select { border: 1px solid var(--line); border-radius: 12px; padding: 30px 22px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: border-color .12s, box-shadow .12s; position: relative; background: #fff; }
+  .bw-select:hover { border-color: #C3CBD0; }
+  .bw-select[data-on] { border: 1.5px solid var(--ink); box-shadow: 0 0 0 3px rgba(22,36,46,.07); }
+  .bw-select .ic { width: 54px; height: 54px; border-radius: 50%; background: #F1F3F4; color: var(--ink); font-size: 22px; display: flex; align-items: center; justify-content: center; }
+  .bw-select .nm { font-size: 19px; font-weight: 800; color: var(--ink); }
+  .bw-select .ds { font-size: 13.5px; line-height: 1.5; color: var(--muted); max-width: 260px; }
+  .bw-select .beta-pill { position: absolute; top: 46px; font-size: 8.5px; font-weight: 800; letter-spacing: .06em; color: var(--muted); background: #fff; border: 1px solid var(--line); padding: 2px 6px; border-radius: 5px; }
+  .bw-select .sel-check { position: absolute; top: 16px; right: 18px; font-size: 12.5px; font-weight: 700; color: var(--ink); display: none; align-items: center; gap: 5px; }
+  .bw-select[data-on] .sel-check { display: inline-flex; }
+  .bw-spark { width: 60px; height: 60px; border-radius: 50%; background: #F1F3F4; color: var(--ink); font-size: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 4px; position: relative; }
+  .bw-spark .beta { position: absolute; bottom: -6px; right: -16px; font-size: 8.5px; font-weight: 800; color: var(--muted); background: #fff; border: 1px solid var(--line); padding: 2px 6px; border-radius: 5px; }
+  .bw-textarea { width: 100%; border: 1px solid var(--line); background: var(--subtle); border-radius: 12px; padding: 15px 16px; font-family: inherit; font-size: 15px; color: var(--ink); min-height: 150px; resize: none; outline: none; text-align: left; }
+  .bw-textarea:focus { border-color: #C9D1D6; background: #fff; }
+  .bw-field { text-align: left; margin-top: 22px; }
+  .bw-field label { display: block; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .bw-field .fh { font-size: 13.5px; color: var(--muted); margin: 2px 0 10px; }
+  .bw-field select { width: 100%; border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px; font-family: inherit; font-size: 14.5px; color: var(--ink); background: #fff; }
+  /* loading */
+  .bw-loading { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 12px 0; }
+  .bw-doc { width: 78px; height: 78px; border-radius: 50%; background: #F1F3F4; color: var(--muted); font-size: 30px; display: flex; align-items: center; justify-content: center; }
+  .bw-ring { width: 116px; height: 116px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; color: var(--ink); background: conic-gradient(var(--ink) 0deg, var(--ink) var(--pct,100deg), #E7EAEC var(--pct,100deg)); }
+  .bw-ring i { width: 92px; height: 92px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-style: normal; }
+  .bw-loading .ph { font-size: 24px; font-weight: 800; color: var(--ink); }
+  .bw-loading .pd { font-size: 15px; color: var(--muted); }
+  .bw-dots { display: flex; gap: 8px; }
+  .bw-dots span { width: 8px; height: 8px; border-radius: 50%; background: #D5DADD; }
+  .bw-dots span[data-on] { background: var(--ink); }
+  .bw-loading .note { font-size: 13.5px; color: var(--faint); max-width: 520px; text-align: center; }
+  /* email content form */
+  .bw-form-h { margin: 0 0 22px; font-size: 22px; font-weight: 700; color: var(--ink); }
+  .bw-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 22px; }
+  .bw-in { display: flex; flex-direction: column; gap: 6px; }
+  .bw-in label { font-size: 13.5px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 5px; }
+  .bw-in label .req { color: #D9534F; }
+  .bw-in label .i { font-size: 11px; color: var(--faint); }
+  .bw-in input, .bw-in .fake { border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px; font-family: inherit; font-size: 14px; color: var(--ink); background: #fff; }
+  .bw-in .fake { color: var(--faint); }
+  .bw-in.disabled input { background: var(--subtle); color: var(--faint); }
+  .bw-preview-bar { display: flex; align-items: center; justify-content: space-between; margin: 26px 0 14px; }
+  .bw-preview-bar .l { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .bw-preview-bar .r { display: flex; gap: 10px; }
+  .bw-preview-body { border-top: 1px solid var(--line-2); padding-top: 26px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .bw-logo { width: 74px; height: 74px; border: 2px solid var(--ink); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: var(--ink); gap: 2px; }
+  .bw-email-h { font-size: 26px; font-weight: 800; color: var(--ink); text-align: center; }
+  /* audience */
+  .bw-seclabel { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--faint); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .bw-stat3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; max-width: 560px; }
+  .bw-stat { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 18px; cursor: pointer; }
+  .bw-stat[data-on] { border: 1.5px solid var(--ink); }
+  .bw-stat .lab { font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+  .bw-stat.email .lab { color: #2563EB; } .bw-stat.sms .lab { color: var(--green); }
+  .bw-stat .num { font-size: 26px; font-weight: 800; color: var(--ink); }
+  .bw-stat .pct { font-size: 12px; color: var(--faint); }
+  .bw-filter3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; max-width: 560px; }
+  .bw-recip { border: 1px solid var(--line); border-radius: 12px; background: var(--subtle); padding: 0; overflow: hidden; }
+  .bw-recip-head { display: flex; justify-content: space-between; padding: 12px 16px; font-size: 12.5px; font-weight: 600; color: var(--muted); background: #EFF1F2; }
+  .bw-recip-empty { padding: 46px 20px; text-align: center; }
+  .bw-recip-empty b { display: block; font-size: 15px; color: var(--ink); font-weight: 700; margin-bottom: 4px; }
+  .bw-recip-empty span { font-size: 13.5px; color: var(--muted); }
+  .bw-aud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+  /* schedule */
+  .bw-sched-summary { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-top: 22px; }
+  .bw-sched-summary .l { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--faint); text-transform: uppercase; }
+  .bw-sched-summary .v { font-size: 16px; font-weight: 700; color: var(--ink); margin-top: 4px; }
+  .bw-sched-pickers { display: flex; gap: 14px; margin-top: 16px; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .bw-sched-pickers .pk { border: 1px solid var(--line); border-radius: 9px; padding: 11px 14px; font-size: 14px; color: var(--ink); display: flex; align-items: center; gap: 10px; }
+  /* send */
+  .bw-send-h { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+  .bw-send-h h2 { margin: 0; font-size: 22px; font-weight: 800; color: var(--ink); }
+  .bw-send-h .s { font-size: 14px; color: var(--muted); }
+  .bw-chtabs { display: inline-flex; gap: 4px; background: #F1F3F4; border-radius: 8px; padding: 3px; margin: 0 auto 18px; }
+  .bw-chtab { border: 0; background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 16px; border-radius: 6px; cursor: pointer; color: var(--muted); }
+  .bw-chtab[data-on] { background: var(--ink); color: #fff; }
+  .bw-footer { padding: 18px 40px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .bw-foot-right { display: flex; align-items: center; gap: 12px; }
+  .bw-back[hidden] { visibility: hidden; }
 
   /* guide banner */
   .guide { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 12.5px; padding: 9px 18px; border-radius: 999px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.4); z-index: 90; max-width: 92%; }
@@ -514,15 +625,15 @@
         <div class="tabpane" data-pane="segments" hidden>
           <div class="list-head"><h3>Your segments</h3><span class="n" id="segCount">3 items</span></div>
           <div class="table" id="segTable" style="margin-top:12px">
-            <div class="tr clickable" data-open-segment="High Risk Churn — Daycare">
+            <div class="tr clickable" data-open-segment="High Risk Churn — Daycare" data-open-desc="Daycare regulars with no upcoming booking.">
               <span class="nm">High Risk Churn — Daycare <small>Daycare regulars with no upcoming booking</small></span>
               <span class="pill seg">Segment</span><span class="when">5 mo ago</span><span class="status">812</span>
             </div>
-            <div class="tr clickable" data-open-segment="Lapsed Customers">
+            <div class="tr clickable" data-open-segment="Lapsed Customers" data-open-desc="No visit in the last 180 days.">
               <span class="nm">Lapsed Customers <small>No visit in the last 180 days</small></span>
               <span class="pill seg">Segment</span><span class="when">5 mo ago</span><span class="status">2,910</span>
             </div>
-            <div class="tr clickable" data-open-segment="Newsletter subscribers">
+            <div class="tr clickable" data-open-segment="Newsletter subscribers" data-open-desc="Opted-in email contacts.">
               <span class="nm">Newsletter subscribers <small>Opted-in email contacts</small></span>
               <span class="pill seg">Segment</span><span class="when">6 days ago</span><span class="status">4,193</span>
             </div>
@@ -728,8 +839,8 @@
         <div class="sb-main">
           <div class="sb-titlerow">
             <div class="sb-title">
-              <h2 id="sbTitleH">Lapsed single-track customers</h2>
-              <input class="name" id="sbTitleInput" placeholder="Name this segment…" hidden />
+              <input class="name" id="sbTitleInput" placeholder="Name this segment…" value="Lapsed single-track customers" />
+              <input class="desc" id="sbDescInput" placeholder="Add a description (optional)…" value="Guests on a past single-track trip with nothing upcoming." />
               <div class="meta" id="sbMeta">Created by Goose · 30 Jul · not yet saved</div>
             </div>
             <div class="sb-headactions">
@@ -835,7 +946,28 @@
       </aside>
     </section>
 
-    <!-- ===== GENERATE MODAL (Broadcast / Segment entry) ===== -->
+    <!-- ===== BROADCAST WIZARD (existing product flow — full-screen) ===== -->
+    <div class="bw" id="bwOverlay">
+      <div class="bw-shell">
+        <div class="bw-header">
+          <div class="bw-title"><h1 id="bwName">Broadcast August 5 04:04 PM</h1><span class="bw-pen" id="bwRename">✎</span><span class="bw-draft" id="bwStatus">Draft</span></div>
+          <span class="bw-x" id="bwClose">✕</span>
+        </div>
+        <div class="bw-body">
+          <nav class="bw-rail" id="bwRail"><!-- steps injected --></nav>
+          <div class="bw-content" id="bwContent"><!-- step panel injected --></div>
+        </div>
+        <div class="bw-footer">
+          <button class="btn btn-outline bw-back" id="bwBack">‹ Back</button>
+          <div class="bw-foot-right">
+            <button class="btn-manual" id="bwSkip">Skip &amp; Save as Draft</button>
+            <button class="btn btn-dark bw-next" id="bwNext">Next ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GENERATE MODAL (Segment entry) ===== -->
     <div class="scrim" id="genScrim">
       <div class="gen-modal">
         <div class="gen-head">
@@ -904,7 +1036,7 @@
     createMenu.removeAttribute('data-open');
     const kind = item.dataset.create;
     if(kind === 'automation') startAutomation();
-    if(kind === 'broadcast') openGenModal('broadcast');
+    if(kind === 'broadcast') openBroadcastWizard();
     if(kind === 'segment') openGenModal('segment');
   });
 
@@ -1048,11 +1180,20 @@
     $('.wf-title h2').textContent = 'Lapsed single-track win-back';
     $('#wfMeta').textContent = 'Sends once on Tue 4 Aug · 1,284 customers · created just now';
     const pill = $('.wf-title .pill'); pill.className = 'pill ai'; pill.textContent = '✦ Built with AI'; pill.style.display = '';
+    $('#wfEditAi').style.display = ''; $('#wfTurnOn').style.display = '';
+    $('#wfStatus').textContent = '● Off ▾'; $('#wfStatus').style.color = '';
     $('#startMain').innerHTML = 'Everyone in <a class="seg-link" id="segLink">Lapsed single-track customers</a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span>';
     $('#segLink').onclick = (e) => { e.stopPropagation(); openSegmentFromWorkflow(); };
+    $('.step[data-step="start"] .lbl').textContent = 'START THIS BROADCAST';
     $('.step[data-step="start"] .sub').textContent = '1,284 customers today · sends once';
+    $('.step[data-step="email"] .main').textContent = 'The trails are dry again';
+    $('.step[data-step="email"] .sub').textContent = 'To 1,284 customers, minus anyone messaged elsewhere in 90 days';
+    $('.step[data-step="sms"] .lbl').textContent = 'SMS · 5 DAYS LATER, IF NOT OPENED';
+    $('.step[data-step="sms"] .main').textContent = '2 spots left on Sawtooth';
     $('#wfTurnOn').textContent = 'Turn on';
-    $('#wfBanner').querySelector('b').textContent = 'Built from your ask — segment, broadcast, and both messages are ready';
+    const banner = $('#wfBanner'); banner.className = 'wf-banner ok';
+    banner.querySelector('b').textContent = 'Built from your ask — segment, broadcast, and both messages are ready';
+    banner.querySelector('span:last-child').textContent = 'Click any step to change it by hand, or use Edit with AI. Nothing sends until you turn it on.';
     ['wait','sms'].forEach(k => { const s = $(`.step[data-step="${k}"]`); s.style.display = ''; });
     $('.step[data-step="wait"]').nextElementSibling.style.display = '';
     $('.step[data-step="sms"]').previousElementSibling.style.display = '';
@@ -1138,30 +1279,29 @@
   $('#segLink2').onclick = (e) => { e.stopPropagation(); openSegmentFromWorkflow(); };
   function openSegmentFromWorkflow(){
     showView('segment');
-    configSegment({ fromWorkflow: true, chat: true, name: 'Lapsed single-track customers' });
+    configSegment({ fromWorkflow: true, chat: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
     setGuide('This is the <strong>segment builder</strong> behind the automation. Continue the chat, edit conditions by hand, or hit <strong>← Back to draft</strong>.');
   }
   $('[data-back-to-workflow]') && $('[data-back-to-workflow]').addEventListener('click', () => { showView('workflow'); $('#wfChat').setAttribute('data-open',''); });
 
   // ================= SEGMENT BUILDER (A6 / A6b) =================
   function configSegment(opts){
-    const { fromWorkflow, chat, name, blank } = opts;
+    const { fromWorkflow, chat, name, desc, blank } = opts;
+    // The draft-origin banner only shows when arriving via the AI automation flow.
     $('#sbNotice').hidden = !fromWorkflow;
     $('#sbUsedBy').style.display = fromWorkflow ? '' : 'none';
-    // title as editable input for blank/new, static for workflow-owned
+    // Name + description are always human-editable.
+    $('#sbTitleInput').value = blank ? '' : (name || '');
+    $('#sbDescInput').value = blank ? '' : (desc || '');
     if(blank){
-      $('#sbTitleH').hidden = true;
-      $('#sbTitleInput').hidden = false;
-      $('#sbTitleInput').value = name && name !== 'New segment' ? name : '';
       $('#sbMeta').textContent = 'New segment · not yet saved';
       $('#segCrumb').textContent = 'New segment';
     } else {
-      $('#sbTitleH').hidden = false;
-      $('#sbTitleInput').hidden = true;
-      $('#sbTitleH').textContent = name;
       $('#sbMeta').textContent = fromWorkflow ? 'Created by Goose · 30 Jul · not yet saved' : 'Saved segment · edit conditions below';
       $('#segCrumb').textContent = name;
     }
+    // keep the crumb in sync as the name is edited
+    $('#sbTitleInput').oninput = () => { $('#segCrumb').textContent = $('#sbTitleInput').value.trim() || 'New segment'; };
     // chat
     $('#sbChat').toggleAttribute('data-open', !!chat);
     $('#sbEditAi').toggleAttribute('data-on', !!chat);
@@ -1169,8 +1309,8 @@
   // Open from the segments list (existing saved segment — A6, no chat, no notice)
   $$('[data-open-segment]').forEach(r => r.onclick = () => {
     showView('segment');
-    configSegment({ fromWorkflow: false, chat: false, name: r.dataset.openSegment });
-    setGuide('This is the <strong>segment builder</strong>. Edit conditions on the left, watch the plain-English + count update on the right, or use <strong>Edit with AI</strong>.');
+    configSegment({ fromWorkflow: false, chat: false, name: r.dataset.openSegment, desc: r.dataset.openDesc || '' });
+    setGuide('This is the <strong>segment builder</strong>. Edit the name and description, tune conditions on the left, watch the plain-English + count update on the right, or use <strong>Edit with AI</strong>.');
   });
   $('#sbEditAi').onclick = () => {
     const open = $('#sbChat').toggleAttribute('data-open');
@@ -1220,104 +1360,269 @@
   // ================= GENERATE MODAL (Broadcast BroadcastScreen3 / Segment SegmentScreen2) =================
   const genScrim = $('#genScrim');
   let genMode = 'broadcast';
+  // Segment entry modal (SegmentScreen2) — segments only now
   function openGenModal(mode){
-    genMode = mode;
-    if(mode === 'broadcast'){
-      $('#genTitle').textContent = 'Create broadcast';
-      $('#genHeadSub').textContent = 'One message, one date. Start with AI, or build it yourself.';
-      $('#genH3').textContent = 'Generate Content with AI';
-      $('#genSub').textContent = "Describe what you want your message to say and we'll generate the content for you with marketing-optimized best practices. Up to one image will be AI-generated for you.";
-      $('#genInput').placeholder = 'e.g., Send a promotional email announcing a 20% off sale on all products';
-      $('#genImageField').hidden = false;
-      $('#genGo').textContent = 'Generate ✦';
-      setGuide('✦ <strong>Broadcast</strong> opens in a modal. Generate content with AI, or switch to <strong>Build Manually</strong>.');
-    } else {
-      $('#genTitle').textContent = 'Create segment';
-      $('#genHeadSub').textContent = 'A saved audience you can reuse. Describe it, or build it yourself.';
-      $('#genH3').textContent = 'Describe your audience';
-      $('#genSub').textContent = "Describe the audience you want to target in plain language, and our AI will create the conditions for you.";
-      $('#genInput').placeholder = 'e.g., Customers who booked a single-track trip in the last 6 months but have nothing upcoming';
-      $('#genImageField').hidden = true;
-      $('#genGo').textContent = 'Generate Segment ✦';
-      setGuide('✦ <strong>Segment</strong> opens the describe-your-audience modal. Generate with AI, or switch to <strong>Manual Builder</strong>.');
-    }
+    genMode = 'segment';
+    $('#genTitle').textContent = 'Create segment';
+    $('#genHeadSub').textContent = 'A saved audience you can reuse. Describe it, or build it yourself.';
+    $('#genH3').textContent = 'Describe your audience';
+    $('#genSub').textContent = "Describe the audience you want to target in plain language, and our AI will create the conditions for you.";
+    $('#genInput').placeholder = 'e.g., Customers who booked a single-track trip in the last 6 months but have nothing upcoming';
+    $('#genImageField').hidden = true;
+    $('#genGo').textContent = 'Generate Segment ✦';
     $('#genInput').value = '';
-    $('#genManual').textContent = mode === 'segment' ? '⚙ Manual Builder' : '⚙ Build Manually';
+    $('#genManual').textContent = '⚙ Manual Builder';
+    setGuide('✦ <strong>Segment</strong> opens the describe-your-audience modal. Generate with AI, or switch to <strong>Manual Builder</strong>.');
     genScrim.setAttribute('data-open','');
   }
   $('#genClose').onclick = closeGen; $('#genCancel').onclick = closeGen;
   genScrim.onclick = e => { if(e.target === genScrim) closeGen(); };
   function closeGen(){ genScrim.removeAttribute('data-open'); }
 
-  // Generate → AI-built result
+  // Generate Segment → A6b (builder with chat, prefilled)
   $('#genGo').onclick = () => {
     closeGen();
-    if(genMode === 'segment'){
-      // Segment: go straight to A6b (builder with chat, prefilled)
-      showView('segment');
-      configSegment({ fromWorkflow: false, chat: true, name: 'Lapsed single-track customers' });
-      $('#sbMeta').textContent = 'Created by Goose · just now · not yet saved';
-      setGuide('✅ AI built your segment. Continue the chat to refine it, or edit conditions by hand — then <strong>Save segment</strong>.');
-    } else {
-      // Broadcast: short build screen, then a broadcast workflow view
-      runBroadcastBuild();
-    }
+    showView('segment');
+    configSegment({ fromWorkflow: false, chat: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
+    $('#sbMeta').textContent = 'Created by Goose · just now · not yet saved';
+    setGuide('✅ AI built your segment. Continue the chat to refine it, or edit conditions by hand — then <strong>Save segment</strong>.');
   };
-  // Build manually
+  // Manual Builder → A6 blank
   $('#genManual').onclick = () => {
     closeGen();
-    if(genMode === 'segment'){
-      // A6 blank
-      showView('segment');
-      configSegment({ fromWorkflow: false, chat: false, blank: true, name: 'New segment' });
-      // reset canvas to a single empty condition
-      $('#sbCount').textContent = '0';
-      $('#sbPlain').innerHTML = 'Add a condition to describe who this segment includes.';
-      setGuide('This is the blank <strong>Manual Builder</strong>. Name the segment and add conditions.');
-    } else {
-      // Broadcast manual → land on broadcast workflow (manual, no AI banner)
-      openBroadcastWorkflow(false);
-    }
+    showView('segment');
+    configSegment({ fromWorkflow: false, chat: false, blank: true, name: 'New segment' });
+    $('#sbCount').textContent = '0';
+    $('#sbPlain').innerHTML = 'Add a condition to describe who this segment includes.';
+    setGuide('This is the blank <strong>Manual Builder</strong>. Name the segment and add conditions.');
   };
 
-  function runBroadcastBuild(){
-    showView('building');
-    // re-label the build steps for a broadcast
-    const steps = $$('#buildSteps .build-step');
-    const labels = ['Audience selected — 2,940 subscribers','Broadcast created','Email content drafted','Image generated'];
-    steps.forEach((s,i) => { s.setAttribute('data-i', i); s.childNodes[1].textContent = ' ' + labels[i]; s.removeAttribute('data-done'); $('.mk', s).textContent='○'; });
-    let i = 0;
-    const tick = () => {
-      if(i < steps.length){ steps[i].setAttribute('data-done',''); $('.mk',steps[i]).textContent='✓'; i++; setTimeout(tick, 560); }
-      else setTimeout(() => openBroadcastWorkflow(true), 650);
-    };
-    setTimeout(tick, 450);
+  // ================= BROADCAST WIZARD (existing product flow) =================
+  // Steps mirror CreateOneTimeWizard: Message Channels → Content Builder Style →
+  // [AI Prompt] → Email Content → Audience → Schedule → Send. The AI Prompt step
+  // only exists when the "Build with AI" content style is chosen.
+  const bwOverlay = $('#bwOverlay');
+  let bwState = { channels: ['email'], style: null, step: 0 };
+  const BW_STEPS = {
+    channels: { label: 'Message Channels' },
+    style:    { label: 'Content Builder Style' },
+    prompt:   { label: 'AI Prompt' },
+    email:    { label: 'Email Content' },
+    audience: { label: 'Audience' },
+    schedule: { label: 'Schedule' },
+    send:     { label: 'Send' },
+  };
+  function bwPath(){
+    const mid = bwState.style === 'ai' ? ['prompt','email'] : ['email'];
+    return ['channels','style',...mid,'audience','schedule','send'];
+  }
+  function openBroadcastWizard(){
+    bwState = { channels: ['email'], style: null, step: 0 };
+    $('#bwName').textContent = 'Broadcast August 5 04:04 PM';
+    $('#bwStatus').textContent = 'Draft'; $('#bwStatus').className = 'bw-draft';
+    bwOverlay.setAttribute('data-open','');
+    bwRender();
+    setGuide('This is the <strong>existing broadcast flow</strong>: pick channels → choose Build with AI or Build Manually → content → audience → schedule → send.');
+  }
+  $('#bwClose').onclick = () => bwOverlay.removeAttribute('data-open');
+  $('#bwRename').onclick = () => {
+    const cur = $('#bwName').textContent;
+    $('#bwName').outerHTML = `<input id="bwName" value="${cur.replace(/"/g,'&quot;')}" />`;
+    const inp = $('#bwName'); inp.focus(); inp.select();
+    inp.onblur = () => { const v = inp.value.trim() || cur; inp.outerHTML = `<h1 id="bwName">${v}</h1>`; };
+    inp.onkeydown = e => { if(e.key === 'Enter') inp.blur(); };
+  };
+
+  function bwRail(path, idx){
+    return path.map((k,i) => {
+      const st = i < idx ? 'done' : i === idx ? 'active' : '';
+      const mk = i < idx ? '✓' : i === idx ? '—' : '—';
+      return `<div class="bw-step" data-state="${st}"><span class="mk">${mk}</span>${BW_STEPS[k].label}</div>`;
+    }).join('');
+  }
+  function bwRender(){
+    const path = bwPath();
+    if(bwState.step >= path.length) bwState.step = path.length - 1;
+    const key = path[bwState.step];
+    $('#bwRail').innerHTML = bwRail(path, bwState.step);
+    $('#bwContent').innerHTML = bwPanel(key);
+    bwBindPanel(key);
+    // footer
+    $('#bwBack').hidden = bwState.step === 0;
+    let nextText = 'Next ›', disabled = false;
+    if(key === 'channels') disabled = bwState.channels.length === 0;
+    if(key === 'style') disabled = !bwState.style;
+    if(key === 'prompt') nextText = 'Generate ›';
+    if(key === 'send') nextText = 'Schedule ›';
+    $('#bwNext').textContent = nextText;
+    $('#bwNext').disabled = disabled;
+    $('#bwNext').style.opacity = disabled ? '.45' : '';
+  }
+  function bwPanel(key){
+    if(key === 'channels') return `<div class="bw-card bw-center">
+      <h2 class="bw-h">Message Channels</h2><p class="bw-sub">Select the channels you want to use in this automation.</p>
+      <div class="bw-2col">
+        <button class="bw-select" data-ch="email"><span class="sel-check">✓ Selected</span><span class="ic">✉</span><span class="nm">Email</span><span class="ds">Send rich content via email</span></button>
+        <button class="bw-select" data-ch="sms"><span class="sel-check">✓ Selected</span><span class="ic">📞</span><span class="nm">SMS</span><span class="ds">Send quick messages via text</span></button>
+      </div></div>`;
+    if(key === 'style') return `<div class="bw-card bw-center">
+      <h2 class="bw-h">Content Builder Style</h2><p class="bw-sub">Choose how you want to create your content</p>
+      <div class="bw-2col">
+        <button class="bw-select" data-style="ai"><span class="sel-check">✓ Selected</span><span class="ic">✦</span><span class="beta-pill">BETA</span><span class="nm">Build with AI</span><span class="ds">Describe your message in plain language and let AI create the content</span></button>
+        <button class="bw-select" data-style="manual"><span class="sel-check">✓ Selected</span><span class="ic">⚙</span><span class="nm">Build Manually</span><span class="ds">Create your content by configuring email and SMS messages directly</span></button>
+      </div></div>`;
+    if(key === 'prompt') return `<div class="bw-card bw-center">
+      <div class="bw-spark">✦<span class="beta">BETA</span></div>
+      <h2 class="bw-h">Generate Content with AI</h2>
+      <p class="bw-sub">Describe what you want your message to say and we'll generate the content for you with marketing optimized best practices. Up to one image will be AI-generated for you.</p>
+      <textarea class="bw-textarea" placeholder="e.g., Send a promotional email announcing a 20% off sale on all products"></textarea>
+      <div class="bw-field"><label>Image Style</label><div class="fh">Choose how AI-generated images will look in your message</div>
+        <select><option>Illustration</option><option>Photo-like</option><option>Bold &amp; Colorful</option><option>Cartoon</option><option>Minimalist</option><option>Watercolor</option></select></div>
+      </div>`;
+    if(key === 'email') return `<div class="bw-card">
+      <h2 class="bw-form-h">Email Content</h2>
+      <div class="bw-grid2">
+        <div class="bw-in"><label>From Email</label><div class="fake">team@pawz.marketing-goose.com ▾</div></div>
+        <div class="bw-in"><label>From Name <span class="i">ⓘ</span></label><input placeholder="Berry Hill Trails" /></div>
+        <div class="bw-in"><label>Subject <span class="req">*</span></label><input value="🐾 Happy National Golden Retriever Day from Paws Pet Hotel!" /></div>
+        <div class="bw-in"><label>Preview Text <span class="i">ⓘ</span></label><input value="Celebrate the fluffiest, friendliest breed with a special treat" /></div>
+      </div>
+      <div class="bw-preview-bar"><span class="l">Preview</span><span class="r"><button class="btn btn-dark" style="padding:9px 14px">▷ Test Email</button><button class="btn btn-dark" style="padding:9px 14px">Edit</button></span></div>
+      <div class="bw-preview-body"><div class="bw-logo">🐾<span>BERRY HILL</span></div><div class="bw-email-h">The trails are dry again 🐾</div></div>
+      </div>`;
+    if(key === 'audience') return `<div class="bw-card">
+      <h2 class="bw-h" style="font-size:26px;margin-bottom:24px;color:#16323f">Select Audience</h2>
+      <div class="bw-aud-grid">
+        <div>
+          <div class="bw-seclabel">Estimated Matches ⓘ</div>
+          <div class="bw-stat3">
+            <div class="bw-stat" data-on><span class="lab">👥 Total</span><span class="num" id="bwTotal">0</span></div>
+            <div class="bw-stat email"><span class="lab">✉ Email</span><span class="num" id="bwEmail">0</span><span class="pct">(0%)</span></div>
+            <div class="bw-stat sms"><span class="lab">📞 SMS</span><span class="num" id="bwSms">0</span><span class="pct">(0%)</span></div>
+          </div>
+          <div class="bw-seclabel" style="margin-top:26px">Filter</div>
+          <div class="bw-filter3">
+            <button class="bw-select" data-aud="segments" data-on style="padding:20px 14px"><span class="sel-check">✓</span><span class="ic" style="width:42px;height:42px;font-size:17px">👥</span><span class="nm" style="font-size:15px">Select Segments</span><span class="ds" style="font-size:12.5px">Choose from Segments</span></button>
+            <button class="bw-select" data-aud="individual" style="padding:20px 14px"><span class="ic" style="width:42px;height:42px;font-size:17px">👤</span><span class="nm" style="font-size:15px">Select Individual</span><span class="ds" style="font-size:12.5px">Pick users one by one</span></button>
+            <button class="bw-select" data-aud="all" style="padding:20px 14px"><span class="ic" style="width:42px;height:42px;font-size:17px">👪</span><span class="nm" style="font-size:15px">All Users</span><span class="ds" style="font-size:12.5px">Send to everyone</span></button>
+          </div>
+          <div style="margin-top:16px"><select class="bw-field" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:12px 14px;font-family:inherit;font-size:14px"><option>Select Segments…</option><option>Daycare &amp; Boarding Customers</option><option>Newsletter subscribers</option><option>Lapsed Customers</option></select></div>
+        </div>
+        <div class="bw-recip">
+          <div class="bw-recip-head"><span>NAME</span><span>CONTACT 🔍</span></div>
+          <div class="bw-recip-empty"><b>No segment selected</b><span>Select one or more segments from the list above to see your recipients</span></div>
+        </div>
+      </div></div>`;
+    if(key === 'schedule') return `<div class="bw-card">
+      <h2 class="bw-h" style="font-size:26px;margin-bottom:24px;color:#16323f">Set Schedule Time</h2>
+      <div class="bw-2col" style="max-width:none">
+        <button class="bw-select" data-when="now" style="padding:26px 22px"><span class="sel-check">✓ Selected</span><span class="ic">➤</span><span class="nm" style="font-size:17px">Immediately</span><span class="ds">Messages will be sent within ~2 minutes of starting the broadcast. Check the Recipients tab to see who has received a message.</span></button>
+        <button class="bw-select" data-when="schedule" data-on style="padding:26px 22px"><span class="sel-check">✓ Selected</span><span class="ic">📅</span><span class="nm" style="font-size:17px">Schedule</span><span class="ds">Choose date and time. Any broadcast scheduled more than 2 hours from now can be unscheduled and updated.</span></button>
+      </div>
+      <div id="bwSchedDetail">
+        <div class="bw-sched-summary"><div class="l">Currently scheduled for</div><div class="v">Wednesday, August 5, 2026 at 9:07 PM EDT</div></div>
+        <div class="bw-sched-pickers"><span class="pk">📅 August 5th, 2026</span><span class="pk">🕘 09:07 PM</span><span class="pk">America/New_York ▾</span></div>
+      </div></div>`;
+    if(key === 'send') return `<div class="bw-card">
+      <div class="bw-send-h"><h2>Preview &amp; Schedule</h2><span class="s">Scheduled for Aug 5, 2026 at 9:07 PM</span></div>
+      <div style="text-align:center"><div class="bw-chtabs"><button class="bw-chtab" data-on>Email</button></div></div>
+      <div class="bw-preview-bar"><span class="l">Email Preview</span><span class="r"><button class="btn btn-outline" style="padding:9px 14px">▷ Send Test</button><button class="btn btn-outline" style="padding:9px 12px">⤢</button><button class="btn btn-outline" style="padding:9px 14px">Details ▾</button></span></div>
+      <div style="border:1px solid var(--line-2);border-radius:10px;padding:18px 20px">
+        <div style="font-size:17px;font-weight:800;color:var(--ink)">🐾 Happy National Golden Retriever Day from Paws Pet Hotel!</div>
+        <div style="font-size:13.5px;color:var(--muted);margin-top:4px">Celebrate the fluffiest, friendliest breed with a special treat from Paws Pet Hotel</div>
+        <div class="bw-preview-body" style="border-top:0;margin-top:18px"><div class="bw-logo">🐾<span>BERRY HILL</span></div><div class="bw-email-h">Happy National Golden Retriever Day! 🐾</div></div>
+      </div></div>`;
+    if(key === 'loading') return `<div class="bw-card"><div class="bw-loading">
+      <div class="bw-doc">📄</div>
+      <div class="bw-ring" id="bwRing"><i id="bwPct">28%</i></div>
+      <div class="ph" id="bwPh">Analyzing Business Profile</div>
+      <div class="pd" id="bwPd">Understanding your brand, tone, and requirements</div>
+      <div class="bw-dots" id="bwDots"><span></span><span data-on></span><span></span><span></span><span></span></div>
+      <div class="note">This usually takes about 60 seconds. We're crafting personalized content just for you.</div>
+    </div></div>`;
+    return '';
+  }
+  function bwBindPanel(key){
+    if(key === 'channels'){
+      $$('#bwContent .bw-select').forEach(b => { b.toggleAttribute('data-on', bwState.channels.includes(b.dataset.ch));
+        b.onclick = () => { const c = b.dataset.ch; const on = b.toggleAttribute('data-on'); bwState.channels = $$('#bwContent .bw-select[data-on]').map(x=>x.dataset.ch); bwRender.footerOnly ? null : ($('#bwNext').disabled = bwState.channels.length===0, $('#bwNext').style.opacity = bwState.channels.length===0?'.45':''); };
+      });
+    }
+    if(key === 'style'){
+      $$('#bwContent .bw-select').forEach(b => { b.toggleAttribute('data-on', bwState.style === b.dataset.style);
+        b.onclick = () => { $$('#bwContent .bw-select').forEach(x=>x.removeAttribute('data-on')); b.setAttribute('data-on',''); bwState.style = b.dataset.style; $('#bwNext').disabled=false; $('#bwNext').style.opacity=''; };
+      });
+    }
+    if(key === 'audience'){
+      $$('#bwContent .bw-select[data-aud]').forEach(b => b.onclick = () => { $$('#bwContent .bw-select[data-aud]').forEach(x=>x.removeAttribute('data-on')); b.setAttribute('data-on',''); });
+    }
+    if(key === 'schedule'){
+      $$('#bwContent .bw-select[data-when]').forEach(b => b.onclick = () => { $$('#bwContent .bw-select[data-when]').forEach(x=>x.removeAttribute('data-on')); b.setAttribute('data-on',''); $('#bwSchedDetail').style.display = b.dataset.when==='schedule'?'':'none'; });
+    }
+  }
+  // AI content-generation loading animation, then land on Email Content
+  function bwRunGenerate(){
+    $('#bwContent').innerHTML = bwPanel('loading');
+    $('#bwRail').innerHTML = bwRail(bwPath(), bwPath().indexOf('prompt')).replace('AI Prompt','AI Prompt (Loading…)');
+    $('#bwNext').disabled = true; $('#bwNext').style.opacity = '.45'; $('#bwNext').textContent = '⟳ Generate';
+    const phases = [
+      ['Initializing AI Engine','Starting up the content generation system…'],
+      ['Analyzing Business Profile','Understanding your brand, tone, and requirements'],
+      ['Crafting Content','Generating compelling copy for your channels'],
+      ['Optimizing for Channels','Tailoring content for Email'],
+      ['Finalizing Campaign','Adding finishing touches and compiling content'],
+    ];
+    let p = 0, pct = 8;
+    const iv = setInterval(() => {
+      pct = Math.min(100, pct + 9);
+      const ring = $('#bwRing'), pctEl = $('#bwPct');
+      if(ring){ ring.style.setProperty('--pct', (pct*3.6)+'deg'); pctEl.textContent = pct + '%'; }
+      const np = Math.min(phases.length-1, Math.floor(pct/20));
+      if(np !== p){ p = np; if($('#bwPh')){ $('#bwPh').textContent = phases[p][0]; $('#bwPd').textContent = phases[p][1]; $$('#bwDots span').forEach((s,i)=>s.toggleAttribute('data-on', i===p)); } }
+      if(pct >= 100){ clearInterval(iv); $('#bwName').textContent = 'Golden Retriever Day Celebration by Paws Pet Hotel'; bwState.step = bwPath().indexOf('email'); bwRender(); }
+    }, 380);
+  }
+  $('#bwBack').onclick = () => { if(bwState.step > 0){ bwState.step--; bwRender(); } };
+  $('#bwSkip').onclick = () => { bwOverlay.removeAttribute('data-open'); setTab('broadcasts'); showView('list'); setGuide('💾 Saved as a draft. It would appear in your <strong>Broadcasts</strong> list.'); };
+  $('#bwNext').onclick = () => {
+    const path = bwPath(); const key = path[bwState.step];
+    if(key === 'prompt'){ bwRunGenerate(); return; }
+    if(key === 'send'){ bwFinish(); return; }
+    if(bwState.step < path.length - 1){ bwState.step++; bwRender(); }
+  };
+  // Final: scheduled → land on the broadcast workflow view (existing product landing)
+  function bwFinish(){
+    bwOverlay.removeAttribute('data-open');
+    openBroadcastLanding();
   }
 
-  // A broadcast reuses the workflow shell, retitled + trimmed to one message
-  function openBroadcastWorkflow(ai){
+  // Broadcast landing view (existing product: Audience / Email / SMS / Start-this-broadcast + email preview)
+  function openBroadcastLanding(){
     showView('workflow');
-    $('#wfChat').toggleAttribute('data-open', !!ai);
-    $('#wfEditAi').toggleAttribute('data-on', !!ai);
-    // retitle
-    $('.wf-title h2').textContent = 'Broadcast — Summer send';
-    const pill = $('.wf-title .pill');
-    if(ai){ pill.className = 'pill ai'; pill.textContent = '✦ Built with AI'; pill.style.display=''; }
-    else { pill.style.display = 'none'; }
-    $('#wfMeta').textContent = ai ? 'Sends once · 2,940 subscribers · created just now' : 'Draft · one message, one date';
-    // one-shot broadcast: retitle the start step, and hide the wait + sms steps
-    $('#startMain').innerHTML = 'Everyone in <a class="seg-link" id="segLinkBc">Newsletter subscribers</a> — sends once on <span class="edit">Fri 8 Aug, 9:00 am</span>';
-    $('.step[data-step="start"] .sub').textContent = ai ? '2,940 subscribers today · sends once' : 'Pick an audience · sends once';
+    $('#wfChat').removeAttribute('data-open'); $('#wfEditAi').removeAttribute('data-on');
+    $('.wf-title h2').textContent = 'Golden Retriever Day Celebration by Paws Pet Hotel';
+    const pill = $('.wf-title .pill'); pill.className = 'pill bc'; pill.textContent = 'Scheduled'; pill.style.display = '';
+    $('#wfMeta').textContent = 'Paws Pet Hotel celebrates National Golden Retriever Day with a festive greeting email';
+    $('#wfStatus').textContent = '● Scheduled ▾'; $('#wfStatus').style.color = '#9A6B00';
+    $('#wfTurnOn').style.display = 'none';
+    $('#wfEditAi').style.display = 'none';
+    // banner
+    $('#wfBanner').className = 'wf-banner ok'; $('#wfBanner').querySelector('b').textContent = 'Broadcast scheduled — sends Aug 5, 2026 at 9:07 PM';
+    $('#wfBanner').querySelector('span:last-child').textContent = 'Review the audience and message below, or cancel from the top-right.';
+    // start step = bulk send; audience shows segment; hide wait; show email + sms
+    $('#startMain').innerHTML = 'Bulk send at <span class="edit">9:07 PM · 08/05/26</span> to <a class="seg-link" id="segLinkBc">Daycare &amp; Boarding Customers</a>';
+    $('.step[data-step="start"] .lbl').textContent = 'START THIS BROADCAST';
+    $('.step[data-step="start"] .sub').textContent = 'Send to all users in this segment · sends once';
     $('#segLinkBc') && ($('#segLinkBc').onclick = (e) => { e.stopPropagation(); openSegmentFromWorkflow(); });
-    $('#wfTurnOn').textContent = 'Send';
     $('.step[data-step="wait"]').style.display = 'none';
     $('.step[data-step="wait"]').nextElementSibling.style.display = 'none';
-    $('.step[data-step="sms"]').style.display = 'none';
-    $('.step[data-step="sms"]').previousElementSibling.style.display = 'none';
-    $('#wfBanner').querySelector('b').textContent = ai ? 'Generated from your prompt — content and audience are ready' : 'Manual broadcast — fill in your message and audience';
-    setGuide(ai ? '✅ AI generated your broadcast. Edit the content, pick the audience, then <strong>Turn on</strong>/Send.' : 'Manual broadcast — click the email step to write content, set the audience, then send.');
-    // reset chat msg
-    $('#wfChatScroll').innerHTML = `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">I drafted a summer re-engagement email with one generated image. Ask me to change the tone, offer, or audience.</div></div>`;
+    $('.step[data-step="sms"]').style.display = '';
+    $('.step[data-step="sms"]').previousElementSibling.style.display = '';
+    $('.step[data-step="email"] .main').textContent = '🐾 Happy National Golden Retriever Day from Paws Pet Hotel!';
+    $('.step[data-step="email"] .sub').textContent = 'Sent to everyone in the segment';
+    $('.step[data-step="sms"] .lbl').textContent = 'SMS';
+    $('.step[data-step="sms"] .main').textContent = 'Hello! 🐾 Happy National Golden Retriever Day from all of us at Paws Pet Hotel.';
+    setGuide('✅ <strong>Broadcast scheduled!</strong> This is the existing broadcast landing view — audience, email + SMS, and the bulk-send time. Click the segment to edit it.');
   }
 
   // ---------- Reset ----------
