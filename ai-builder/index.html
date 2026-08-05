@@ -387,6 +387,12 @@
   .side-bul .b.inc .m { color: var(--green); } .side-bul .b.exc .m { color: #B6BFC5; }
   .side-bul .b span { flex: 1; font-size: 13px; line-height: 1.5; color: var(--slate); }
   .side-note { font-size: 12.5px; color: var(--faint); line-height: 1.5; padding-top: 8px; }
+  .used-list { display: flex; flex-direction: column; gap: 7px; }
+  .used-item { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 11px; background: #fff; cursor: pointer; }
+  .used-item:hover { border-color: #C3CBD0; }
+  .used-item .ci { flex: none; width: 22px; height: 22px; border-radius: 6px; background: var(--indigo-bg); color: var(--indigo); font-size: 11px; display: flex; align-items: center; justify-content: center; }
+  .used-item .cn { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: var(--ink); }
+  .used-item .cg { font-size: 11px; color: var(--faint); }
   .side-div { height: 1px; background: #E7E9EA; }
   .side-count { display: flex; align-items: baseline; gap: 10px; }
   .side-count .big { font-size: 30px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
@@ -593,15 +599,15 @@
           <div class="table" id="autoTable" style="margin-top:12px">
             <div class="tr">
               <span class="nm">High Risk Journey — Grooming <small>Re-engage customers at churn risk</small></span>
-              <span class="pill auto">Automation</span><span class="when">9d ago</span><span class="status">Off</span>
+              <span class="pill auto">Managed</span><span class="when">9d ago</span><span class="status">Off</span>
             </div>
             <div class="tr">
               <span class="nm">Boarding Cross-Sell <small>Encourage daycare customers to try boarding</small></span>
-              <span class="pill auto">Automation</span><span class="when">9d ago</span><span class="status live">Live</span>
+              <span class="pill auto">Managed</span><span class="when">9d ago</span><span class="status live">Live</span>
             </div>
             <div class="tr clickable" data-open-workflow>
               <span class="nm">Lapsed single-track win-back <small>Guests on a past single-track trip, nothing upcoming</small></span>
-              <span class="pill ai">✦ Built with AI</span><span class="when">just now</span><span class="status">Draft</span>
+              <span class="pill ai">Custom</span><span class="when">just now</span><span class="status">Draft</span>
             </div>
           </div>
         </div>
@@ -627,15 +633,15 @@
           <div class="table" id="segTable" style="margin-top:12px">
             <div class="tr clickable" data-open-segment="High Risk Churn — Daycare" data-open-desc="Daycare regulars with no upcoming booking.">
               <span class="nm">High Risk Churn — Daycare <small>Daycare regulars with no upcoming booking</small></span>
-              <span class="pill seg">Segment</span><span class="when">5 mo ago</span><span class="status">812</span>
+              <span class="pill auto">Managed</span><span class="when">5 mo ago</span><span class="status">812</span>
             </div>
             <div class="tr clickable" data-open-segment="Lapsed Customers" data-open-desc="No visit in the last 180 days.">
               <span class="nm">Lapsed Customers <small>No visit in the last 180 days</small></span>
-              <span class="pill seg">Segment</span><span class="when">5 mo ago</span><span class="status">2,910</span>
+              <span class="pill auto">Managed</span><span class="when">5 mo ago</span><span class="status">2,910</span>
             </div>
             <div class="tr clickable" data-open-segment="Newsletter subscribers" data-open-desc="Opted-in email contacts.">
               <span class="nm">Newsletter subscribers <small>Opted-in email contacts</small></span>
-              <span class="pill seg">Segment</span><span class="when">6 days ago</span><span class="status">4,193</span>
+              <span class="pill ai">Custom</span><span class="when">6 days ago</span><span class="status">4,193</span>
             </div>
           </div>
         </div>
@@ -698,7 +704,7 @@
             <div class="wf-title">
               <div class="row1">
                 <h2>Lapsed single-track win-back</h2>
-                <span class="pill ai">✦ Built with AI</span>
+                <span class="pill ai">Custom</span>
               </div>
               <div class="meta" id="wfMeta">Sends once on Tue 4 Aug · 1,284 customers · created just now</div>
             </div>
@@ -924,8 +930,7 @@
             <div class="side-div"></div>
             <div class="side-sec" id="sbUsedBy">
               <div class="l">USED BY</div>
-              <div class="side-plain" style="font-size:13.5px;line-height:1.5;color:var(--slate)">Only the <strong style="color:var(--ink)">Lapsed single-track win-back</strong> broadcast. Editing it cannot affect anything else.</div>
-              <div class="side-note">Want to reuse it elsewhere? <span style="color:var(--accent-deep);font-weight:600;cursor:pointer">Make it a shared segment</span></div>
+              <div id="sbUsedByBody"><!-- filled per segment --></div>
             </div>
           </div>
         </aside>
@@ -1179,7 +1184,7 @@
   function restoreAutomationShell(){
     $('.wf-title h2').textContent = 'Lapsed single-track win-back';
     $('#wfMeta').textContent = 'Sends once on Tue 4 Aug · 1,284 customers · created just now';
-    const pill = $('.wf-title .pill'); pill.className = 'pill ai'; pill.textContent = '✦ Built with AI'; pill.style.display = '';
+    const pill = $('.wf-title .pill'); pill.className = 'pill ai'; pill.textContent = 'Custom'; pill.style.display = '';
     $('#wfEditAi').style.display = ''; $('#wfTurnOn').style.display = '';
     $('#wfStatus').textContent = '● Off ▾'; $('#wfStatus').style.color = '';
     $('#startMain').innerHTML = 'Everyone in <a class="seg-link" id="segLink">Lapsed single-track customers</a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span>';
@@ -1285,11 +1290,39 @@
   $('[data-back-to-workflow]') && $('[data-back-to-workflow]').addEventListener('click', () => { showView('workflow'); $('#wfChat').setAttribute('data-open',''); });
 
   // ================= SEGMENT BUILDER (A6 / A6b) =================
+  // Which automations/broadcasts each segment feeds (its "Used by").
+  const SEGMENT_USED_BY = {
+    'Lapsed single-track customers': { owner: 'Lapsed single-track win-back', kind: 'broadcast', list: [] },
+    'High Risk Churn — Daycare': { list: [{ name: 'High Risk Journey — Grooming', kind: 'Automation' }, { name: 'Daycare Churn Risk Outreach', kind: 'Automation' }] },
+    'Lapsed Customers': { list: [{ name: 'Win-back — spring', kind: 'Broadcast' }] },
+    'Newsletter subscribers': { list: [] },
+  };
+  function renderUsedBy(name){
+    const info = SEGMENT_USED_BY[name] || { list: [] };
+    const body = $('#sbUsedByBody');
+    // Owned by a single draft (segment created behind an automation/broadcast)
+    if(info.owner){
+      body.innerHTML = `<div class="side-plain" style="font-size:13.5px;line-height:1.5;color:var(--slate)">Only the <strong style="color:var(--ink)">${info.owner}</strong> ${info.kind}. Editing it cannot affect anything else.</div>
+        <div class="side-note">Want to reuse it elsewhere? <span style="color:var(--accent-deep);font-weight:600;cursor:pointer">Make it a shared segment</span></div>`;
+      return;
+    }
+    // Shared segment — list every automation/broadcast that references it
+    if(!info.list.length){
+      body.innerHTML = `<div class="side-plain" style="font-size:13.5px;line-height:1.5;color:var(--slate)">Not used by anything yet.</div>
+        <div class="side-note">Target it from a broadcast or automation to start messaging this audience.</div>`;
+      return;
+    }
+    const rows = info.list.map(a => `<div class="used-item"><span class="ci">${a.kind === 'Broadcast' ? '▤' : '⚡'}</span><span class="cn">${a.name}</span><span class="cg">${a.kind}</span></div>`).join('');
+    body.innerHTML = `<div class="used-list">${rows}</div>
+      <div class="side-note">Editing conditions changes who these ${info.list.length > 1 ? 'send to' : 'sends to'}. Duplicate the segment first if you only want to change one.</div>`;
+  }
   function configSegment(opts){
     const { fromWorkflow, chat, name, desc, blank } = opts;
     // The draft-origin banner only shows when arriving via the AI automation flow.
     $('#sbNotice').hidden = !fromWorkflow;
-    $('#sbUsedBy').style.display = fromWorkflow ? '' : 'none';
+    // "Used by" is always shown (except for a brand-new unsaved segment).
+    $('#sbUsedBy').style.display = blank ? 'none' : '';
+    if(!blank) renderUsedBy(name);
     // Name + description are always human-editable.
     $('#sbTitleInput').value = blank ? '' : (name || '');
     $('#sbDescInput').value = blank ? '' : (desc || '');
@@ -1310,7 +1343,7 @@
   $$('[data-open-segment]').forEach(r => r.onclick = () => {
     showView('segment');
     configSegment({ fromWorkflow: false, chat: false, name: r.dataset.openSegment, desc: r.dataset.openDesc || '' });
-    setGuide('This is the <strong>segment builder</strong>. Edit the name and description, tune conditions on the left, watch the plain-English + count update on the right, or use <strong>Edit with AI</strong>.');
+    setGuide('This is the <strong>segment builder</strong>. Edit the name and description, tune conditions on the left, or see which automations it feeds under <strong>Used by</strong>.');
   });
   $('#sbEditAi').onclick = () => {
     const open = $('#sbChat').toggleAttribute('data-open');
