@@ -445,9 +445,9 @@ function setGbp(v) {
   document.getElementById('d-gbp-off').classList.toggle('on', !v);
   render();
 }
-function jump(i) { S.step = i; S.score = null; render(); }
-function next() { if (S.step < STEPS.length - 1) { S.step++; S.score = null; render(); } else alert('Activated — reputation is now live.'); }
-function prev() { if (S.step > 0) { S.step--; S.score = null; render(); } }
+function jump(i) { S.step = i; S.score = null; render({ toTop: true }); }
+function next() { if (S.step < STEPS.length - 1) { S.step++; S.score = null; render({ toTop: true }); } else alert('Activated — reputation is now live.'); }
+function prev() { if (S.step > 0) { S.step--; S.score = null; render({ toTop: true }); } }
 
 /* ═══════════ Sidebar ═══════════ */
 function renderNav() {
@@ -469,6 +469,14 @@ const thrScale = () => Array.from({length:10},(_,i)=>i+1)
 function bump(key, d, min, max) { S[key] = Math.max(min, Math.min(max, S[key] + d)); render(); }
 function thr(d) { S.threshold = Math.max(7, Math.min(10, S.threshold + d)); render(); }
 function toggle(key) { S[key] = !S[key]; render(); }
+function toggleAdvanced() {
+  S.advOpen = !S.advOpen;
+  render();
+  if (S.advOpen) {
+    const t = document.querySelector('.advtoggle');
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
 function pickScore(n) { S.score = n; render(); }
 function setPostReview(v) { S.postReview = v; render(); }
 function mapLoc(i, v) { S.mapped[i] = !!v; render(); }
@@ -839,7 +847,7 @@ function stepSettings() {
       <div class="box-b" style="padding-top:6px">${summary}</div>
     </div>
 
-    <button class="advtoggle ${S.advOpen?'open':''}" onclick="toggle('advOpen')">
+    <button class="advtoggle ${S.advOpen?'open':''}" onclick="toggleAdvanced()">
       <span class="advchev">▸</span>
       <span>Advanced settings</span>
       <span class="advhint">${S.advOpen?'Hide':'Cooldowns, timing, thresholds, audience'}</span>
@@ -1166,13 +1174,15 @@ function stepReview() {
 /* ═══════════ Render ═══════════ */
 const RENDER = [stepApproach, stepConnect, stepMap, stepChannels, stepBranding, stepSettings, stepPreview, stepReview];
 
-function render() {
+function render(opts = {}) {
+  const main = document.getElementById('main');
+  const keep = opts.toTop ? 0 : main.scrollTop;
   renderNav();
-  document.getElementById('main').innerHTML = RENDER[S.step]();
+  main.innerHTML = RENDER[S.step]();
   document.getElementById('btn-prev').disabled = S.step === 0;
   const last = S.step === STEPS.length - 1;
   document.getElementById('btn-next').textContent = last ? 'Finish' : 'Next';
-  document.getElementById('main').scrollTop = 0;
+  main.scrollTop = keep;
 }
 render();
 </script>
