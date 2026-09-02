@@ -249,6 +249,8 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 .farr { display: flex; flex-direction: column; align-items: center; color: var(--fg-3); font-size: 14px; padding: 0 3px; min-width: 42px; }
 .farr em { font-style: normal; font-size: 9.5px; font-weight: 650; color: var(--fg-3); white-space: nowrap; margin-top: 1px; }
 
+.copynote { display:block; font-size:10.5px; color:var(--ok); font-weight:600; margin-top:3px; }
+
 /* message rows */
 .msg { border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px; background: var(--surface); }
 .msg-off { background: var(--bg); opacity: .68; }
@@ -860,10 +862,23 @@ function eventRow(ic, label, meta) {
 
 function stepPreview() {
   const isFix = S.approach === 'fix';
+  const wait  = isFix ? `${S.handoffDays} day${S.handoffDays===1?'':'s'}` : `${S.followUpHours} hours`;
+
+  /* Copy adapts to who actually receives the message. Under Fix (and under Grow with
+     fast-track off) the Google ask goes to every scorer, so it can't assume a promoter. */
+  const googAskCopy = fastTrackOn()
+    ? '"Thanks for sharing that — would you post it on Google?"'
+    : '"Would you share your experience on Google?"';
+  const googAskNote = combined() && !fastTrackOn()
+    ? 'Same copy for every customer — it can\'t reference how they scored.'
+    : '';
 
   const privStream = formOn() ? `
     <div class="box">
-      <div class="box-h"><div class="box-t"><span style="color:var(--brand)">✉</span> Private feedback</div></div>
+      <div class="box-h">
+        <div class="box-t"><span style="color:var(--brand)">✉</span> Private feedback</div>
+        ${PRESETS[S.approach].formForced?`<span class="pill p-lock">🔒 Always first</span>`:''}
+      </div>
       <div class="box-b"><div class="seq">
         ${eventRow('▸','Visit completes','Customer enters the qualifying segment')}
         ${waitRow('Wait until 9:00am','Next available send window')}
@@ -873,32 +888,53 @@ function stepPreview() {
       </div></div>
     </div>` : '';
 
+  /* Fast-track is an immediate on-form handoff, not a message — show it as its own path
+     so the sequence doesn't imply promoters wait for the follow-up. */
+  const fastPath = fastTrackOn() ? `
+    <div class="box">
+      <div class="box-h">
+        <div class="box-t"><span style="color:var(--ok)">★</span> Fast-track — scores ${S.threshold}+</div>
+        <span class="pill p-ok">No message needed</span>
+      </div>
+      <div class="box-b"><div class="seq">
+        ${eventRow('▸','Scores '+S.threshold+' or above','Roughly 85% of everyone who responds')}
+        ${eventRow('→','Google opens immediately','Redirected from the form itself — no email or SMS involved')}
+      </div>
+      <div class="note n-info" style="margin:12px 0 0"><span class="n-ic">◆</span><div>
+        If they don't actually leave a review, they rejoin the sequence below and get the same ask as everyone else.
+      </div></div></div>
+    </div>` : '';
+
   const googStream = googleOn() ? `
     <div class="box">
-      <div class="box-h"><div class="box-t"><span style="color:var(--goog)">◉</span> Google review ask</div>
-        ${combined()?`<span class="pill p-lock">🔒 Always follows</span>`:''}</div>
+      <div class="box-h">
+        <div class="box-t"><span style="color:var(--goog)">◉</span> Google review ask${fastTrackOn()?' — everyone else':''}</div>
+        ${combined()?`<span class="pill p-lock">🔒 Every customer</span>`:''}
+      </div>
       <div class="box-b"><div class="seq">
         ${combined()
           ? eventRow('▸','Private feedback submitted','Any score — this entry point is score-blind')
           : eventRow('▸','Visit completes','Customer enters the qualifying segment')}
         ${combined()
-          ? waitRow(isFix?('Wait '+S.handoffDays+' days'):('Wait '+S.followUpHours+' hours'),'Identical for everyone, whatever they scored')
+          ? waitRow('Wait '+wait, 'Identical for everyone, whatever they scored')
           : waitRow('Wait until 9:00am','Next available send window')}
-        ${combined() ? `<div class="sstep"><div class="srail"><div class="snode wait">⊘</div><div class="sline"></div></div>
+        ${combined() && !isFix ? `<div class="sstep"><div class="srail"><div class="snode wait">⊘</div><div class="sline"></div></div>
           <div class="scont" style="padding-bottom:13px"><div class="slab">Stop if a Google review was detected</div>
-          <div class="smeta">Limited by the 61% match rate on this account</div></div></div>` : ''}
-        ${msgRow('googAsk', 1, 'Google Review Request', '"Thanks for the kind words — share them on Google?"')}
-        ${waitRow('Wait '+S.googReminder+' days','')}
+          <div class="smeta">Catches anyone who was fast-tracked and already reviewed — limited by the 61% match rate</div></div></div>` : ''}
+        ${msgRow('googAsk', 1, 'Google Review Request', googAskCopy + (googAskNote?` <span class="copynote">${googAskNote}</span>`:''))}
+        ${waitRow('Wait '+S.googReminder+' days','Skipped if they\'ve now left a review')}
         ${msgRow('googRem', 2, 'Google Review Reminder', '"Following up — a Google review for {{business_name}}"')}
       </div></div>
     </div>` : '';
 
-  const formSection = combined() ? `
+  const formSection = formOn() ? `
     <div class="hr"></div>
     <div class="sub">What the customer sees on the form</div>
-    <div class="subd">${fastTrackOn()
-      ? `Tap a score to walk the branch. Fast-track threshold is <b>${S.threshold}</b>.`
-      : `Tap any score — <b>every one leads to the same place</b>, because fast-track is off. The score only decides whether we ask what went wrong.`}</div>
+    <div class="subd">${!googleOn()
+      ? `No public review is ever offered — the form collects feedback and ends there.`
+      : (fastTrackOn()
+        ? `Tap a score to walk the branch. Fast-track threshold is <b>${S.threshold}</b>.`
+        : `Tap any score — <b>every one leads to the same place</b>. Nobody is redirected; the score only decides whether we ask what went wrong.`)}</div>
     <div class="phones">
       <div class="pw">
         <div class="phone"><div class="pnotch"></div><div class="pscr">
@@ -912,15 +948,28 @@ function stepPreview() {
         <div class="sub" style="font-size:13px">What's happening</div>
         <div class="subd" style="font-size:12px">${formExplain()}</div>
         <div class="note n-ok" style="font-size:11.5px"><span class="n-ic">✓</span><div><b>Submitting the score counts.</b> A promoter never has to write anything for their feedback to be captured.</div></div>
-        <div class="note n-lock" style="font-size:11.5px;margin-bottom:0"><span class="n-ic">🔒</span><div><b>Every branch ends at Google.</b> ${fastTrackOn()?'The score changes how fast someone gets there. It never changes whether they\'re asked.':'No branch reaches Google faster than another.'}</div></div>
+        ${googleOn() ? `<div class="note n-lock" style="font-size:11.5px;margin-bottom:0"><span class="n-ic">🔒</span><div>${fastTrackOn()
+          ? `<b>Every branch ends at Google.</b> The score changes how fast someone gets there. It never changes whether they're asked.`
+          : `<b>No branch reaches Google faster than another.</b> The score changes nothing about the public ask — not who gets it, not when.`}</div></div>` : ''}
       </div>
     </div>` : '';
 
+  const listenNote = !googleOn() ? `
+    <div class="note n-info"><span class="n-ic">◆</span><div>
+      <b>No public review requests in this approach.</b> ${S.gbp
+        ? 'Your connected Google profile still feeds the Reputation dashboard, so reviews you receive on your own appear alongside this private feedback and you can reply to them there.'
+        : 'Connect a Google Business Profile from the dashboard to monitor and reply to reviews you receive on your own.'}
+    </div></div>` : '';
+
+  const noFormNote = googleOn() && !formOn() ? `
+    <div class="note n-ok"><span class="n-ic">✓</span><div>
+      <b>No form, no scoring, no branching.</b> Every qualifying customer receives the same two messages.
+    </div></div>` : '';
+
   return `
     <h2>Preview Communications</h2>
-    <p class="lede">Every message, in order. Click a channel chip to turn that channel on or off for that message, or edit the content.</p>
-    ${privStream}${googStream}${formSection}
-    ${!combined() && googleOn() ? `<div class="note n-ok"><span class="n-ic">✓</span><div><b>No form, no scoring, no branching.</b> Every qualifying customer receives the same Google request.</div></div>`:''}
+    <p class="lede">Every message this configuration sends, in order. Click a channel chip to turn that channel on or off for that message, or edit the content.</p>
+    ${privStream}${fastPath}${googStream}${listenNote}${noFormNote}${formSection}
   `;
 }
 
