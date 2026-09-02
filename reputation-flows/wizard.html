@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reputation Onboarding — Integrated Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f9fafb; --surface: #fff; --border: #e5e7eb; --border-h: #d1d5db;
+  --fg: #111827; --fg-2: #6b7280; --fg-3: #9ca3af;
+  --brand: #6d5ef7; --brand-h: #5b4de0; --brand-bg: #f5f3ff; --brand-border: #ddd6fe;
+  --ok: #16a34a; --ok-bg: #f0fdf4; --ok-border: #bbf7d0;
+  --warn: #d97706; --warn-bg: #fffbeb; --warn-border: #fde68a;
+  --dgr: #dc2626; --dgr-bg: #fef2f2; --dgr-border: #fecaca;
+  --goog: #4285F4; --goog-bg: #eff6ff; --goog-border: #bfdbfe;
+  --lock: #0f766e; --lock-bg: #f0fdfa; --lock-border: #99f6e4;
+  --r: 10px;
+}
+html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; line-height: 1.5; color: var(--fg); background: #e8eaed; -webkit-font-smoothing: antialiased; }
+
+.back-link { position: fixed; top: 14px; left: 18px; z-index: 90; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 500; color: var(--fg-2); text-decoration: none; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 100px; padding: 6px 13px 6px 10px; }
+.back-link:hover { color: var(--fg); }
+
+.devbar { position: fixed; top: 0; left: 0; right: 0; z-index: 80; display: flex; flex-wrap: wrap; align-items: center;
+  gap: 5px; padding: 11px 18px 11px 140px; background: rgba(255,255,255,.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.devbtn { font-family: inherit; font-size: 11.5px; font-weight: 500; padding: 4px 10px; border-radius: 100px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--fg-2); white-space: nowrap; }
+.devbtn:hover { border-color: var(--border-h); color: var(--fg); }
+.devbtn.on { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+.devlabel { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); margin-right: 3px; }
+.devsep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+
+.stage { padding: 62px 16px 20px; max-width: 1180px; margin: 0 auto; }
+
+/* modal shell — mirrors production */
+.modal { background: var(--surface); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.16); overflow: hidden; display: flex; flex-direction: column; min-height: 760px; }
+.mhead { padding: 20px 26px 16px; border-bottom: 1px solid var(--border); position: relative; }
+.mhead h1 { font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
+.mhead p { font-size: 13px; color: var(--fg-2); margin-top: 3px; }
+.mclose { position: absolute; top: 18px; right: 22px; background: none; border: none; cursor: pointer; color: var(--fg-2); font-size: 20px; line-height: 1; padding: 4px; }
+.mclose:hover { color: var(--fg); }
+
+.mbody { display: flex; flex: 1; min-height: 0; }
+.side { width: 268px; flex-shrink: 0; padding: 22px 18px; border-right: 1px solid var(--border); }
+.snav { display: flex; flex-direction: column; gap: 2px; }
+.sitem { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 9px; font-size: 13.5px; color: var(--fg-3); border: 1.5px solid transparent; cursor: default; }
+.sitem.done { color: var(--fg-3); }
+.sitem.cur { color: var(--fg); font-weight: 600; border-color: var(--brand); background: #fff; }
+.sitem.skip { opacity: .5; }
+.sicon { width: 15px; text-align: center; flex-shrink: 0; font-size: 13px; }
+.sitem.done .sicon { color: var(--ok); }
+.sitem.cur .sicon { color: var(--brand); }
+.sopt { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--fg-3); margin-left: auto; }
+
+.main { flex: 1; padding: 26px 30px; overflow-y: auto; max-height: 660px; min-width: 0; }
+.main h2 { font-size: 19px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.lede { font-size: 13.5px; color: var(--fg-2); line-height: 1.6; margin-bottom: 20px; max-width: 720px; }
+
+.mfoot { padding: 14px 26px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--surface); }
+.btn { font-family: inherit; font-size: 13.5px; font-weight: 600; padding: 10px 26px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
+.btn:hover { border-color: var(--border-h); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-p { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn-p:hover { background: var(--brand-h); border-color: var(--brand-h); }
+
+/* cards */
+.card { border: 1.5px solid var(--border); border-radius: var(--r); padding: 16px; background: var(--surface); margin-bottom: 12px; cursor: pointer; text-align: left; font-family: inherit; width: 100%; display: block; }
+.card:hover { border-color: var(--border-h); }
+.card.sel { border-color: var(--brand); background: var(--brand-bg); }
+.card-t { font-size: 15px; font-weight: 650; display: flex; align-items: center; gap: 9px; letter-spacing: -.01em; }
+.card-d { font-size: 13px; color: var(--fg-2); line-height: 1.55; margin-top: 5px; }
+.card-ic { font-size: 15px; color: var(--brand); }
+
+.box { border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); margin-bottom: 14px; }
+.box-h { padding: 13px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.box-t { font-size: 14px; font-weight: 650; display: flex; align-items: center; gap: 9px; }
+.box-b { padding: 14px 16px; }
+
+.row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.row:last-child { border-bottom: none; }
+.row-t { flex: 1; min-width: 0; }
+.row-n { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.row-d { font-size: 12px; color: var(--fg-2); margin-top: 2px; line-height: 1.5; }
+
+.pill { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 100px; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.p-ok { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-border); }
+.p-off { background: var(--bg); color: var(--fg-3); border: 1px solid var(--border); }
+.p-lock { background: var(--lock-bg); color: var(--lock); border: 1px solid var(--lock-border); }
+.p-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-border); }
+.p-brand { background: var(--brand-bg); color: var(--brand); border: 1px solid var(--brand-border); }
+.p-dark { background: #111827; color: #fff; }
+
+.note { border-radius: var(--r); padding: 12px 14px; font-size: 12.5px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+.n-info { background: var(--goog-bg); border: 1px solid var(--goog-border); color: #1e40af; }
+.n-warn { background: var(--warn-bg); border: 1px solid var(--warn-border); color: #92400e; }
+.n-ok { background: var(--ok-bg); border: 1px solid var(--ok-border); color: #166534; }
+.n-dgr { background: var(--dgr-bg); border: 1px solid var(--dgr-border); color: #991b1b; }
+.n-lock { background: var(--lock-bg); border: 1px solid var(--lock-border); color: #115e59; }
+.n-ic { flex-shrink: 0; }
+.note b { font-weight: 650; }
+
+.sw { width: 40px; height: 23px; border-radius: 100px; border: none; background: var(--brand); position: relative; cursor: pointer; flex-shrink: 0; padding: 0; }
+.sw::after { content: ''; position: absolute; top: 2.5px; left: 2.5px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .16s; }
+.sw:not(.off)::after { transform: translateX(17px); }
+.sw.off { background: #d1d5db; }
+.sw:disabled { opacity: .5; cursor: not-allowed; }
+
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; flex-shrink: 0; }
+.stepper button { width: 27px; height: 27px; border: none; background: var(--surface); cursor: pointer; font-size: 14px; color: var(--fg-2); font-family: inherit; }
+.stepper button:hover { background: var(--bg); color: var(--fg); }
+.stepper span { min-width: 56px; text-align: center; font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; border-left: 1px solid var(--border); border-right: 1px solid var(--border); padding: 3px 0; }
+
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cfgrow { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 12.5px; }
+.cfgrow:last-child { border-bottom: none; }
+.cfgk { color: var(--fg-2); }
+.cfgv { font-weight: 650; text-align: right; }
+
+/* threshold */
+.thr { display: flex; gap: 4px; margin-top: 10px; }
+.tc { flex: 1; text-align: center; padding: 7px 0; border-radius: 6px; font-size: 11.5px; font-weight: 700; border: 1px solid var(--border); background: var(--bg); color: var(--fg-3); }
+.tc.lo { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn); }
+.tc.hi { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
+.tleg { display: flex; gap: 16px; margin-top: 9px; font-size: 11.5px; color: var(--fg-2); flex-wrap: wrap; }
+.tleg span { display: inline-flex; align-items: center; gap: 5px; }
+.dot { width: 7px; height: 7px; border-radius: 2px; }
+
+/* sequence */
+.seq { display: flex; flex-direction: column; }
+.sstep { display: flex; gap: 11px; }
+.srail { display: flex; flex-direction: column; align-items: center; width: 24px; flex-shrink: 0; }
+.snode { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; border: 1.5px solid var(--border); background: var(--surface); color: var(--fg-2); z-index: 1; flex-shrink: 0; }
+.snode.send { border-color: #111827; background: #111827; color: #fff; }
+.snode.wait { border-style: dashed; }
+.sline { width: 1.5px; flex: 1; background: var(--border); min-height: 12px; }
+.sstep:last-child .sline { display: none; }
+.scont { flex: 1; padding-bottom: 13px; min-width: 0; }
+.sstep:last-child .scont { padding-bottom: 0; }
+.slab { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.smeta { font-size: 11.5px; color: var(--fg-2); margin-top: 2px; }
+.ch { font-size: 10px; font-weight: 650; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--fg-2); background: var(--bg); }
+.ch.e { background: var(--goog-bg); border-color: var(--goog-border); color: #1d4ed8; }
+.ch.s { background: var(--brand-bg); border-color: var(--brand-border); color: var(--brand); }
+
+/* locations */
+.loc { display: grid; grid-template-columns: 1fr 34px 1fr; align-items: center; gap: 10px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+.loc:last-child { border-bottom: none; }
+.locn { font-size: 13.5px; font-weight: 650; }
+.loca { font-size: 12px; color: var(--fg-2); }
+.locid { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--fg-3); margin-top: 2px; }
+.locm { border: 1px solid var(--ok-border); background: var(--ok-bg); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-weight: 600; color: #166534; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.locsel { width: 100%; font-family: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.arrow { text-align: center; color: var(--fg-3); }
+
+input[type=text], select { font-family: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); width: 100%; }
+label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6px; }
+.fld { margin-bottom: 14px; }
+
+/* phone */
+.phones { display: flex; gap: 26px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+.pw { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+.phone { width: 274px; height: 566px; border-radius: 32px; padding: 9px; background: #1f2937; box-shadow: 0 14px 40px rgba(0,0,0,.2); flex-shrink: 0; position: relative; }
+.pnotch { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 92px; height: 19px; background: #1f2937; border-radius: 0 0 11px 11px; z-index: 3; }
+.pscr { width: 100%; height: 100%; background: #fff; border-radius: 24px; overflow-y: auto; }
+.pscr::-webkit-scrollbar { width: 0; }
+.pbar { height: 30px; }
+.pbrand { padding: 16px 18px 13px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 9px; }
+.plogo { width: 28px; height: 28px; border-radius: 7px; background: #0f766e; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; }
+.pbiz { font-size: 12.5px; font-weight: 650; }
+.pbizs { font-size: 10px; color: var(--fg-3); }
+.pbody { padding: 18px; }
+.pq { font-size: 15.5px; font-weight: 650; line-height: 1.35; letter-spacing: -.015em; margin-bottom: 5px; }
+.ps { font-size: 12px; color: var(--fg-2); line-height: 1.55; margin-bottom: 16px; }
+.pscale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.psc { aspect-ratio: 1; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; font-family: inherit; font-size: 13.5px; font-weight: 650; cursor: pointer; color: var(--fg); display: flex; align-items: center; justify-content: center; }
+.psc:hover { border-color: #0f766e; background: #f0fdfa; }
+.pends { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--fg-3); }
+.pdiv { height: 1px; background: #f1f5f9; margin: 17px 0; }
+.ptext { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px; font-family: inherit; font-size: 12px; resize: none; min-height: 78px; }
+.plabel { font-size: 12px; font-weight: 600; margin-bottom: 7px; }
+.phelp { font-size: 10.5px; color: var(--fg-3); margin-top: 6px; }
+.pbtn { width: 100%; padding: 12px; border-radius: 9px; border: none; font-family: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
+.pbtn + .pbtn { margin-top: 8px; }
+.pb-g { background: #4285F4; color: #fff; }
+.pb-ghost { background: #fff; color: var(--fg-2); border: 1.5px solid var(--border); }
+.pok { width: 42px; height: 42px; border-radius: 50%; background: var(--ok-bg); border: 1.5px solid var(--ok-border); color: var(--ok); display: flex; align-items: center; justify-content: center; font-size: 18px; margin: 0 auto 12px; }
+.pcenter { text-align: center; padding: 22px 0 4px; }
+.predir { border: 1px dashed var(--goog-border); background: var(--goog-bg); border-radius: 8px; padding: 11px; margin-top: 14px; font-size: 11px; color: #1e40af; text-align: center; }
+.gstars { display: flex; gap: 3px; justify-content: center; margin: 10px 0; font-size: 17px; }
+.pcap { font-size: 11.5px; color: var(--fg-2); text-align: center; max-width: 274px; line-height: 1.5; }
+.pcap b { color: var(--fg); font-weight: 650; }
+
+.annot { border-left: 2px solid var(--border); padding-left: 12px; font-size: 11.5px; color: var(--fg-2); line-height: 1.6; max-width: 274px; }
+.annot b { color: var(--fg); font-weight: 650; }
+.atag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 4px; }
+.atag.hi { color: var(--ok); } .atag.lo { color: var(--warn); }
+
+.cmp { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.cmp th, .cmp td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.cmp th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-2); font-weight: 700; background: var(--bg); }
+.cmp td:first-child { font-weight: 600; }
+.cmp .s { color: var(--ok); font-weight: 650; } .cmp .d { color: var(--warn); font-weight: 650; }
+
+.kbd { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; background: rgba(0,0,0,.05); border-radius: 4px; padding: 1px 5px; white-space: nowrap; display: inline-block; }
+.hr { height: 1px; background: var(--border); margin: 20px 0; }
+.sub { font-size: 14px; font-weight: 650; margin-bottom: 5px; }
+.subd { font-size: 12.5px; color: var(--fg-2); margin-bottom: 13px; line-height: 1.6; }
+.mini { font-size: 11.5px; color: var(--fg-3); line-height: 1.6; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
+@media (max-width: 980px) { .g2 { grid-template-columns: 1fr; } .side { display: none; } }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">← All projects</a>
+
+<div class="devbar">
+  <span class="devlabel">Preset</span>
+  <button class="devbtn on" id="d-grow" onclick="setPreset('grow')">Grow public reviews</button>
+  <button class="devbtn" id="d-fix" onclick="setPreset('fix')">Fix issues first</button>
+  <button class="devbtn" id="d-listen" onclick="setPreset('listen')">Listen only</button>
+  <div class="devsep"></div>
+  <span class="devlabel">GBP</span>
+  <button class="devbtn on" id="d-gbp-on" onclick="setGbp(true)">Connected</button>
+  <button class="devbtn" id="d-gbp-off" onclick="setGbp(false)">Not connected</button>
+  <div class="devsep"></div>
+  <button class="devbtn" onclick="jump(0)">Restart</button>
+  <button class="devbtn" onclick="jump(7)">Jump to Review</button>
+</div>
+
+<div class="stage">
+  <div class="modal">
+    <div class="mhead">
+      <h1>Set up Reputation</h1>
+      <p id="head-sub">Choose your approach, connect Google Business Profile, configure how requests go out, and review before activating.</p>
+      <button class="mclose" onclick="alert('Close wizard')">✕</button>
+    </div>
+    <div class="mbody">
+      <nav class="side"><div class="snav" id="snav"></div></nav>
+      <div class="main" id="main"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" id="btn-prev" onclick="prev()">Previous</button>
+      <button class="btn btn-p" id="btn-next" onclick="next()">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ State ═══════════ */
+const S = {
+  step: 0,
+  preset: 'grow',
+  gbp: true,
+  privateOn: true,
+  googleOn: true,
+  threshold: 9,
+  followUp: true,
+  followUpHours: 24,
+  privCooldown: 14, privReminder: 5,
+  googCooldown: 90, googReminder: 5,
+  postReview: 'stop',
+  postReviewCadence: 90,
+  emailOn: true, smsOn: true,
+  score: null,
+  mapped: [true, true, true, false],
+};
+
+const PRESETS = {
+  grow:   { label: 'Grow public reviews', priv: true, goog: true,  grad: false },
+  fix:    { label: 'Fix issues first',    priv: true, goog: false, grad: true  },
+  listen: { label: 'Listen only',         priv: true, goog: false, grad: false },
+};
+
+const STEPS = [
+  { id: 'approach', name: 'Choose Approach' },
+  { id: 'connect',  name: 'Connect Accounts',       googleful: true },
+  { id: 'map',      name: 'Map Locations',          googleful: true },
+  { id: 'channels', name: 'Communication Channels' },
+  { id: 'branding', name: 'Customize Branding' },
+  { id: 'settings', name: 'Review Settings' },
+  { id: 'preview',  name: 'Preview Communications' },
+  { id: 'review',   name: 'Review' },
+];
+
+function setPreset(k) {
+  S.preset = k;
+  S.privateOn = PRESETS[k].priv;
+  S.googleOn = PRESETS[k].goog;
+  ['grow','fix','listen'].forEach(x => document.getElementById('d-'+x).classList.toggle('on', x===k));
+  render();
+}
+function setGbp(v) {
+  S.gbp = v;
+  document.getElementById('d-gbp-on').classList.toggle('on', v);
+  document.getElementById('d-gbp-off').classList.toggle('on', !v);
+  render();
+}
+function jump(i) { S.step = i; S.score = null; render(); }
+function next() { if (S.step < STEPS.length - 1) { S.step++; S.score = null; render(); } else alert('Activated — reputation is now live.'); }
+function prev() { if (S.step > 0) { S.step--; S.score = null; render(); } }
+
+/* ═══════════ Sidebar ═══════════ */
+function renderNav() {
+  document.getElementById('snav').innerHTML = STEPS.map((st, i) => {
+    const optional = st.googleful && !S.googleOn;
+    const cls = i < S.step ? 'done' : i === S.step ? 'cur' : '';
+    const icon = i < S.step ? '✓' : i === S.step ? '—' : '—';
+    return `<div class="sitem ${cls} ${optional && i !== S.step ? 'skip' : ''}" onclick="jump(${i})" style="cursor:pointer">
+      <span class="sicon">${icon}</span><span>${st.name}</span>
+      ${optional ? '<span class="sopt">Optional</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════ Helpers ═══════════ */
+const thrScale = () => Array.from({length:10},(_,i)=>i+1)
+  .map(n => `<div class="tc ${n >= S.threshold ? 'hi' : 'lo'}">${n}</div>`).join('');
+
+function bump(key, d, min, max) { S[key] = Math.max(min, Math.min(max, S[key] + d)); render(); }
+function thr(d) { S.threshold = Math.max(7, Math.min(10, S.threshold + d)); render(); }
+function toggle(key) { S[key] = !S[key]; render(); }
+function pickScore(n) { S.score = n; render(); }
+function setPostReview(v) { S.postReview = v; render(); }
+function mapLoc(i, v) { S.mapped[i] = !!v; render(); }
+
+const volPriv = 124;
+const volGoog = S.googleOn ? 124 : 0;
+
+/* ═══════════ Steps ═══════════ */
+function stepApproach() {
+  const cards = [
+    ['grow','★','Grow public reviews','You\'re confident in your service and want more Google reviews. Private feedback runs first, then <b>everyone</b> gets a Google ask.','~248 sends/mo','Both streams'],
+    ['fix','◐','Fix issues first','Few reviews, or a rating you want to improve. Private feedback only — nothing public goes out until your graduation date.','~124 sends/mo','Time-boxed'],
+    ['listen','◎','Listen only','Mid service turnaround. Collect private feedback indefinitely and never ask for a public review.','~124 sends/mo','No public ask'],
+  ].map(([k,ic,t,d,vol,tag]) => `
+    <button class="card ${S.preset===k?'sel':''}" onclick="setPreset('${k}')">
+      <div class="card-t"><span class="card-ic">${ic}</span>${t}</div>
+      <div class="card-d">${d}</div>
+      <div style="margin-top:11px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--fg-2)">
+        <span><b style="color:var(--fg)">${vol.split(' ')[0]}</b> ${vol.split(' ').slice(1).join(' ')}</span>
+        <span class="pill ${k===S.preset?'p-brand':'p-off'}">${tag}</span>
+      </div>
+    </button>`).join('');
+
+  const rows = S.googleOn
+    ? [['Private feedback stream','On'],['Google review stream','On'],['Fast-track score',S.threshold+' and above'],['Google follow-up ask','On — both branches'],['Follow-up delay',S.followUpHours+' hours'],['Once reviewed','Stop asking']]
+    : [['Private feedback stream','On'],['Google review stream','Off'],['Fast-track score','Not applicable'],['Google follow-up ask','Off — no public stream'],['Graduation date', S.preset==='fix' ? '1 Dec 2026 · check-back scheduled' : 'None — indefinite by design']];
+
+  return `
+    <h2>Choose Your Approach</h2>
+    <p class="lede">Pick what matches your situation. We'll configure the details and show you exactly what each choice sets — these are starting points, not locked modes.</p>
+    ${cards}
+    <div class="box" style="margin-top:16px">
+      <div class="box-h"><div class="box-t">What this sets</div><span style="font-size:12px;color:var(--fg-3)">${PRESETS[S.preset].label}</span></div>
+      <div class="box-b">${rows.map(([k,v])=>`<div class="cfgrow"><span class="cfgk">${k}</span><span class="cfgv">${v}</span></div>`).join('')}</div>
+    </div>
+    ${S.preset==='fix' ? `<div class="note n-warn"><span class="n-ic">◔</span><div><b>Graduation date required.</b> "Fix issues first" is a temporary state. We'll check back on <b>1 Dec 2026</b> and ask whether you're ready to start collecting public reviews. Nobody parks here by accident.</div></div>` : ''}
+    <div class="mini">Every setting above stays editable in step 6. Choosing a preset writes values — it doesn't lock a mode.</div>
+  `;
+}
+
+function stepConnect() {
+  const optional = !S.googleOn;
+  return `
+    <h2>Connect Your Review Platform</h2>
+    <p class="lede">${optional
+      ? 'Your approach doesn\'t send Google review requests — but connecting is still worth doing.'
+      : 'Connect your Google Business Profile so customers can be directed to leave a review as part of your setup.'}</p>
+
+    ${optional ? `<div class="note n-info"><span class="n-ic">◆</span><div>
+      <b>You don't need this to activate — but you probably still want it.</b> Connecting your Google Business Profile lets you
+      <b>monitor and reply to reviews</b> from the Reputation dashboard, even though we'll never solicit one on your behalf.
+      You'll also see reviews alongside your private feedback in one place. And if you switch on public reviews later,
+      it's already done.
+    </div></div>` : ''}
+
+    <div class="box">
+      <div class="box-h">
+        <div class="box-t"><span style="color:var(--brand)">✉</span> Private Direct Feedback</div>
+        <span class="pill p-ok">Active</span>
+      </div>
+      <div class="box-b"><div style="font-size:12.5px;color:var(--fg-2);line-height:1.6">Capture customer insights right after each visit to improve experiences and spot problems early.</div></div>
+    </div>
+
+    <div class="box">
+      <div class="box-h">
+        <div class="box-t"><span style="color:var(--goog)">◉</span> QA Locations (test) Google Business Profile</div>
+        ${S.gbp ? `<span class="pill p-brand">● Connected</span>` : `<button class="btn btn-p" style="padding:7px 16px;font-size:12.5px" onclick="setGbp(true)">Connect</button>`}
+      </div>
+      <div class="box-b">
+        ${S.gbp
+          ? `<div style="font-size:12.5px;color:var(--fg-2)">Connected since Mar 19, 2026</div>`
+          : `<div style="font-size:12.5px;color:var(--fg-2)">Not connected yet.${optional ? ' Optional for this approach.' : ' Required for your selected approach.'}</div>`}
+        <div style="font-size:12px;color:var(--fg-3);margin-top:9px">ⓘ You must be an Owner or Admin on every Google Business Profile location you want to connect.</div>
+      </div>
+    </div>
+
+    ${!S.gbp && S.googleOn ? `<div class="note n-warn"><span class="n-ic">⚠</span><div><b>Google reviews can't send without this.</b> You can skip and connect later from the dashboard — the private feedback stream will run on its own until you do.</div></div>` : ''}
+
+    ${S.gbp ? `<div class="note n-ok"><span class="n-ic">✓</span><div><b>Review matching for this account: 61%.</b> We link Google reviews to customers by exact name match. The rest can't be tied to a customer — which means suppression ("stop asking once they've reviewed") won't catch everyone. <span class="kbd">median across tenants: 54%</span></div></div>` : ''}
+  `;
+}
+
+function stepMap() {
+  const optional = !S.googleOn;
+  if (!S.gbp) {
+    return `<h2>Map Your Locations</h2>
+      <p class="lede">Connect your locations to Google Business Profile locations.</p>
+      <div class="note n-warn"><span class="n-ic">⚠</span><div><b>Connect a Google Business Profile first.</b> There's nothing to map until an account is linked. Go back a step, or skip — you can map from the dashboard later.</div></div>`;
+  }
+  const locs = [
+    ['Manhattan','4367 Cumberland Street, New York, NY','partner-loc-0'],
+    ['Brooklyn','78812 Blind Lane, Brooklyn, NY','partner-loc-1'],
+    ['Queens','23776 Ladarius Mountains, Queens, NY','partner-loc-2'],
+    ['Bronx','901 Gateway Park, Bronx, NY','partner-loc-3'],
+  ];
+  const count = S.mapped.filter(Boolean).length;
+  return `
+    <h2>Map Your Locations</h2>
+    <p class="lede">${optional
+      ? 'Mapping lets us show reviews per location in the dashboard, even though we won\'t send review requests.'
+      : 'Connect your locations with your Google Business Profile locations so we know where to direct customers.'}</p>
+    <div class="box">
+      <div class="box-h">
+        <div class="box-t">Your Location  ⟷  Google Business Location</div>
+        <span class="pill ${count===4?'p-ok':'p-dark'}">${count} of 4 mapped</span>
+      </div>
+      <div class="box-b">
+        ${locs.map(([n,a,id],i)=>`
+          <div class="loc">
+            <div><div class="locn">${n}</div><div class="loca">${a}</div><div class="locid">ID: ${id}</div></div>
+            <div class="arrow">⟷</div>
+            <div>${S.mapped[i]
+              ? `<div class="locm"><span>✓ ${n}</span><button onclick="mapLoc(${i},false)" style="background:none;border:none;cursor:pointer;color:#166534;font-size:14px">✕</button></div>`
+              : `<select class="locsel" onchange="mapLoc(${i}, this.value)"><option value="">Select a Google location…</option><option value="1">${n}</option><option value="2">${n} — Downtown</option></select>`
+            }</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    ${count < 4 ? `<div class="note n-info"><span class="n-ic">◆</span><div>Unmapped locations simply won't ${optional ? 'show reviews in the dashboard' : 'send review requests'}. You can finish mapping later without redoing setup.</div></div>` : ''}
+  `;
+}
+
+function stepChannels() {
+  return `
+    <h2>Configure Channels</h2>
+    <p class="lede">Choose which channels to use. In step 6 you'll pick the channel for each individual message — first ask and reminder can differ.</p>
+
+    <div class="box">
+      <div class="box-h"><div class="box-t">Email Channel</div><button class="sw ${S.emailOn?'':'off'}" onclick="toggle('emailOn')"></button></div>
+      ${S.emailOn ? `<div class="box-b">
+        <div class="fld"><label class="fl">Account Email ⓘ</label><select><option>marketing@celtics.dripos.marketing</option></select></div>
+        <div class="fld"><label class="fl">Display Name ⓘ</label><input type="text" value="Dripos"></div>
+        <div class="fld" style="margin-bottom:0"><label class="fl">Reply-to Email ⓘ</label><input type="text" placeholder="Replies from recipients will go to this email"></div>
+      </div>` : ''}
+    </div>
+
+    <div class="box">
+      <div class="box-h"><div class="box-t">SMS Channel</div><button class="sw ${S.smsOn?'':'off'}" onclick="toggle('smsOn')"></button></div>
+      ${S.smsOn ? `<div class="box-b">
+        <div class="fld" style="margin-bottom:0"><label class="fl">Sending Number ⓘ</label><select><option>+1 (555) 014-2277 — registered</option></select></div>
+      </div>` : ''}
+    </div>
+
+    ${S.smsOn && S.emailOn ? `<div class="note n-warn"><span class="n-ic">⚠</span><div>
+      <b>Today this silently means "both channels on every message."</b> A message currently sends on every channel that has a sender
+      and body copy — so switching SMS on converts existing email-only messages into email + SMS using email fallback text.
+      The new per-message channel picker in step 6 fixes this: you choose the channel per message instead of inheriting it.
+    </div></div>` : ''}
+
+    ${!S.emailOn && !S.smsOn ? `<div class="note n-warn"><span class="n-ic">⚠</span><div><b>At least one channel is required.</b> With both off, nothing can send.</div></div>` : ''}
+  `;
+}
+
+function stepBranding() {
+  return `
+    <h2>Customize Branding</h2>
+    <p class="lede">Customize your brand identity for review requests. This is what customers see on the feedback form and in every message.</p>
+
+    <div class="box" style="border-color:var(--brand-border);background:var(--brand-bg)">
+      <div class="box-b" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:240px">
+          <div class="sub">✨ Auto-fill your brand from your site</div>
+          <div class="subd" style="margin-bottom:11px">Add your website and we'll pull your logo, colors and name from it automatically.</div>
+          <button class="btn btn-p" style="padding:9px 18px;font-size:13px">✨ Scan my website</button>
+        </div>
+        <div style="width:180px;height:96px;border:1px solid var(--brand-border);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--fg-3)">Waiting for a website</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-b">
+        <div class="fld"><label class="fl">Brand website</label><input type="text" value="https://dripos.com"><div style="font-size:11.5px;color:var(--fg-3);margin-top:5px">Used to scan your brand and as the destination for links.</div></div>
+        <div class="g2">
+          <div>
+            <div class="fld"><label class="fl">Brand Name</label><input type="text" placeholder="Enter your brand name"></div>
+            <div class="fld" style="margin-bottom:0"><label class="fl">Primary Color</label><input type="text" value="#0f766e"></div>
+          </div>
+          <div>
+            <label class="fl">Brand Logo</label>
+            <div style="border:1.5px dashed var(--border);border-radius:8px;height:132px;display:flex;align-items:center;justify-content:center;background:var(--bg);font-size:12px;color:var(--fg-3)">Drop a logo, or scan your site</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepSettings() {
+  const combined = S.privateOn && S.googleOn;
+  return `
+    <h2>Review Settings</h2>
+    <p class="lede">Your approach set these. Change anything — the settings are the source of truth, not the preset.</p>
+
+    <div class="g2">
+      <div class="box">
+        <div class="box-h"><div class="box-t"><span style="color:var(--brand)">✉</span> Private feedback</div><button class="sw ${S.privateOn?'':'off'}" onclick="toggle('privateOn')"></button></div>
+        ${S.privateOn ? `<div class="box-b">
+          <div class="row"><div class="row-t"><div class="row-n">Audience</div><div class="row-d">Completed standard visit, excluding meet-and-greet, behavioral eval and intro visits. Has an email address.</div></div><span class="pill p-off">Partner-set</span></div>
+          <div class="row"><div class="row-t"><div class="row-n">Cooldown</div><div class="row-d">How often one person can be asked</div></div>
+            <div class="stepper"><button onclick="bump('privCooldown',-7,7,180)">−</button><span>${S.privCooldown} d</span><button onclick="bump('privCooldown',7,7,180)">+</button></div></div>
+          <div class="row"><div class="row-t"><div class="row-n">Reminder delay</div><div class="row-d">Wait before the reminder</div></div>
+            <div class="stepper"><button onclick="bump('privReminder',-1,1,30)">−</button><span>${S.privReminder} d</span><button onclick="bump('privReminder',1,1,30)">+</button></div></div>
+        </div>` : `<div class="box-b"><div style="font-size:12.5px;color:var(--fg-3)">Stream off — no private feedback requests will send.</div></div>`}
+      </div>
+
+      <div class="box">
+        <div class="box-h"><div class="box-t"><span style="color:var(--goog)">◉</span> Google review ask</div><button class="sw ${S.googleOn?'':'off'}" onclick="toggle('googleOn')"></button></div>
+        ${S.googleOn ? `<div class="box-b">
+          <div class="row"><div class="row-t"><div class="row-n">Audience</div><div class="row-d">Same qualifying visit, minus anyone matched to an existing Google review.</div></div><span class="pill p-off">Partner-set</span></div>
+          <div class="row"><div class="row-t"><div class="row-n">Cooldown</div><div class="row-d">How often one person can be asked</div></div>
+            <div class="stepper"><button onclick="bump('googCooldown',-30,30,365)">−</button><span>${S.googCooldown} d</span><button onclick="bump('googCooldown',30,30,365)">+</button></div></div>
+          <div class="row"><div class="row-t"><div class="row-n">Reminder delay</div><div class="row-d">Wait before the reminder</div></div>
+            <div class="stepper"><button onclick="bump('googReminder',-1,1,30)">−</button><span>${S.googReminder} d</span><button onclick="bump('googReminder',1,1,30)">+</button></div></div>
+        </div>` : `<div class="box-b"><div style="font-size:12.5px;color:var(--fg-3)">Stream off — no public review requests will send. ${S.gbp ? 'Your connected profile still feeds the dashboard for monitoring and replies.' : ''}</div></div>`}
+      </div>
+    </div>
+
+    ${combined ? `
+      <div class="hr"></div>
+      <div class="sub">Combined flow</div>
+      <div class="subd">Both streams are on, so someone who submits private feedback is handled by the combined flow rather than getting two unrelated asks.</div>
+
+      <div class="box">
+        <div class="box-b">
+          <div class="row">
+            <div class="row-t"><div class="row-n">Fast-track score <span class="pill p-off">Partner-set</span></div>
+            <div class="row-d">At or above this score we skip the complaint box and go straight to Google. Below it, we ask what went wrong first — then still offer Google.</div></div>
+            <div class="stepper"><button onclick="thr(-1)">−</button><span>${S.threshold}</span><button onclick="thr(1)">+</button></div>
+          </div>
+          <div class="thr">${thrScale()}</div>
+          <div class="tleg">
+            <span><span class="dot" style="background:var(--warn)"></span> Asks what went wrong, then offers Google</span>
+            <span><span class="dot" style="background:var(--ok)"></span> Straight to Google</span>
+          </div>
+          <div class="note n-info" style="margin:14px 0 0"><span class="n-ic">◔</span><div>Range is limited to <b>7–10</b>. <b>85% of responses are a 10</b>, so this moves fewer people than it appears to.</div></div>
+
+          <div style="height:6px"></div>
+          <div class="row">
+            <div class="row-t"><div class="row-n">Google follow-up ask <span class="pill p-lock">🔒 Both branches</span></div>
+            <div class="row-d">${S.followUpHours} hours after private feedback, if no Google review is detected, send the Google ask. <b>One switch covers everyone</b> — there is no per-branch version of this control.</div></div>
+            <button class="sw ${S.followUp?'':'off'}" onclick="toggle('followUp')"></button>
+          </div>
+          <div class="row"><div class="row-t"><div class="row-n">Follow-up delay</div><div class="row-d">Applies identically to both branches</div></div>
+            <div class="stepper"><button onclick="bump('followUpHours',-12,12,168)">−</button><span>${S.followUpHours} h</span><button onclick="bump('followUpHours',12,12,168)">+</button></div></div>
+          <div class="row">
+            <div class="row-t"><div class="row-n">Once a Google review is detected</div><div class="row-d">A person can only leave one Google review, so the public ask always stops here.</div></div>
+            <select style="width:auto" onchange="setPostReview(this.value)">
+              <option value="stop" ${S.postReview==='stop'?'selected':''}>Stop asking entirely</option>
+              <option value="internal" ${S.postReview==='internal'?'selected':''}>Move to private-feedback cadence</option>
+            </select>
+          </div>
+          ${S.postReview==='internal' ? `<div class="row"><div class="row-t"><div class="row-n">Private-feedback cadence</div><div class="row-d">How often to keep collecting private feedback afterwards</div></div>
+            <div class="stepper"><button onclick="bump('postReviewCadence',-30,30,365)">−</button><span>${S.postReviewCadence} d</span><button onclick="bump('postReviewCadence',30,30,365)">+</button></div></div>` : ''}
+        </div>
+      </div>
+
+      ${!S.followUp ? `<div class="note n-dgr"><span class="n-ic">⚠</span><div><b>Follow-up is off for everyone.</b> That's allowed — what's structurally impossible is turning it off for low scorers while keeping it for high scorers. The setting is one boolean; a per-branch version has no field to live in.</div></div>` : ''}
+
+      <div class="note n-lock"><span class="n-ic">🔒</span><div><b>Enforced, not configurable.</b> No score, complaint flag, or incident record can decide <b>whether</b> someone gets a Google ask — only how quickly they reach it. That's not a policy someone has to remember; the control that would break it doesn't exist in the product.</div></div>
+    ` : `
+      <div class="note n-info"><span class="n-ic">◆</span><div>Combined-flow settings (fast-track score, follow-up ask, post-review behavior) appear when <b>both</b> streams are on. With one stream, a customer just enters the segment and receives that request.</div></div>
+    `}
+  `;
+}
+
+function stepPreview() {
+  const priv = `
+    <div class="box">
+      <div class="box-h"><div class="box-t"><span style="color:var(--brand)">✉</span> Private feedback stream</div></div>
+      <div class="box-b"><div class="seq">
+        <div class="sstep"><div class="srail"><div class="snode">▸</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Visit completes</div><div class="smeta">Customer enters the qualifying segment</div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode wait">◔</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Wait until 9:00am</div><div class="smeta">Next available send window</div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode send">1</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Rating Request ${S.emailOn?'<span class="ch e">✉ Email</span>':''}</div><div class="smeta">"How was your experience with {{business_name}}?"</div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode wait">◔</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Wait ${S.privReminder} days</div><div class="smeta">Skipped if they already responded</div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode send">2</div></div>
+          <div class="scont"><div class="slab">Rating Reminder ${S.smsOn?'<span class="ch s">◈ SMS</span>':'<span class="ch e">✉ Email</span>'}</div><div class="smeta">"A quick reminder — your feedback for {{business_name}}"</div></div></div>
+      </div></div>
+    </div>`;
+
+  const goog = S.googleOn ? `
+    <div class="box">
+      <div class="box-h"><div class="box-t"><span style="color:var(--goog)">◉</span> Google ask stream</div></div>
+      <div class="box-b"><div class="seq">
+        <div class="sstep"><div class="srail"><div class="snode">▸</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Private feedback submitted</div><div class="smeta">Any score — this entry point is score-blind</div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode wait">◔</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Wait ${S.followUpHours} hours</div><div class="smeta">Identical for both branches</div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode wait">⊘</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Stop if a Google review was detected</div><div class="smeta">Limited by 61% match rate for this account</div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode send">1</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Google Review Request ${S.emailOn?'<span class="ch e">✉ Email</span>':''}</div><div class="smeta">"Thanks for the kind words — share them on Google?"</div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode wait">◔</div><div class="sline"></div></div>
+          <div class="scont"><div class="slab">Wait ${S.googReminder} days</div><div class="smeta"></div></div></div>
+        <div class="sstep"><div class="srail"><div class="snode send">2</div></div>
+          <div class="scont"><div class="slab">Google Review Reminder ${S.emailOn?'<span class="ch e">✉ Email</span>':''}${S.smsOn?'<span class="ch s">◈ SMS</span>':''}</div><div class="smeta">"Following up — a Google review for {{business_name}}"</div></div></div>
+      </div></div>
+    </div>` : '';
+
+  const formSection = (S.privateOn && S.googleOn) ? `
+    <div class="hr"></div>
+    <div class="sub">What the customer sees on the form</div>
+    <div class="subd">Tap a score to walk the branch. Threshold is <b>${S.threshold}</b> — change it in step 6 and this follows.</div>
+    <div class="phones">
+      <div class="pw">
+        <div class="phone"><div class="pnotch"></div><div class="pscr">
+          <div class="pbar"></div>
+          <div class="pbrand"><div class="plogo">HT</div><div><div class="pbiz">Happy Tails Pet Resort</div><div class="pbizs">Austin, TX</div></div></div>
+          <div class="pbody">${formBody()}</div>
+        </div></div>
+        <div class="pcap">${formCap()}</div>
+      </div>
+      <div style="max-width:300px">
+        <div class="sub" style="font-size:13px">What's happening</div>
+        <div class="subd" style="font-size:12px">${formExplain()}</div>
+        <div class="note n-ok" style="font-size:11.5px"><span class="n-ic">✓</span><div><b>Submitting the score counts.</b> A promoter never has to write anything for their feedback to be captured — which is why the fast-track branch has no complaint box.</div></div>
+        <div class="note n-lock" style="font-size:11.5px;margin-bottom:0"><span class="n-ic">🔒</span><div><b>Both branches end at Google.</b> The score changes how fast someone gets there. It never changes whether they're asked.</div></div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+    <div class="sub">Branch comparison</div>
+    <div class="subd">The friction gap between branches is the compliance risk surface.</div>
+    <table class="cmp">
+      <thead><tr><th>Element</th><th>Fast-track (${S.threshold}–10)</th><th>Recovery (1–${S.threshold-1})</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Google CTA present</td><td>Yes</td><td>Yes</td><td class="s">Identical</td></tr>
+        <tr><td>CTA styling</td><td>Primary, full width</td><td>Primary, full width</td><td class="s">Identical</td></tr>
+        <tr><td>CTA position</td><td>Above the fold</td><td>Below one optional field</td><td class="d">Minor gap</td></tr>
+        <tr><td>Auto-redirect</td><td>Yes, 3s</td><td>No</td><td class="d">Speed, not access</td></tr>
+        <tr><td>${S.followUpHours}h follow-up</td><td>${S.followUp?'Sent':'Off'}</td><td>${S.followUp?'Sent':'Off'}</td><td class="s">Identical — enforced</td></tr>
+        <tr><td>Suppression rules</td><td>Review detected</td><td>Review detected</td><td class="s">Symmetric</td></tr>
+      </tbody>
+    </table>
+    <div class="note n-ok" style="margin-top:14px"><span class="n-ic">✓</span><div>Every row is either identical or a difference in <b>speed</b>. No row is a difference in <b>whether</b> the customer is asked.</div></div>
+  ` : `
+    <div class="note n-info"><span class="n-ic">◆</span><div>With a single stream there's no score branching — the customer submits feedback and sees a thank-you. The combined form appears when both streams are on.</div></div>
+  `;
+
+  return `
+    <h2>Preview Communications</h2>
+    <p class="lede">${PRESETS[S.preset].label} is configured. Here is every message, in order, with its channel.</p>
+    ${priv}${goog}${formSection}
+  `;
+}
+
+function formBody() {
+  if (S.score === null) {
+    return `<div class="pq">How was your visit?</div><div class="ps">One tap — that's the whole survey.</div>
+      <div class="pscale">${Array.from({length:10},(_,i)=>i+1).map(n=>`<button class="psc" onclick="pickScore(${n})">${n}</button>`).join('')}</div>
+      <div class="pends"><span>Not great</span><span>Loved it</span></div>`;
+  }
+  const hi = S.score >= S.threshold;
+  if (hi) return `
+    <div class="pcenter"><div class="pok">✓</div><div class="pq" style="font-size:14.5px">Thanks — that's great to hear</div>
+    <div class="ps" style="margin-bottom:0">You scored us ${S.score}/10. Sent to the team.</div></div>
+    <div class="pdiv"></div>
+    <div class="pq" style="font-size:13.5px">Would you share that on Google?</div>
+    <div class="ps">It takes about 30 seconds and helps other pet owners find us.</div>
+    <div class="gstars">⭐⭐⭐⭐⭐</div>
+    <button class="pbtn pb-g">Write a Google review</button>
+    <button class="pbtn pb-ghost" onclick="pickScore(null)">Not right now</button>
+    <div class="predir">Opening Google automatically in 3 seconds…</div>`;
+  return `
+    <div class="pcenter"><div class="pok">✓</div><div class="pq" style="font-size:14.5px">Thanks for telling us</div>
+    <div class="ps" style="margin-bottom:0">You scored us ${S.score}/10. Recorded.</div></div>
+    <div class="pdiv"></div>
+    <div class="plabel">Anything we could have done better?</div>
+    <textarea class="ptext" placeholder="Optional — this goes straight to the owner."></textarea>
+    <div class="phelp">Optional. Skipping this doesn't change anything below.</div>
+    <div class="pdiv"></div>
+    <div class="pq" style="font-size:13.5px">Share your experience on Google?</div>
+    <div class="ps">Honest reviews help us improve and help other pet owners decide.</div>
+    <button class="pbtn pb-g">Write a Google review</button>
+    <button class="pbtn pb-ghost" onclick="pickScore(null)">Send feedback only</button>`;
+}
+function formCap() {
+  if (S.score === null) return 'Tap a score from <b>1</b> to <b>10</b>.';
+  return S.score >= S.threshold
+    ? `Scored <b>${S.score}</b> — at or above <b>${S.threshold}</b>. <b>Fast-track branch.</b>`
+    : `Scored <b>${S.score}</b> — below <b>${S.threshold}</b>. <b>Recovery branch.</b>`;
+}
+function formExplain() {
+  if (S.score === null) return 'The score is submitted and stored first. Only after it\'s recorded does it decide what the customer sees next.';
+  return S.score >= S.threshold
+    ? 'No complaint box: the score <i>is</i> the feedback. Straight to Google, plus an automatic redirect.'
+    : 'The complaint box appears, but the Google button below it is the <b>same primary style and weight</b> as the fast-track branch. Only the redirect differs.';
+}
+
+function stepReview() {
+  const count = S.mapped.filter(Boolean).length;
+  const blockers = [];
+  if (!S.emailOn && !S.smsOn) blockers.push('No communication channel is enabled.');
+  if (S.googleOn && !S.gbp) blockers.push('Google stream is on but no Google Business Profile is connected.');
+  if (!S.privateOn && !S.googleOn) blockers.push('Both streams are off — nothing would send.');
+
+  return `
+    <h2>Review & Activate</h2>
+    <p class="lede">Review your configuration and confirm to activate.</p>
+    ${blockers.length ? `<div class="note n-dgr"><span class="n-ic">⚠</span><div><b>Can't activate yet.</b><ul style="margin:6px 0 0 16px">${blockers.map(b=>`<li>${b}</li>`).join('')}</ul></div></div>`
+      : `<div class="note n-info"><span class="n-ic">ⓘ</span><div><b>Pro Tip</b> — you can modify all of these settings anytime from the Reputation dashboard after activation.</div></div>`}
+
+    <div class="g2">
+      <div>
+        <div class="box">
+          <div class="box-h"><div class="box-t">Approach</div><span class="pill p-dark">${PRESETS[S.preset].label}</span></div>
+          <div class="box-b">
+            <div class="cfgrow"><span class="cfgk">Private feedback</span><span class="cfgv">${S.privateOn?'On':'Off'}</span></div>
+            <div class="cfgrow"><span class="cfgk">Google review ask</span><span class="cfgv">${S.googleOn?'On':'Off'}</span></div>
+            ${S.privateOn&&S.googleOn?`
+            <div class="cfgrow"><span class="cfgk">Fast-track score</span><span class="cfgv">${S.threshold}+</span></div>
+            <div class="cfgrow"><span class="cfgk">Follow-up ask</span><span class="cfgv">${S.followUp?`On — both branches, ${S.followUpHours}h`:'Off — both branches'}</span></div>
+            <div class="cfgrow"><span class="cfgk">Once reviewed</span><span class="cfgv">${S.postReview==='stop'?'Stop asking':`Private every ${S.postReviewCadence} d`}</span></div>`:''}
+            ${S.preset==='fix'?`<div class="cfgrow"><span class="cfgk">Graduation date</span><span class="cfgv">1 Dec 2026</span></div>`:''}
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="box-h"><div class="box-t">Communication Channels</div></div>
+          <div class="box-b">
+            <div class="row"><div class="row-t"><div class="row-n">✉ Email</div></div><span class="pill ${S.emailOn?'p-ok':'p-off'}">${S.emailOn?'Enabled':'Off'}</span></div>
+            <div class="row"><div class="row-t"><div class="row-n">◈ SMS</div></div><span class="pill ${S.smsOn?'p-ok':'p-off'}">${S.smsOn?'Enabled':'Off'}</span></div>
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="box-h"><div class="box-t">Cadence</div></div>
+          <div class="box-b">
+            ${S.privateOn?`<div class="cfgrow"><span class="cfgk">Private cooldown / reminder</span><span class="cfgv">${S.privCooldown} d / ${S.privReminder} d</span></div>`:''}
+            ${S.googleOn?`<div class="cfgrow"><span class="cfgk">Google cooldown / reminder</span><span class="cfgv">${S.googCooldown} d / ${S.googReminder} d</span></div>`:''}
+            <div class="cfgrow"><span class="cfgk">Projected sends / mo</span><span class="cfgv">~${(S.privateOn?124:0)+(S.googleOn?124:0)}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="box">
+          <div class="box-h"><div class="box-t"><span style="color:var(--goog)">◉</span> Google Business Profile</div>
+            <span class="pill ${S.gbp?'p-ok':'p-off'}">${S.gbp?'● Connected':'Not connected'}</span></div>
+          <div class="box-b">
+            ${S.gbp?`<div class="cfgrow"><span class="cfgk">Account</span><span class="cfgv">QA Locations (test)</span></div>
+            <div class="cfgrow"><span class="cfgk">Review match rate</span><span class="cfgv">61%</span></div>
+            ${!S.googleOn?`<div style="font-size:11.5px;color:var(--fg-2);margin-top:9px;line-height:1.6">Connected for <b>monitoring and replies only</b> — no review requests will be sent.</div>`:''}`
+            :`<div style="font-size:12.5px;color:var(--fg-2)">${S.googleOn?'Required for the Google stream.':'Optional — connect later to monitor and reply to reviews from the dashboard.'}</div>`}
+          </div>
+        </div>
+
+        ${S.gbp?`<div class="box">
+          <div class="box-h"><div class="box-t">Location Mappings</div><span class="pill ${count===4?'p-ok':'p-dark'}">${count} of 4 mapped</span></div>
+          <div class="box-b">
+            ${['Manhattan','Brooklyn','Queens','Bronx'].map((n,i)=>`
+              <div class="row"><div class="row-t"><div class="row-n">${n}</div></div>
+              <span style="color:${S.mapped[i]?'var(--ok)':'var(--fg-3)'};font-size:16px">●</span></div>`).join('')}
+          </div>
+        </div>`:''}
+
+        ${S.privateOn&&S.googleOn?`<div class="note n-lock" style="margin-bottom:0"><span class="n-ic">🔒</span><div><b>Compliance summary.</b> Both branches receive the same Google ask, governed by one switch. No score can filter a public request at any layer.</div></div>`:''}
+      </div>
+    </div>
+  `;
+}
+
+/* ═══════════ Render ═══════════ */
+const RENDER = [stepApproach, stepConnect, stepMap, stepChannels, stepBranding, stepSettings, stepPreview, stepReview];
+
+function render() {
+  renderNav();
+  document.getElementById('main').innerHTML = RENDER[S.step]();
+  document.getElementById('btn-prev').disabled = S.step === 0;
+  const last = S.step === STEPS.length - 1;
+  document.getElementById('btn-next').textContent = last ? 'Finish' : 'Next';
+  document.getElementById('main').scrollTop = 0;
+}
+render();
+</script>
+</body>
+</html>
