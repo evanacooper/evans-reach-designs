@@ -213,6 +213,32 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 .mini { font-size: 11.5px; color: var(--fg-3); line-height: 1.6; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
 
 
+
+/* plain-English summary bullets */
+.bullet { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.bullet:last-child { border-bottom: none; }
+.bullet-ic { width: 26px; height: 26px; border-radius: 7px; background: var(--bg); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+  color: var(--fg-2); flex-shrink: 0; margin-top: 1px; }
+.bullet-t { font-size: 13.5px; font-weight: 650; letter-spacing: -.008em; }
+.bullet-d { font-size: 12.5px; color: var(--fg-2); line-height: 1.55; margin-top: 2px; }
+
+/* advanced disclosure */
+.advtoggle { display: flex; align-items: center; gap: 9px; width: 100%; font-family: inherit;
+  font-size: 13px; font-weight: 600; padding: 12px 15px; border: 1px solid var(--border);
+  border-radius: var(--r); background: var(--surface); color: var(--fg); cursor: pointer; text-align: left; }
+.advtoggle:hover { border-color: var(--border-h); }
+.advtoggle.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
+.advchev { color: var(--fg-3); font-size: 11px; transition: transform .16s; display: inline-block; }
+.advtoggle.open .advchev { transform: rotate(90deg); }
+.advhint { margin-left: auto; font-size: 11.5px; font-weight: 500; color: var(--fg-3); }
+.advbody { border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--r) var(--r);
+  padding: 4px 15px 15px; background: var(--surface); }
+.advsec { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.advsec:last-of-type { border-bottom: none; }
+.advsec-t { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--fg-3); margin-bottom: 3px; }
+
 /* flow strip */
 .flowstrip { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
 .fnode { border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; background: var(--bg); text-align: center; min-width: 92px; }
@@ -315,6 +341,7 @@ const S = {
   postReview: 'stop',
   postReviewCadence: 90,
   emailOn: true, smsOn: true,
+  advOpen: false,
   score: null,
   mapped: [true, true, true, false],
   // per-message channels: [email, sms]
@@ -647,130 +674,154 @@ function stepBranding() {
 
 function stepSettings() {
   const P = PRESETS[S.approach];
+  const isFix = S.approach === 'fix';
+  const wait = isFix ? `${S.handoffDays} day${S.handoffDays===1?'':'s'}` : `${S.followUpHours} hours`;
 
-  const googBox = googleOn() ? `
-    <div class="box">
-      <div class="box-h">
-        <div class="box-t"><span style="color:var(--goog)">◉</span> Google review ask</div>
-        <span class="pill p-lock">🔒 Always on</span>
-      </div>
-      <div class="box-b">
-        <div class="note n-lock" style="margin-bottom:12px;font-size:12px"><span class="n-ic">🔒</span><div>
-          You chose <b>${P.label}</b>, so the Google ask can't be switched off — it's the point of this approach.
-          To stop asking for public reviews, go back and choose <b>Listen only</b>.
-        </div></div>
+  /* ── Plain-English summary of what will happen ── */
+  const bullets = [];
+  if (formOn()) {
+    bullets.push([`✉`, `We ask for private feedback first`,
+      `A short rating form goes out after a qualifying visit, with one reminder ${S.privReminder} days later if they don't respond.`]);
+  }
+  if (combined()) {
+    bullets.push(fastTrackOn()
+      ? [`★`, `Scores of ${S.threshold} or more go straight to Google`,
+         `Anyone scoring below ${S.threshold} is asked what went wrong first — and is still offered Google on the same screen.`]
+      : [`=`, `Everyone takes the same path`,
+         `No one is routed straight to Google. The score only decides whether we ask what went wrong.`]);
+    bullets.push([`G`, `Everyone is asked for a Google review`,
+      `${wait} after their feedback, anyone who hasn't left a review gets the ask. This applies to every customer regardless of score — it's what keeps the flow compliant.`]);
+  } else if (googleOn()) {
+    bullets.push([`G`, `Everyone is asked for a Google review`,
+      `A review request goes out after a qualifying visit, with one reminder ${S.googReminder} days later.`]);
+  }
+  if (googleOn()) {
+    bullets.push([`⊘`, `We stop once they've reviewed`,
+      `${S.postReview==='stop' ? 'No further requests of any kind.' : `We keep collecting private feedback every ${S.postReviewCadence} days, but never ask for Google again.`} A person can only leave one Google review.`]);
+  }
+  if (!googleOn()) {
+    bullets.push([`⊘`, `Nothing public ever goes out`,
+      `${S.gbp ? 'Your connected Google profile still feeds the dashboard so you can monitor and reply to reviews you receive on your own.' : 'Connect a Google Business Profile later to monitor and reply to reviews you receive on your own.'}`]);
+  }
+  bullets.push([`◔`, `We won't ask the same person too often`,
+    `${formOn()?`Private feedback at most once every ${S.privCooldown} days`:''}${formOn()&&googleOn()?'; ':''}${googleOn()?`Google at most once every ${S.googCooldown} days`:''}.`]);
+
+  const summary = bullets.map(([ic,t,d]) => `
+    <div class="bullet">
+      <div class="bullet-ic">${ic}</div>
+      <div><div class="bullet-t">${t}</div><div class="bullet-d">${d}</div></div>
+    </div>`).join('');
+
+  /* ── Advanced ── */
+  const adv = `
+    <div class="advbody">
+
+      ${P.allowFastTrack && combined() ? `
+      <div class="advsec">
+        <div class="advsec-t">Fast-track</div>
+        <div class="row">
+          <div class="row-t"><div class="row-n">Send high scorers straight to Google</div>
+          <div class="row-d">Skips the complaint box for happy customers. Everyone else is still asked — just after the delay.</div></div>
+          <button class="sw ${S.fastTrack?'':'off'}" onclick="toggle('fastTrack')"></button>
+        </div>
+        ${S.fastTrack ? `
+        <div class="row">
+          <div class="row-t"><div class="row-n">Fast-track score <span class="pill p-off">Partner-set</span></div>
+          <div class="row-d">85% of responses are a 10, so this moves fewer people than it looks like it does.</div></div>
+          <div class="stepper"><button onclick="thr(-1)">−</button><span>${S.threshold}</span><button onclick="thr(1)">+</button></div>
+        </div>
+        <div class="thr">${thrScale()}</div>
+        <div class="tleg">
+          <span><span class="dot" style="background:var(--warn)"></span> Asked what went wrong, then offered Google</span>
+          <span><span class="dot" style="background:var(--ok)"></span> Straight to Google</span>
+        </div>` : ''}
+      </div>` : ''}
+
+      ${combined() ? `
+      <div class="advsec">
+        <div class="advsec-t">Timing</div>
+        <div class="row">
+          <div class="row-t"><div class="row-n">${isFix?'Wait before the Google ask':'Follow-up delay'}</div>
+          <div class="row-d">Applies identically to everyone, whatever they scored.</div></div>
+          ${isFix
+            ? `<div class="stepper"><button onclick="bump('handoffDays',-1,1,30)">−</button><span>${S.handoffDays} d</span><button onclick="bump('handoffDays',1,1,30)">+</button></div>`
+            : `<div class="stepper"><button onclick="bump('followUpHours',-12,12,168)">−</button><span>${S.followUpHours} h</span><button onclick="bump('followUpHours',12,12,168)">+</button></div>`}
+        </div>
+      </div>` : ''}
+
+      ${formOn() ? `
+      <div class="advsec">
+        <div class="advsec-t">Private feedback</div>
+        ${P.formForced ? '' : `
+        <div class="row">
+          <div class="row-t"><div class="row-n">Collect a private rating first</div><div class="row-d">Turn off to send customers straight to Google with no form.</div></div>
+          <button class="sw ${S.useForm?'':'off'}" onclick="toggle('useForm')"></button>
+        </div>`}
+        <div class="row"><div class="row-t"><div class="row-n">Audience</div><div class="row-d">Completed standard visit, excluding meet-and-greet, behavioral eval and intro visits. Has an email address.</div></div><span class="pill p-off">Partner-set</span></div>
+        <div class="row"><div class="row-t"><div class="row-n">Cooldown</div><div class="row-d">How often one person can be asked</div></div>
+          <div class="stepper"><button onclick="bump('privCooldown',-7,7,180)">−</button><span>${S.privCooldown} d</span><button onclick="bump('privCooldown',7,7,180)">+</button></div></div>
+        <div class="row"><div class="row-t"><div class="row-n">Reminder delay</div><div class="row-d">Wait before the feedback reminder</div></div>
+          <div class="stepper"><button onclick="bump('privReminder',-1,1,30)">−</button><span>${S.privReminder} d</span><button onclick="bump('privReminder',1,1,30)">+</button></div></div>
+      </div>` : `
+      <div class="advsec">
+        <div class="advsec-t">Private feedback</div>
+        <div class="row">
+          <div class="row-t"><div class="row-n">Collect a private rating first</div><div class="row-d">Currently off — customers go straight to the Google ask.</div></div>
+          <button class="sw off" onclick="toggle('useForm')"></button>
+        </div>
+      </div>`}
+
+      ${googleOn() ? `
+      <div class="advsec">
+        <div class="advsec-t">Google review ask</div>
+        <div class="row">
+          <div class="row-t"><div class="row-n">Ask for Google reviews <span class="pill p-lock">🔒 Required</span></div>
+          <div class="row-d">Can't be switched off in <b>${P.label}</b> — it's the point of this approach. To stop asking publicly, go back and choose <b>Listen only</b>.</div></div>
+          <button class="sw" disabled></button>
+        </div>
         <div class="row"><div class="row-t"><div class="row-n">Audience</div><div class="row-d">Qualifying completed visit, minus anyone matched to an existing Google review.</div></div><span class="pill p-off">Partner-set</span></div>
         <div class="row"><div class="row-t"><div class="row-n">Cooldown</div><div class="row-d">How often one person can be asked</div></div>
           <div class="stepper"><button onclick="bump('googCooldown',-30,30,365)">−</button><span>${S.googCooldown} d</span><button onclick="bump('googCooldown',30,30,365)">+</button></div></div>
         <div class="row"><div class="row-t"><div class="row-n">Reminder delay</div><div class="row-d">Wait before the Google reminder</div></div>
           <div class="stepper"><button onclick="bump('googReminder',-1,1,30)">−</button><span>${S.googReminder} d</span><button onclick="bump('googReminder',1,1,30)">+</button></div></div>
-      </div>
-    </div>` : '';
+        ${combined() ? `
+        <div class="row">
+          <div class="row-t"><div class="row-n">Google ask after private feedback <span class="pill p-lock">🔒 Required</span></div>
+          <div class="row-d"><b>This can't be turned off for one group and not another.</b> There is no per-branch version of this control, at any layer.</div></div>
+          <button class="sw" disabled></button>
+        </div>` : ''}
+        <div class="row">
+          <div class="row-t"><div class="row-n">Once a Google review is detected</div><div class="row-d">Suppression depends on name matching — 61% on this account.</div></div>
+          <select style="width:auto" onchange="setPostReview(this.value)">
+            <option value="stop" ${S.postReview==='stop'?'selected':''}>Stop asking entirely</option>
+            <option value="internal" ${S.postReview==='internal'?'selected':''}>Move to private-feedback cadence</option>
+          </select>
+        </div>
+        ${S.postReview==='internal' ? `<div class="row"><div class="row-t"><div class="row-n">Private-feedback cadence</div><div class="row-d">How often to keep collecting private feedback afterwards</div></div>
+          <div class="stepper"><button onclick="bump('postReviewCadence',-30,30,365)">−</button><span>${S.postReviewCadence} d</span><button onclick="bump('postReviewCadence',30,30,365)">+</button></div></div>` : ''}
+      </div>` : ''}
 
-  const privBox = `
-    <div class="box">
-      <div class="box-h">
-        <div class="box-t"><span style="color:var(--brand)">✉</span> Private feedback form</div>
-        ${P.formForced
-          ? `<span class="pill p-lock">🔒 Always on</span>`
-          : `<button class="sw ${S.useForm?'':'off'}" onclick="toggle('useForm')"></button>`}
-      </div>
-      <div class="box-b">
-        ${P.formForced
-          ? `<div class="note n-lock" style="margin-bottom:12px;font-size:12px"><span class="n-ic">🔒</span><div>${S.approach==='fix'
-              ? 'Asking privately first is what defines this approach, so the form stays on.'
-              : 'Private feedback is the only thing this approach collects.'}</div></div>`
-          : (!S.useForm ? `<div class="note n-info" style="margin-bottom:12px;font-size:12px"><span class="n-ic">◆</span><div>Form is off — customers go straight to the Google ask. No score, no branching.</div></div>` : '')}
-        ${formOn() ? `
-          <div class="row"><div class="row-t"><div class="row-n">Audience</div><div class="row-d">Completed standard visit, excluding meet-and-greet, behavioral eval and intro visits. Has an email address.</div></div><span class="pill p-off">Partner-set</span></div>
-          <div class="row"><div class="row-t"><div class="row-n">Cooldown</div><div class="row-d">How often one person can be asked</div></div>
-            <div class="stepper"><button onclick="bump('privCooldown',-7,7,180)">−</button><span>${S.privCooldown} d</span><button onclick="bump('privCooldown',7,7,180)">+</button></div></div>
-          <div class="row"><div class="row-t"><div class="row-n">Reminder delay</div><div class="row-d">Wait before the feedback reminder</div></div>
-            <div class="stepper"><button onclick="bump('privReminder',-1,1,30)">−</button><span>${S.privReminder} d</span><button onclick="bump('privReminder',1,1,30)">+</button></div></div>
-        ` : ''}
-      </div>
+      <div class="note n-lock" style="margin:4px 0 0"><span class="n-ic">🔒</span><div><b>Enforced, not configurable.</b> No score, complaint flag, or incident record can decide <b>whether</b> someone gets a Google ask — at most it changes how quickly they reach it.</div></div>
     </div>`;
 
-  // ── handoff / combined section
-  let combinedSection = '';
-  if (combined()) {
-    const isFix = S.approach === 'fix';
-    combinedSection = `
-      <div class="hr"></div>
-      <div class="sub">From private feedback to the Google ask</div>
-      <div class="subd">${isFix
-        ? 'Everyone who is asked privately is also asked for a Google review. You control the wait — not who gets asked.'
-        : 'Both streams are on, so a customer who submits the form is handled as one journey rather than two unrelated asks.'}</div>
-
-      <div class="box">
-        <div class="box-b">
-
-          ${P.allowFastTrack ? `
-            <div class="row">
-              <div class="row-t">
-                <div class="row-n">Fast-track high scores</div>
-                <div class="row-d">Send high scorers straight to Google from the form instead of making them wait. Everyone else still gets asked — just after the delay.</div>
-              </div>
-              <button class="sw ${S.fastTrack?'':'off'}" onclick="toggle('fastTrack')"></button>
-            </div>
-            ${S.fastTrack ? `
-              <div class="row">
-                <div class="row-t"><div class="row-n">Fast-track score <span class="pill p-off">Partner-set</span></div>
-                <div class="row-d">At or above this score we skip the complaint box and go straight to Google. Below it, we ask what went wrong first — then still offer Google.</div></div>
-                <div class="stepper"><button onclick="thr(-1)">−</button><span>${S.threshold}</span><button onclick="thr(1)">+</button></div>
-              </div>
-              <div class="thr">${thrScale()}</div>
-              <div class="tleg">
-                <span><span class="dot" style="background:var(--warn)"></span> Asks what went wrong, then offers Google</span>
-                <span><span class="dot" style="background:var(--ok)"></span> Straight to Google</span>
-              </div>
-              <div class="note n-info" style="margin:14px 0 0"><span class="n-ic">◔</span><div>Range is limited to <b>7–10</b>. <b>85% of responses are a 10</b>, so this moves fewer people than it appears to.</div></div>
-            ` : `<div class="note n-ok" style="margin:2px 0 0"><span class="n-ic">✓</span><div>Fast-track off — <b>every customer takes the identical path</b> to Google, regardless of score. The score only decides whether we ask what went wrong.</div></div>`}
-          ` : `
-            <div class="note n-ok" style="margin:0 0 4px"><span class="n-ic">✓</span><div>
-              <b>No fast-track in this approach.</b> Nobody is routed straight to Google from the form. Every customer waits the same delay and receives the same ask — the score only decides whether we ask what went wrong.
-            </div></div>
-          `}
-
-          <div class="row">
-            <div class="row-t">
-              <div class="row-n">Google ask after private feedback <span class="pill p-lock">🔒 Required</span></div>
-              <div class="row-d">Once someone has given private feedback, the Google ask always follows${isFix?'':' if no review is detected'}. <b>This can't be turned off, and it can't be turned off for one group and not another</b> — that's what keeps the flow compliant.</div>
-            </div>
-            <button class="sw" disabled title="Required — cannot be disabled"></button>
-          </div>
-
-          <div class="row">
-            <div class="row-t"><div class="row-n">${isFix ? 'Wait before the Google ask' : 'Follow-up delay'}</div>
-            <div class="row-d">Applies identically to everyone${P.allowFastTrack && S.fastTrack ? ', including anyone who was fast-tracked but didn\'t leave a review' : ''}.</div></div>
-            ${isFix
-              ? `<div class="stepper"><button onclick="bump('handoffDays',-1,1,30)">−</button><span>${S.handoffDays} d</span><button onclick="bump('handoffDays',1,1,30)">+</button></div>`
-              : `<div class="stepper"><button onclick="bump('followUpHours',-12,12,168)">−</button><span>${S.followUpHours} h</span><button onclick="bump('followUpHours',12,12,168)">+</button></div>`}
-          </div>
-
-          <div class="row">
-            <div class="row-t"><div class="row-n">Once a Google review is detected</div><div class="row-d">A person can only leave one Google review, so the public ask always stops here.</div></div>
-            <select style="width:auto" onchange="setPostReview(this.value)">
-              <option value="stop" ${S.postReview==='stop'?'selected':''}>Stop asking entirely</option>
-              <option value="internal" ${S.postReview==='internal'?'selected':''}>Move to private-feedback cadence</option>
-            </select>
-          </div>
-          ${S.postReview==='internal' ? `<div class="row"><div class="row-t"><div class="row-n">Private-feedback cadence</div><div class="row-d">How often to keep collecting private feedback afterwards</div></div>
-            <div class="stepper"><button onclick="bump('postReviewCadence',-30,30,365)">−</button><span>${S.postReviewCadence} d</span><button onclick="bump('postReviewCadence',30,30,365)">+</button></div></div>` : ''}
-        </div>
-      </div>
-
-      <div class="note n-lock"><span class="n-ic">🔒</span><div><b>Enforced, not configurable.</b> No score, complaint flag, or incident record can decide <b>whether</b> someone gets a Google ask — at most it changes how quickly they reach it. There is no per-branch version of the switch above, at any layer.</div></div>
-    `;
-  }
-
   return `
-    <h2>Review Settings</h2>
-    <p class="lede">Your approach set these. Change anything — the settings are the source of truth, not the preset.</p>
-    ${googleOn() ? googBox : ''}
-    ${privBox}
-    ${!googleOn() ? `<div class="note n-info"><span class="n-ic">◆</span><div><b>No public review requests in this approach.</b> ${S.gbp ? 'Your connected Google profile still feeds the dashboard so you can monitor and reply to reviews you receive organically.' : 'Connect a Google Business Profile from the dashboard to monitor and reply to reviews you receive organically.'}</div></div>` : ''}
-    ${combinedSection}
+    <h2>How this will work</h2>
+    <p class="lede">These are the defaults for <b>${P.label}</b>. Most tenants never change them.</p>
+
+    <div class="box">
+      <div class="box-h">
+        <div class="box-t">Here's what will happen</div>
+        <span class="pill p-off">~${volume()} sends/mo</span>
+      </div>
+      <div class="box-b" style="padding-top:6px">${summary}</div>
+    </div>
+
+    <button class="advtoggle ${S.advOpen?'open':''}" onclick="toggle('advOpen')">
+      <span class="advchev">▸</span>
+      <span>Advanced settings</span>
+      <span class="advhint">${S.advOpen?'Hide':'Cooldowns, timing, thresholds, audience'}</span>
+    </button>
+    ${S.advOpen ? adv : ''}
   `;
 }
 
