@@ -251,6 +251,27 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 
 .copynote { display:block; font-size:10.5px; color:var(--ok); font-weight:600; margin-top:3px; }
 
+
+/* journey fork */
+.forkwrap { margin: 6px 0 2px; }
+.forkhead { display: flex; align-items: center; gap: 11px; margin-bottom: 11px; }
+.forkline { flex: 1; height: 1px; background: var(--border); }
+.forklabel { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-3); white-space: nowrap; }
+.forkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.forkcol { border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.forkcol.fc-hi { border-color: var(--ok-border); background: var(--ok-bg); }
+.forkcol.fc-lo { border-color: var(--warn-border); background: var(--warn-bg); }
+.forkcol.fc-same { border-color: var(--lock-border); background: var(--lock-bg); }
+.forkcol-h { padding: 9px 12px; border-bottom: 1px solid rgba(0,0,0,.06); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.forkcol-t { font-size: 12.5px; font-weight: 700; }
+.forkcol-b { padding: 10px 12px; }
+.forkstep { font-size: 11.5px; line-height: 1.5; margin-bottom: 8px; }
+.forkstep:last-child { margin-bottom: 0; }
+.forkstep b { display: block; font-weight: 650; color: var(--fg); }
+.forkstep span { color: var(--fg-2); }
+.forkstep.dim { opacity: .72; }
+@media (max-width: 860px) { .forkgrid { grid-template-columns: 1fr; } }
+
 /* message rows */
 .msg { border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px; background: var(--surface); }
 .msg-off { background: var(--bg); opacity: .68; }
@@ -864,8 +885,6 @@ function stepPreview() {
   const isFix = S.approach === 'fix';
   const wait  = isFix ? `${S.handoffDays} day${S.handoffDays===1?'':'s'}` : `${S.followUpHours} hours`;
 
-  /* Copy adapts to who actually receives the message. Under Fix (and under Grow with
-     fast-track off) the Google ask goes to every scorer, so it can't assume a promoter. */
   const googAskCopy = fastTrackOn()
     ? '"Thanks for sharing that — would you post it on Google?"'
     : '"Would you share your experience on Google?"';
@@ -873,67 +892,108 @@ function stepPreview() {
     ? 'Same copy for every customer — it can\'t reference how they scored.'
     : '';
 
-  const privStream = formOn() ? `
-    <div class="box">
-      <div class="box-h">
-        <div class="box-t"><span style="color:var(--brand)">✉</span> Private feedback</div>
-        ${PRESETS[S.approach].formForced?`<span class="pill p-lock">🔒 Always first</span>`:''}
-      </div>
-      <div class="box-b"><div class="seq">
+  /* ── ONE journey, not parallel campaigns ──
+     Combined = a single timeline with a fork at the form. Anything else is a
+     straight line. Message numbering runs continuously so the tenant can see
+     the true maximum a customer receives. */
+  let timeline = '';
+  let maxMsgs = 0;
+
+  if (combined()) {
+    maxMsgs = 4;
+    timeline = `
+      <div class="seq">
         ${eventRow('▸','Visit completes','Customer enters the qualifying segment')}
         ${waitRow('Wait until 9:00am','Next available send window')}
         ${msgRow('privAsk', 1, 'Rating Request', '"How was your experience with {{business_name}}?"')}
-        ${waitRow('Wait '+S.privReminder+' days','Skipped if they already responded')}
+        ${waitRow('Wait '+S.privReminder+' days','Only if they haven\'t responded yet')}
         ${msgRow('privRem', 2, 'Rating Reminder', '"A quick reminder — your feedback for {{business_name}}"')}
-      </div></div>
-    </div>` : '';
+      </div>
 
-  /* Fast-track is an immediate on-form handoff, not a message — show it as its own path
-     so the sequence doesn't imply promoters wait for the follow-up. */
-  const fastPath = fastTrackOn() ? `
-    <div class="box">
-      <div class="box-h">
-        <div class="box-t"><span style="color:var(--ok)">★</span> Fast-track — scores ${S.threshold}+</div>
-        <span class="pill p-ok">No message needed</span>
-      </div>
-      <div class="box-b"><div class="seq">
-        ${eventRow('▸','Scores '+S.threshold+' or above','Roughly 85% of everyone who responds')}
-        ${eventRow('→','Google opens immediately','Redirected from the form itself — no email or SMS involved')}
-      </div>
-      <div class="note n-info" style="margin:12px 0 0"><span class="n-ic">◆</span><div>
-        If they don't actually leave a review, they rejoin the sequence below and get the same ask as everyone else.
-      </div></div></div>
-    </div>` : '';
+      <div class="forkwrap">
+        <div class="forkhead">
+          <span class="forkline"></span>
+          <span class="forklabel">They submit a score — the journey forks</span>
+          <span class="forkline"></span>
+        </div>
+        <div class="forkgrid">
 
-  const googStream = googleOn() ? `
-    <div class="box">
-      <div class="box-h">
-        <div class="box-t"><span style="color:var(--goog)">◉</span> Google review ask${fastTrackOn()?' — everyone else':''}</div>
-        ${combined()?`<span class="pill p-lock">🔒 Every customer</span>`:''}
+          ${fastTrackOn() ? `
+          <div class="forkcol fc-hi">
+            <div class="forkcol-h"><span class="forkcol-t">Scores ${S.threshold}+</span><span class="pill p-ok">~85%</span></div>
+            <div class="forkcol-b">
+              <div class="forkstep"><b>Google opens immediately</b><span>Redirected from the form — no message sent</span></div>
+              <div class="forkstep"><b>Left a review?</b><span>Journey ends. Nothing further.</span></div>
+              <div class="forkstep dim"><b>Didn't leave one?</b><span>Rejoins the messages below</span></div>
+            </div>
+          </div>
+          <div class="forkcol fc-lo">
+            <div class="forkcol-h"><span class="forkcol-t">Scores below ${S.threshold}</span><span class="pill p-off">~15%</span></div>
+            <div class="forkcol-b">
+              <div class="forkstep"><b>Asked what went wrong</b><span>Optional box, plus the same Google button</span></div>
+              <div class="forkstep"><b>Left a review?</b><span>Journey ends. Nothing further.</span></div>
+              <div class="forkstep dim"><b>Didn't leave one?</b><span>Continues to the messages below</span></div>
+            </div>
+          </div>` : `
+          <div class="forkcol fc-same" style="grid-column:1/-1">
+            <div class="forkcol-h"><span class="forkcol-t">Every score — one path</span><span class="pill p-lock">🔒 No fast-track</span></div>
+            <div class="forkcol-b" style="display:flex;gap:22px;flex-wrap:wrap">
+              <div class="forkstep" style="flex:1;min-width:180px"><b>Below ${S.threshold}: asked what went wrong</b><span>Optional box only. Nobody is redirected.</span></div>
+              <div class="forkstep" style="flex:1;min-width:180px"><b>Everyone continues below</b><span>Same wait, same message, whatever they scored</span></div>
+            </div>
+          </div>`}
+
+        </div>
       </div>
-      <div class="box-b"><div class="seq">
-        ${combined()
-          ? eventRow('▸','Private feedback submitted','Any score — this entry point is score-blind')
-          : eventRow('▸','Visit completes','Customer enters the qualifying segment')}
-        ${combined()
-          ? waitRow('Wait '+wait, 'Identical for everyone, whatever they scored')
-          : waitRow('Wait until 9:00am','Next available send window')}
-        ${combined() && !isFix ? `<div class="sstep"><div class="srail"><div class="snode wait">⊘</div><div class="sline"></div></div>
-          <div class="scont" style="padding-bottom:13px"><div class="slab">Stop if a Google review was detected</div>
-          <div class="smeta">Catches anyone who was fast-tracked and already reviewed — limited by the 61% match rate</div></div></div>` : ''}
-        ${msgRow('googAsk', 1, 'Google Review Request', googAskCopy + (googAskNote?` <span class="copynote">${googAskNote}</span>`:''))}
-        ${waitRow('Wait '+S.googReminder+' days','Skipped if they\'ve now left a review')}
-        ${msgRow('googRem', 2, 'Google Review Reminder', '"Following up — a Google review for {{business_name}}"')}
-      </div></div>
-    </div>` : '';
+
+      <div class="seq" style="margin-top:4px">
+        ${waitRow('Wait '+wait, 'Identical for everyone, whatever they scored')}
+        ${!isFix ? `<div class="sstep"><div class="srail"><div class="snode wait">⊘</div><div class="sline"></div></div>
+          <div class="scont" style="padding-bottom:13px"><div class="slab">Skip anyone who already reviewed</div>
+          <div class="smeta">Catches the fast-tracked customers who followed through — limited by the 61% match rate</div></div></div>` : ''}
+        ${msgRow('googAsk', 3, 'Google Review Request', googAskCopy + (googAskNote?` <span class="copynote">${googAskNote}</span>`:''))}
+        ${waitRow('Wait '+S.googReminder+' days','Only if they still haven\'t reviewed')}
+        ${msgRow('googRem', 4, 'Google Review Reminder', '"Following up — a Google review for {{business_name}}"')}
+      </div>`;
+  } else if (googleOn()) {
+    maxMsgs = 2;
+    timeline = `<div class="seq">
+      ${eventRow('▸','Visit completes','Customer enters the qualifying segment')}
+      ${waitRow('Wait until 9:00am','Next available send window')}
+      ${msgRow('googAsk', 1, 'Google Review Request', googAskCopy)}
+      ${waitRow('Wait '+S.googReminder+' days','Only if they haven\'t reviewed yet')}
+      ${msgRow('googRem', 2, 'Google Review Reminder', '"Following up — a Google review for {{business_name}}"')}
+    </div>`;
+  } else {
+    maxMsgs = 2;
+    timeline = `<div class="seq">
+      ${eventRow('▸','Visit completes','Customer enters the qualifying segment')}
+      ${waitRow('Wait until 9:00am','Next available send window')}
+      ${msgRow('privAsk', 1, 'Rating Request', '"How was your experience with {{business_name}}?"')}
+      ${waitRow('Wait '+S.privReminder+' days','Only if they haven\'t responded yet')}
+      ${msgRow('privRem', 2, 'Rating Reminder', '"A quick reminder — your feedback for {{business_name}}"')}
+    </div>`;
+  }
+
+  const listenNote = !googleOn() ? `
+    <div class="note n-info"><span class="n-ic">◆</span><div>
+      <b>No public review requests in this approach.</b> ${S.gbp
+        ? 'Your connected Google profile still feeds the Reputation dashboard, so reviews you receive on your own appear alongside this private feedback and you can reply to them there.'
+        : 'Connect a Google Business Profile from the dashboard to monitor and reply to reviews you receive on your own.'}
+    </div></div>` : '';
+
+  const noFormNote = googleOn() && !formOn() ? `
+    <div class="note n-ok"><span class="n-ic">✓</span><div>
+      <b>No form, no scoring, no branching.</b> Every qualifying customer receives the same two messages.
+    </div></div>` : '';
 
   const formSection = formOn() ? `
     <div class="hr"></div>
-    <div class="sub">What the customer sees on the form</div>
+    <div class="sub">The form itself</div>
     <div class="subd">${!googleOn()
       ? `No public review is ever offered — the form collects feedback and ends there.`
       : (fastTrackOn()
-        ? `Tap a score to walk the branch. Fast-track threshold is <b>${S.threshold}</b>.`
+        ? `Tap a score to see which side of the fork the customer lands on. Threshold is <b>${S.threshold}</b>.`
         : `Tap any score — <b>every one leads to the same place</b>. Nobody is redirected; the score only decides whether we ask what went wrong.`)}</div>
     <div class="phones">
       <div class="pw">
@@ -949,27 +1009,29 @@ function stepPreview() {
         <div class="subd" style="font-size:12px">${formExplain()}</div>
         <div class="note n-ok" style="font-size:11.5px"><span class="n-ic">✓</span><div><b>Submitting the score counts.</b> A promoter never has to write anything for their feedback to be captured.</div></div>
         ${googleOn() ? `<div class="note n-lock" style="font-size:11.5px;margin-bottom:0"><span class="n-ic">🔒</span><div>${fastTrackOn()
-          ? `<b>Every branch ends at Google.</b> The score changes how fast someone gets there. It never changes whether they're asked.`
-          : `<b>No branch reaches Google faster than another.</b> The score changes nothing about the public ask — not who gets it, not when.`}</div></div>` : ''}
+          ? `<b>Both sides of the fork end at Google.</b> The score changes how fast someone gets there. It never changes whether they're asked.`
+          : `<b>Neither side reaches Google faster.</b> The score changes nothing about the public ask — not who gets it, not when.`}</div></div>` : ''}
       </div>
     </div>` : '';
 
-  const listenNote = !googleOn() ? `
-    <div class="note n-info"><span class="n-ic">◆</span><div>
-      <b>No public review requests in this approach.</b> ${S.gbp
-        ? 'Your connected Google profile still feeds the Reputation dashboard, so reviews you receive on your own appear alongside this private feedback and you can reply to them there.'
-        : 'Connect a Google Business Profile from the dashboard to monitor and reply to reviews you receive on your own.'}
-    </div></div>` : '';
-
-  const noFormNote = googleOn() && !formOn() ? `
-    <div class="note n-ok"><span class="n-ic">✓</span><div>
-      <b>No form, no scoring, no branching.</b> Every qualifying customer receives the same two messages.
-    </div></div>` : '';
-
   return `
     <h2>Preview Communications</h2>
-    <p class="lede">Every message this configuration sends, in order. Click a channel chip to turn that channel on or off for that message, or edit the content.</p>
-    ${privStream}${fastPath}${googStream}${listenNote}${noFormNote}${formSection}
+    <p class="lede">One journey per customer${combined()?', with a fork at the form':''}. Click a channel chip to turn that channel on or off for a message, or edit the content.</p>
+
+    <div class="box">
+      <div class="box-h">
+        <div class="box-t">A customer's journey, start to finish</div>
+        <span class="pill p-off">${maxMsgs} messages max</span>
+      </div>
+      <div class="box-b">
+        ${timeline}
+        <div class="note n-info" style="margin:14px 0 0"><span class="n-ic">◆</span><div>
+          <b>Nobody receives all ${maxMsgs}.</b> Each step is skipped once the customer does the thing it's asking for${combined()?` — responding to the form, or leaving a review`:''}.
+        </div></div>
+      </div>
+    </div>
+
+    ${listenNote}${noFormNote}${formSection}
   `;
 }
 
