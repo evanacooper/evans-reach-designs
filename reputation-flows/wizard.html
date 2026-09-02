@@ -211,6 +211,26 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 .sub { font-size: 14px; font-weight: 650; margin-bottom: 5px; }
 .subd { font-size: 12.5px; color: var(--fg-2); margin-bottom: 13px; line-height: 1.6; }
 .mini { font-size: 11.5px; color: var(--fg-3); line-height: 1.6; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
+
+/* preset cards — side-by-side */
+.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: stretch; }
+.pcard { border: 1.5px solid var(--border); border-radius: var(--r); padding: 15px; background: var(--surface);
+  cursor: pointer; text-align: left; font-family: inherit; display: flex; flex-direction: column;
+  transition: border-color .16s, box-shadow .16s, transform .16s; }
+.pcard:hover { border-color: var(--border-h); box-shadow: 0 3px 12px rgba(0,0,0,.05); transform: translateY(-1px); }
+.pcard.sel { border-color: var(--brand); background: var(--brand-bg); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
+.pcard-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.pcard-ic { font-size: 17px; color: var(--brand); line-height: 1; }
+.pcard-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border-h);
+  flex-shrink: 0; position: relative; background: var(--surface); }
+.pcard.sel .pcard-radio { border-color: var(--brand); border-width: 5px; }
+.pcard-t { font-size: 14.5px; font-weight: 650; letter-spacing: -.012em; margin-bottom: 6px; line-height: 1.25; }
+.pcard-d { font-size: 12.5px; color: var(--fg-2); line-height: 1.55; flex: 1; }
+.pcard-foot { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; color: var(--fg-2); }
+.pcard-foot b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.pcard-vsub { font-size: 10.5px; color: var(--fg-3); }
+@media (max-width: 1080px) { .pgrid { grid-template-columns: 1fr; } }
 @media (max-width: 980px) { .g2 { grid-template-columns: 1fr; } .side { display: none; } }
 </style>
 </head>
@@ -338,11 +358,15 @@ function stepApproach() {
     ['fix','◐','Fix issues first','Few reviews, or a rating you want to improve. Private feedback only — nothing public goes out until your graduation date.','~124 sends/mo','Time-boxed'],
     ['listen','◎','Listen only','Mid service turnaround. Collect private feedback indefinitely and never ask for a public review.','~124 sends/mo','No public ask'],
   ].map(([k,ic,t,d,vol,tag]) => `
-    <button class="card ${S.preset===k?'sel':''}" onclick="setPreset('${k}')">
-      <div class="card-t"><span class="card-ic">${ic}</span>${t}</div>
-      <div class="card-d">${d}</div>
-      <div style="margin-top:11px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--fg-2)">
-        <span><b style="color:var(--fg)">${vol.split(' ')[0]}</b> ${vol.split(' ').slice(1).join(' ')}</span>
+    <button class="pcard ${S.preset===k?'sel':''}" onclick="setPreset('${k}')">
+      <div class="pcard-top">
+        <span class="pcard-ic">${ic}</span>
+        <span class="pcard-radio" aria-hidden="true"></span>
+      </div>
+      <div class="pcard-t">${t}</div>
+      <div class="pcard-d">${d}</div>
+      <div class="pcard-foot">
+        <span><b>${vol.split(' ')[0]}</b> <span class="pcard-vsub">${vol.split(' ').slice(1).join(' ')}</span></span>
         <span class="pill ${k===S.preset?'p-brand':'p-off'}">${tag}</span>
       </div>
     </button>`).join('');
@@ -354,7 +378,7 @@ function stepApproach() {
   return `
     <h2>Choose Your Approach</h2>
     <p class="lede">Pick what matches your situation. We'll configure the details and show you exactly what each choice sets — these are starting points, not locked modes.</p>
-    ${cards}
+    <div class="pgrid">${cards}</div>
     <div class="box" style="margin-top:16px">
       <div class="box-h"><div class="box-t">What this sets</div><span style="font-size:12px;color:var(--fg-3)">${PRESETS[S.preset].label}</span></div>
       <div class="box-b">${rows.map(([k,v])=>`<div class="cfgrow"><span class="cfgk">${k}</span><span class="cfgv">${v}</span></div>`).join('')}</div>
