@@ -59,18 +59,34 @@ h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; font-weight:
   </p>
 
   <div class="grid">
-    <a class="card" href="wizard.html">
+    <a class="card" href="wizard-v1.html">
       <div class="card-top">
-        <div class="card-t">The integrated onboarding flow</div>
+        <div class="card-t">The integrated onboarding flow — v1</div>
         <span class="badge b-main">Start here</span>
       </div>
       <div class="card-d">
-        The real 8-step wizard, fully clickable end to end. Walk "Public and private" through every
-        step and every option — connect or skip Google, map locations, tune the threshold, then tap a
-        score to see the customer's branch. Use the top bar to switch channels and GBP state.
+        What we're actually shipping first. No advanced settings at all — the tenant picks one of the
+        three options and takes it as written, with message content the only thing they can change.
+        "What will happen" moves onto the first screen, so the behaviour is stated where the choice is
+        made. Tap <b>Try the form</b> to expand the phone in place; the table drops below it.
       </div>
       <div class="tags">
-        <span class="tag">8 steps</span><span class="tag">Live state</span>
+        <span class="tag">7 steps</span><span class="tag">No settings</span>
+        <span class="tag">Behaviour up front</span><span class="tag">Score branching</span>
+      </div>
+    </a>
+
+    <a class="card" href="wizard.html">
+      <div class="card-top">
+        <div class="card-t">The integrated onboarding flow — v2</div>
+        <span class="badge b-ref">Later phase</span>
+      </div>
+      <div class="card-d">
+        The fuller 8-step wizard with a dedicated Settings step — tune the threshold, reminder cadence,
+        resend windows and post-review behaviour. This is the Phase 2 target, not the first release.
+      </div>
+      <div class="tags">
+        <span class="tag">8 steps</span><span class="tag">Advanced settings</span>
         <span class="tag">Score branching</span><span class="tag">Blocker states</span>
       </div>
     </a>

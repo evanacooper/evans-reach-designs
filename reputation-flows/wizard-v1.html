@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reputation Onboarding — v1 (No Settings)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f9fafb; --surface: #fff; --border: #e5e7eb; --border-h: #d1d5db;
+  --fg: #111827; --fg-2: #6b7280; --fg-3: #9ca3af;
+  --brand: #6d5ef7; --brand-h: #5b4de0; --brand-bg: #f5f3ff; --brand-border: #ddd6fe;
+  --ok: #16a34a; --ok-bg: #f0fdf4; --ok-border: #bbf7d0;
+  --warn: #d97706; --warn-bg: #fffbeb; --warn-border: #fde68a;
+  --dgr: #dc2626; --dgr-bg: #fef2f2; --dgr-border: #fecaca;
+  --goog: #4285F4; --goog-bg: #eff6ff; --goog-border: #bfdbfe;
+  --lock: #0f766e; --lock-bg: #f0fdfa; --lock-border: #99f6e4;
+  --r: 10px;
+}
+html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; line-height: 1.5; color: var(--fg); background: #e8eaed; -webkit-font-smoothing: antialiased; }
+
+.back-link { position: fixed; top: 14px; left: 18px; z-index: 90; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 500; color: var(--fg-2); text-decoration: none; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 100px; padding: 6px 13px 6px 10px; }
+.back-link:hover { color: var(--fg); }
+
+.devbar { position: fixed; top: 0; left: 0; right: 0; z-index: 80; display: flex; flex-wrap: wrap; align-items: center;
+  gap: 5px; padding: 11px 18px 11px 140px; background: rgba(255,255,255,.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.devbtn { font-family: inherit; font-size: 11.5px; font-weight: 500; padding: 4px 10px; border-radius: 100px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--fg-2); white-space: nowrap; }
+.devbtn:hover { border-color: var(--border-h); color: var(--fg); }
+.devbtn.on { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+.devlabel { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); margin-right: 3px; }
+.devsep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+
+.stage { padding: 62px 16px 20px; max-width: 1180px; margin: 0 auto; }
+
+/* modal shell — mirrors production */
+.modal { background: var(--surface); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.16); overflow: hidden; display: flex; flex-direction: column; min-height: 760px; }
+.mhead { padding: 20px 26px 16px; border-bottom: 1px solid var(--border); position: relative; }
+.mhead h1 { font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
+.mhead p { font-size: 13px; color: var(--fg-2); margin-top: 3px; }
+.mclose { position: absolute; top: 18px; right: 22px; background: none; border: none; cursor: pointer; color: var(--fg-2); font-size: 20px; line-height: 1; padding: 4px; }
+.mclose:hover { color: var(--fg); }
+
+.mbody { display: flex; flex: 1; min-height: 0; }
+.side { width: 268px; flex-shrink: 0; padding: 22px 18px; border-right: 1px solid var(--border); }
+.snav { display: flex; flex-direction: column; gap: 2px; }
+.sitem { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 9px; font-size: 13.5px; color: var(--fg-3); border: 1.5px solid transparent; cursor: default; }
+.sitem.done { color: var(--fg-3); }
+.sitem.cur { color: var(--fg); font-weight: 600; border-color: var(--brand); background: #fff; }
+.sitem.skip { opacity: .5; }
+.sicon { width: 15px; text-align: center; flex-shrink: 0; font-size: 13px; }
+.sitem.done .sicon { color: var(--ok); }
+.sitem.cur .sicon { color: var(--brand); }
+.sopt { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--fg-3); margin-left: auto; }
+
+.main { flex: 1; padding: 26px 30px; overflow-y: auto; max-height: 660px; min-width: 0; }
+.main h2 { font-size: 19px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.lede { font-size: 13.5px; color: var(--fg-2); line-height: 1.6; margin-bottom: 20px; max-width: 720px; }
+
+.mfoot { padding: 14px 26px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--surface); }
+.btn { font-family: inherit; font-size: 13.5px; font-weight: 600; padding: 10px 26px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
+.btn:hover { border-color: var(--border-h); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-p { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn-p:hover { background: var(--brand-h); border-color: var(--brand-h); }
+
+/* cards */
+.card { border: 1.5px solid var(--border); border-radius: var(--r); padding: 16px; background: var(--surface); margin-bottom: 12px; cursor: pointer; text-align: left; font-family: inherit; width: 100%; display: block; }
+.card:hover { border-color: var(--border-h); }
+.card.sel { border-color: var(--brand); background: var(--brand-bg); }
+.card-t { font-size: 15px; font-weight: 650; display: flex; align-items: center; gap: 9px; letter-spacing: -.01em; }
+.card-d { font-size: 13px; color: var(--fg-2); line-height: 1.55; margin-top: 5px; }
+.card-ic { font-size: 15px; color: var(--brand); }
+
+.box { border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); margin-bottom: 14px; }
+.box-h { padding: 13px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.box-t { font-size: 14px; font-weight: 650; display: flex; align-items: center; gap: 9px; }
+.box-b { padding: 14px 16px; }
+
+.row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.row:last-child { border-bottom: none; }
+.row-t { flex: 1; min-width: 0; }
+.row-n { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.row-d { font-size: 12px; color: var(--fg-2); margin-top: 2px; line-height: 1.5; }
+
+.pill { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 100px; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.p-ok { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-border); }
+.p-off { background: var(--bg); color: var(--fg-3); border: 1px solid var(--border); }
+.p-lock { background: var(--lock-bg); color: var(--lock); border: 1px solid var(--lock-border); }
+.p-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-border); }
+.p-brand { background: var(--brand-bg); color: var(--brand); border: 1px solid var(--brand-border); }
+.p-dark { background: #111827; color: #fff; }
+
+.note { border-radius: var(--r); padding: 12px 14px; font-size: 12.5px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+.n-info { background: var(--goog-bg); border: 1px solid var(--goog-border); color: #1e40af; }
+.n-warn { background: var(--warn-bg); border: 1px solid var(--warn-border); color: #92400e; }
+.n-ok { background: var(--ok-bg); border: 1px solid var(--ok-border); color: #166534; }
+.n-dgr { background: var(--dgr-bg); border: 1px solid var(--dgr-border); color: #991b1b; }
+.n-lock { background: var(--lock-bg); border: 1px solid var(--lock-border); color: #115e59; }
+.n-ic { flex-shrink: 0; }
+.note b { font-weight: 650; }
+
+.sw { width: 40px; height: 23px; border-radius: 100px; border: none; background: var(--brand); position: relative; cursor: pointer; flex-shrink: 0; padding: 0; }
+.sw::after { content: ''; position: absolute; top: 2.5px; left: 2.5px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .16s; }
+.sw:not(.off)::after { transform: translateX(17px); }
+.sw.off { background: #d1d5db; }
+.sw:disabled { opacity: .5; cursor: not-allowed; }
+
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; flex-shrink: 0; }
+.stepper button { width: 27px; height: 27px; border: none; background: var(--surface); cursor: pointer; font-size: 14px; color: var(--fg-2); font-family: inherit; }
+.stepper button:hover { background: var(--bg); color: var(--fg); }
+.stepper span { min-width: 56px; text-align: center; font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; border-left: 1px solid var(--border); border-right: 1px solid var(--border); padding: 3px 0; }
+
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cfgrow { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 12.5px; }
+.cfgrow:last-child { border-bottom: none; }
+.cfgk { color: var(--fg-2); }
+.cfgv { font-weight: 650; text-align: right; }
+
+/* threshold */
+.thr { display: flex; gap: 4px; margin-top: 10px; }
+.tc { flex: 1; text-align: center; padding: 7px 0; border-radius: 6px; font-size: 11.5px; font-weight: 700; border: 1px solid var(--border); background: var(--bg); color: var(--fg-3); }
+.tc.lo { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn); }
+.tc.hi { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
+.tleg { display: flex; gap: 16px; margin-top: 9px; font-size: 11.5px; color: var(--fg-2); flex-wrap: wrap; }
+.tleg span { display: inline-flex; align-items: center; gap: 5px; }
+.dot { width: 7px; height: 7px; border-radius: 2px; }
+
+/* sequence */
+.seq { display: flex; flex-direction: column; }
+.sstep { display: flex; gap: 11px; }
+.srail { display: flex; flex-direction: column; align-items: center; width: 24px; flex-shrink: 0; }
+.snode { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; border: 1.5px solid var(--border); background: var(--surface); color: var(--fg-2); z-index: 1; flex-shrink: 0; }
+.snode.send { border-color: #111827; background: #111827; color: #fff; }
+.snode.wait { border-style: dashed; }
+.sline { width: 1.5px; flex: 1; background: var(--border); min-height: 12px; }
+.sstep:last-child .sline { display: none; }
+.scont { flex: 1; padding-bottom: 13px; min-width: 0; }
+.sstep:last-child .scont { padding-bottom: 0; }
+.slab { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.smeta { font-size: 11.5px; color: var(--fg-2); margin-top: 2px; }
+.ch { font-size: 10px; font-weight: 650; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--fg-2); background: var(--bg); }
+.ch.e { background: var(--goog-bg); border-color: var(--goog-border); color: #1d4ed8; }
+.ch.s { background: var(--brand-bg); border-color: var(--brand-border); color: var(--brand); }
+
+/* locations */
+.loc { display: grid; grid-template-columns: 1fr 34px 1fr; align-items: center; gap: 10px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+.loc:last-child { border-bottom: none; }
+.locn { font-size: 13.5px; font-weight: 650; }
+.loca { font-size: 12px; color: var(--fg-2); }
+.locid { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--fg-3); margin-top: 2px; }
+.locm { border: 1px solid var(--ok-border); background: var(--ok-bg); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-weight: 600; color: #166534; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.locsel { width: 100%; font-family: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.arrow { text-align: center; color: var(--fg-3); }
+
+input[type=text], select { font-family: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); width: 100%; }
+label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6px; }
+.fld { margin-bottom: 14px; }
+
+/* phone */
+.phones { display: flex; gap: 26px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+.pw { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+.phone { width: 274px; height: 566px; border-radius: 32px; padding: 9px; background: #1f2937; box-shadow: 0 14px 40px rgba(0,0,0,.2); flex-shrink: 0; position: relative; }
+.pnotch { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 92px; height: 19px; background: #1f2937; border-radius: 0 0 11px 11px; z-index: 3; }
+.pscr { width: 100%; height: 100%; background: #fff; border-radius: 24px; overflow-y: auto; }
+.pscr::-webkit-scrollbar { width: 0; }
+.pbar { height: 30px; }
+.pbrand { padding: 16px 18px 13px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 9px; }
+.plogo { width: 28px; height: 28px; border-radius: 7px; background: #0f766e; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; }
+.pbiz { font-size: 12.5px; font-weight: 650; }
+.pbizs { font-size: 10px; color: var(--fg-3); }
+.pbody { padding: 18px; }
+.pq { font-size: 15.5px; font-weight: 650; line-height: 1.35; letter-spacing: -.015em; margin-bottom: 5px; }
+.ps { font-size: 12px; color: var(--fg-2); line-height: 1.55; margin-bottom: 16px; }
+.pscale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.psc { aspect-ratio: 1; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; font-family: inherit; font-size: 13.5px; font-weight: 650; cursor: pointer; color: var(--fg); display: flex; align-items: center; justify-content: center; }
+.psc:hover { border-color: #0f766e; background: #f0fdfa; }
+.pends { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--fg-3); }
+.pdiv { height: 1px; background: #f1f5f9; margin: 17px 0; }
+.ptext { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px; font-family: inherit; font-size: 12px; resize: none; min-height: 78px; }
+.plabel { font-size: 12px; font-weight: 600; margin-bottom: 7px; }
+.phelp { font-size: 10.5px; color: var(--fg-3); margin-top: 6px; }
+.pbtn { width: 100%; padding: 12px; border-radius: 9px; border: none; font-family: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
+.pbtn + .pbtn { margin-top: 8px; }
+.pb-g { background: #4285F4; color: #fff; }
+.pb-ghost { background: #fff; color: var(--fg-2); border: 1.5px solid var(--border); }
+.pok { width: 42px; height: 42px; border-radius: 50%; background: var(--ok-bg); border: 1.5px solid var(--ok-border); color: var(--ok); display: flex; align-items: center; justify-content: center; font-size: 18px; margin: 0 auto 12px; }
+.pcenter { text-align: center; padding: 22px 0 4px; }
+.predir { border: 1px dashed var(--goog-border); background: var(--goog-bg); border-radius: 8px; padding: 11px; margin-top: 14px; font-size: 11px; color: #1e40af; text-align: center; }
+.gstars { display: flex; gap: 3px; justify-content: center; margin: 10px 0; font-size: 17px; }
+.pcap { font-size: 11.5px; color: var(--fg-2); text-align: center; max-width: 274px; line-height: 1.5; }
+.pcap b { color: var(--fg); font-weight: 650; }
+
+.annot { border-left: 2px solid var(--border); padding-left: 12px; font-size: 11.5px; color: var(--fg-2); line-height: 1.6; max-width: 274px; }
+.annot b { color: var(--fg); font-weight: 650; }
+.atag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 4px; }
+.atag.hi { color: var(--ok); } .atag.lo { color: var(--warn); }
+
+.cmp { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.cmp th, .cmp td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.cmp th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-2); font-weight: 700; background: var(--bg); }
+.cmp td:first-child { font-weight: 600; }
+.cmp .s { color: var(--ok); font-weight: 650; } .cmp .d { color: var(--warn); font-weight: 650; }
+
+.kbd { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; background: rgba(0,0,0,.05); border-radius: 4px; padding: 1px 5px; white-space: nowrap; display: inline-block; }
+.hr { height: 1px; background: var(--border); margin: 20px 0; }
+.sub { font-size: 14px; font-weight: 650; margin-bottom: 5px; }
+.subd { font-size: 12.5px; color: var(--fg-2); margin-bottom: 13px; line-height: 1.6; }
+.mini { font-size: 11.5px; color: var(--fg-3); line-height: 1.6; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
+
+
+
+/* plain-English summary bullets */
+.bullet { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.bullet:last-child { border-bottom: none; }
+.bullet-ic { width: 26px; height: 26px; border-radius: 7px; background: var(--bg); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+  color: var(--fg-2); flex-shrink: 0; margin-top: 1px; }
+.bullet-t { font-size: 13.5px; font-weight: 650; letter-spacing: -.008em; }
+.bullet-d { font-size: 12.5px; color: var(--fg-2); line-height: 1.55; margin-top: 2px; }
+
+/* advanced disclosure */
+.advtoggle { display: flex; align-items: center; gap: 9px; width: 100%; font-family: inherit;
+  font-size: 13px; font-weight: 600; padding: 12px 15px; border: 1px solid var(--border);
+  border-radius: var(--r); background: var(--surface); color: var(--fg); cursor: pointer; text-align: left; }
+.advtoggle:hover { border-color: var(--border-h); }
+.advtoggle.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
+.advchev { color: var(--fg-3); font-size: 11px; transition: transform .16s; display: inline-block; }
+.advtoggle.open .advchev { transform: rotate(90deg); }
+.advhint { margin-left: auto; font-size: 11.5px; font-weight: 500; color: var(--fg-3); }
+.advbody { border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--r) var(--r);
+  padding: 4px 15px 15px; background: var(--surface); }
+.advsec { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.advsec:last-of-type { border-bottom: none; }
+.advsec-t { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--fg-3); margin-bottom: 3px; }
+
+/* flow strip */
+.flowstrip { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.fnode { border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; background: var(--bg); text-align: center; min-width: 92px; }
+.fnode.f-priv { background: var(--brand-bg); border-color: var(--brand-border); }
+.fnode.f-goog { background: var(--goog-bg); border-color: var(--goog-border); }
+.fnode-ic { font-size: 14px; line-height: 1.2; margin-bottom: 3px; }
+.fnode-l { font-size: 11px; font-weight: 600; line-height: 1.3; color: var(--fg); }
+.farr { display: flex; flex-direction: column; align-items: center; color: var(--fg-3); font-size: 14px; padding: 0 3px; min-width: 42px; }
+.farr em { font-style: normal; font-size: 9.5px; font-weight: 650; color: var(--fg-3); white-space: nowrap; margin-top: 1px; }
+
+.copynote { display:block; font-size:10.5px; color:var(--ok); font-weight:600; margin-top:3px; }
+
+
+
+.flowcard { border: 1px solid var(--border); border-radius: var(--r); padding: 16px; background: var(--surface); margin-top: 14px; }
+.flowcap { font-size: 12.5px; color: var(--fg-2); margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); line-height: 1.55; }
+.inlinerow { border: 1px solid var(--border); border-radius: var(--r); padding: 13px 16px; background: var(--surface); margin-top: 12px; border-bottom: 1px solid var(--border); }
+
+.quiet { font-size: 11.5px; color: var(--fg-3); line-height: 1.55; margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); }
+
+.rec { font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--brand);background:var(--brand-bg);border:1px solid var(--brand-border);padding:2px 7px;border-radius:100px;vertical-align:middle;margin-left:5px; }
+
+
+
+.psc.on { border-color: #0f766e; background: #0f766e; color: #fff; }
+.pb-primary { background: #0f766e; color: #fff; }
+.pb-dis { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+.por { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.por span { flex: 1; height: 1px; background: var(--border); }
+.por em { font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; color: var(--fg-3); }
+
+
+
+/* approach diagram */
+.dwrap { border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); margin-top: 14px; overflow: hidden; }
+.dhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--border); }
+.dhead-t { font-size: 12.5px; font-weight: 650; }
+.dtry { font-family: inherit; font-size: 11.5px; font-weight: 600; padding: 5px 11px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--fg-2); cursor: pointer; white-space: nowrap; }
+.dtry:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-bg); }
+.dbody { display: flex; gap: 20px; padding: 16px 15px; align-items: flex-start; }
+.dhead-r { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+.dpreview { display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 18px 15px 4px; }
+.dbody-rows { padding: 4px 16px 12px; }
+.dbody-rows .bullet:first-child { padding-top: 8px; }
+.dleft { flex: 1; min-width: 0; }
+.dright { display: flex; flex-direction: column; align-items: center; gap: 9px; flex-shrink: 0; }
+.phone-sm { width: 230px; height: 452px; padding: 8px; border-radius: 27px; }
+.phone-sm .pscr { border-radius: 20px; }
+
+.drow { display: flex; align-items: stretch; gap: 2px; flex-wrap: wrap; }
+.dn { border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; background: var(--bg); min-width: 92px; text-align: center; }
+.dn.d-priv { background: var(--brand-bg); border-color: var(--brand-border); }
+.dn.d-goog { background: var(--goog-bg); border-color: var(--goog-border); }
+.dn-ic { font-size: 14px; line-height: 1.2; }
+.dn-l { font-size: 11.5px; font-weight: 650; margin-top: 2px; }
+.dn-s { font-size: 10px; color: var(--fg-2); margin-top: 1px; }
+.darr { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--fg-3); font-size: 13px; min-width: 34px; }
+.darr em { font-style: normal; font-size: 9.5px; font-weight: 650; }
+
+.dfork { margin-top: 4px; }
+.dn.forks { position: relative; }
+.dn.forks::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1.5px; height: 14px; background: var(--border); transform: translateX(-50%); }
+.drow { margin-bottom: 14px; }
+.dfork { margin-top: 0; }
+.dbranches { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.dbranch { border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.db-hi { border-color: var(--ok-border); background: var(--ok-bg); }
+.db-lo { border-color: var(--warn-border); background: var(--warn-bg); }
+.dbranches:has(.dbranch:only-child) { grid-template-columns: 1fr; }
+.db-tag { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 5px 10px; border-bottom: 1px solid rgba(0,0,0,.06); }
+.db-hi .db-tag { color: var(--ok); }
+.db-lo .db-tag { color: var(--warn); }
+.db-body { padding: 8px 10px; }
+.db-body b { display: block; font-size: 11.5px; font-weight: 650; }
+.db-body span { font-size: 10.5px; color: var(--fg-2); line-height: 1.45; }
+.dconverge { display: flex; align-items: center; gap: 9px; margin-top: 10px; }
+.dconv-line { flex: 1; height: 1px; background: var(--ok-border); }
+.dconv-lab { font-size: 10.5px; font-weight: 700; color: var(--ok); white-space: nowrap; }
+@media (max-width: 1080px) { .dbody { flex-direction: column; } .dright { align-self: center; } }
+
+
+.mailhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 9px; }
+.mailkind { font-size: 9.5px; font-weight: 700; letter-spacing: .06em; color: #1d4ed8; background: var(--goog-bg); border: 1px solid var(--goog-border); border-radius: 4px; padding: 2px 7px; }
+.mailto { font-size: 10px; color: var(--fg-3); }
+
+/* Google review sheet */
+.gwrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
+.gbar { display: flex; align-items: center; gap: 5px; padding: 7px 10px; background: #f1f3f4; border-bottom: 1px solid #e0e3e6; }
+.gdot { width: 7px; height: 7px; border-radius: 50%; background: #d0d4d8; }
+.gurl { margin-left: 6px; font-size: 10px; color: #5f6368; background: #fff; border-radius: 100px; padding: 2px 10px; flex: 1; }
+.gsheet { padding: 14px; }
+.gtop { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; }
+.gavatar { width: 30px; height: 30px; border-radius: 50%; background: #1a73e8; color: #fff; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.gname { font-size: 12.5px; font-weight: 600; color: #202124; }
+.gsub { font-size: 10.5px; color: #5f6368; }
+.gbiz { display: flex; align-items: center; gap: 9px; padding: 9px; border: 1px solid #e0e3e6; border-radius: 8px; margin-bottom: 13px; }
+.gbiz-ic { width: 26px; height: 26px; border-radius: 6px; background: #0f766e; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.gbiz-n { font-size: 12px; font-weight: 600; color: #202124; }
+.gbiz-a { font-size: 10.5px; color: #5f6368; }
+.gstars-row { display: flex; gap: 5px; justify-content: center; margin-bottom: 13px; }
+.gstar { font-size: 27px; color: #dadce0; line-height: 1; }
+.gstar.on { color: #fbbc04; }
+.gph { font-size: 11.5px; color: #80868b; border: 1px solid #e0e3e6; border-radius: 8px; padding: 11px; min-height: 58px; }
+.gchips { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.gchip { font-size: 10.5px; color: #1a73e8; border: 1px solid #d2e3fc; background: #f8fbff; border-radius: 100px; padding: 3px 10px; }
+.gactions { display: flex; justify-content: flex-end; gap: 16px; align-items: center; margin-top: 14px; }
+.gcancel { font-size: 12px; font-weight: 600; color: #1a73e8; }
+.gpost { font-size: 12px; font-weight: 600; color: #fff; background: #1a73e8; border-radius: 100px; padding: 7px 20px; }
+
+/* automation editor */
+.ar-wrap { display: grid; grid-template-columns: 1fr 1.1fr; gap: 18px; align-items: start; }
+.ar-rail { display: flex; flex-direction: column; }
+.ar-line { width: 1.5px; height: 12px; background: var(--border); margin-left: 26px; }
+.ar-step { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.ar-row { display: flex; align-items: center; gap: 11px; padding: 11px 13px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .14s; }
+.ar-row:last-child { border-bottom: none; }
+.ar-row:hover { background: var(--bg); }
+.ar-row.sel { background: var(--brand-bg); box-shadow: inset 2px 0 0 var(--brand); }
+.ar-row.dim .ar-kind, .ar-row.dim .ar-body { opacity: .45; }
+.ar-row.ar-wait { cursor: default; background: var(--bg); }
+.ar-row.ar-wait:hover { background: var(--bg); }
+.ar-ic { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.ar-ic-email { background: var(--brand-bg); color: var(--brand); }
+.ar-ic-sms { background: #dcfce7; color: #16a34a; }
+.ar-ic-wait { background: var(--surface); border: 1px solid var(--border); color: var(--fg-3); }
+.ar-txt { flex: 1; min-width: 0; }
+.ar-kind { font-size: 9.5px; font-weight: 700; letter-spacing: .07em; color: var(--fg-3); }
+.ar-body { font-size: 12.5px; font-weight: 500; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ar-sw { width: 34px; height: 19px; border-radius: 100px; border: none; background: #d1d5db; position: relative; cursor: pointer; flex-shrink: 0; padding: 0; }
+.ar-sw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: transform .16s; }
+.ar-sw.on { background: #22c55e; }
+.ar-sw.on::after { transform: translateX(15px); }
+
+.ar-pv { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.ar-pv-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; border-bottom: 1px solid var(--border); }
+.ar-pv-l { font-size: 11px; font-weight: 700; letter-spacing: .07em; color: var(--fg-2); }
+.ar-pv-r { display: flex; gap: 6px; }
+.ar-pv-meta { padding: 10px 13px; border-bottom: 1px solid var(--border); font-size: 12.5px; line-height: 1.7; }
+.ar-pv-k { font-size: 9.5px; font-weight: 700; letter-spacing: .07em; color: var(--fg-3); margin-right: 6px; }
+.ar-pv-body { padding: 18px; position: relative; min-height: 210px; }
+.ar-edit { position: absolute; top: 12px; right: 12px; padding: 5px 11px !important; font-size: 11.5px !important; }
+.ar-pv-h { font-size: 21px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 12px; }
+.mf { background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 1px 7px; font-size: 15px; font-weight: 500; }
+.ar-pv-p { font-size: 13px; color: var(--fg-2); line-height: 1.6; margin-bottom: 16px; max-width: 90%; }
+.ar-pv-cta { background: #2563eb; color: #fff; border: none; border-radius: 7px; padding: 10px 20px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.ar-pv-foot { font-size: 11px; color: var(--fg-3); margin-top: 20px; }
+.sms-bubble { background: #fff; border: 1px solid var(--border); border-radius: 14px 14px 14px 4px; padding: 11px 14px; font-size: 12.5px; line-height: 1.5; max-width: 88%; }
+.sms-link { color: #2563eb; }
+.formbtn { display: inline-flex; align-items: center; gap: 7px; }
+@media (max-width: 980px) { .ar-wrap { grid-template-columns: 1fr; } }
+
+/* journey fork */
+.forkwrap { margin: 6px 0 2px; }
+.forkhead { display: flex; align-items: center; gap: 11px; margin-bottom: 11px; }
+.forkline { flex: 1; height: 1px; background: var(--border); }
+.forklabel { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-3); white-space: nowrap; }
+.forkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.forkcol { border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.forkcol.fc-hi { border-color: var(--ok-border); background: var(--ok-bg); }
+.forkcol.fc-lo { border-color: var(--warn-border); background: var(--warn-bg); }
+.forkcol.fc-same { border-color: var(--lock-border); background: var(--lock-bg); }
+.forkcol-h { padding: 9px 12px; border-bottom: 1px solid rgba(0,0,0,.06); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.forkcol-t { font-size: 12.5px; font-weight: 700; }
+.forkcol-b { padding: 10px 12px; }
+.forkstep { font-size: 11.5px; line-height: 1.5; margin-bottom: 8px; }
+.forkstep:last-child { margin-bottom: 0; }
+.forkstep b { display: block; font-weight: 650; color: var(--fg); }
+.forkstep span { color: var(--fg-2); }
+.forkstep.dim { opacity: .72; }
+@media (max-width: 860px) { .forkgrid { grid-template-columns: 1fr; } }
+
+/* message rows */
+.msg { border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px; background: var(--surface); }
+.msg-off { background: var(--bg); opacity: .68; }
+.msg-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.msg-t { font-size: 12.5px; font-weight: 650; }
+.msg-c { font-size: 11.5px; color: var(--fg-2); margin-top: 2px; }
+.msg-ch { display: flex; align-items: center; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
+.chip { font-family: inherit; font-size: 10.5px; font-weight: 650; padding: 3px 9px; border-radius: 5px;
+  border: 1px solid var(--border); color: var(--fg-3); background: var(--bg); cursor: pointer; transition: all .14s; }
+.chip:hover { border-color: var(--border-h); color: var(--fg-2); }
+.chip.on.e { background: var(--goog-bg); border-color: var(--goog-border); color: #1d4ed8; }
+.chip.on.s { background: var(--brand-bg); border-color: var(--brand-border); color: var(--brand); }
+.chip-note { font-size: 10.5px; color: var(--fg-3); margin-left: 2px; }
+.editbtn { font-family: inherit; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--fg-2); cursor: pointer; white-space: nowrap; }
+.editbtn:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-bg); }
+.pfoot { font-size: 10.5px; color: var(--fg-3); text-align: center; margin-top: 12px; line-height: 1.5; }
+
+/* preset cards — side-by-side */
+.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: stretch; }
+.pcard { border: 1.5px solid var(--border); border-radius: var(--r); padding: 15px; background: var(--surface);
+  cursor: pointer; text-align: left; font-family: inherit; display: flex; flex-direction: column;
+  transition: border-color .16s, box-shadow .16s, transform .16s; }
+.pcard:hover { border-color: var(--border-h); box-shadow: 0 3px 12px rgba(0,0,0,.05); transform: translateY(-1px); }
+.pcard.sel { border-color: var(--brand); background: var(--brand-bg); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
+.pcard-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.pcard-ic { color: var(--brand); line-height: 0; }
+.pcard-ic svg { width: 22px; height: 22px; display: block; }
+.pcard-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border-h);
+  flex-shrink: 0; position: relative; background: var(--surface); }
+.pcard.sel .pcard-radio { border-color: var(--brand); border-width: 5px; }
+.pcard-t { font-size: 14.5px; font-weight: 650; letter-spacing: -.012em; margin-bottom: 6px; line-height: 1.25; }
+.pcard-d { font-size: 12.5px; color: var(--fg-2); line-height: 1.55; flex: 1; }
+.pcard-foot { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; color: var(--fg-2); }
+.pcard-foot b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.pcard-vsub { font-size: 10.5px; color: var(--fg-3); }
+@media (max-width: 1080px) { .pgrid { grid-template-columns: 1fr; } }
+@media (max-width: 980px) { .g2 { grid-template-columns: 1fr; } .side { display: none; } }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">← All projects</a>
+
+<div class="devbar">
+  <span class="devlabel">Channels</span>
+  <button class="devbtn on" id="d-both" onclick="setPreset('both')">Public + private</button>
+  <button class="devbtn" id="d-public" onclick="setPreset('public')">Public only</button>
+  <button class="devbtn" id="d-private" onclick="setPreset('private')">Private only</button>
+  <div class="devsep"></div>
+  <span class="devlabel">GBP</span>
+  <button class="devbtn on" id="d-gbp-on" onclick="setGbp(true)">Connected</button>
+  <button class="devbtn" id="d-gbp-off" onclick="setGbp(false)">Not connected</button>
+  <div class="devsep"></div>
+  <button class="devbtn" onclick="jump(0)">Restart</button>
+  <button class="devbtn" onclick="jump(6)">Review</button>
+</div>
+
+<div class="stage">
+  <div class="modal">
+    <div class="mhead">
+      <h1>Set up Reputation</h1>
+      <p id="head-sub">Choose your approach, connect Google Business Profile, configure how requests go out, and review before activating.</p>
+      <button class="mclose" onclick="alert('Close wizard')">✕</button>
+    </div>
+    <div class="mbody">
+      <nav class="side"><div class="snav" id="snav"></div></nav>
+      <div class="main" id="main"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" id="btn-prev" onclick="prev()">Previous</button>
+      <button class="btn btn-p" id="btn-next" onclick="next()">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ State ═══════════ */
+const S = {
+  step: 0,
+  channels: 'both',           // both | public | private
+  gbp: true,
+  fastTrack: true,            // 9-10 skip the comment box and go straight to Google
+  threshold: 9,
+  reminderDays: 2,            // wait before the single reminder
+  resendDays: 90,             // how often the whole ask can repeat
+  resendNoResponseDays: 30,   // sooner if they never responded
+  afterReview: 'feedback',    // feedback = keep asking for feedback | exclude = never ask again
+  emailOn: true, smsOn: true,
+  advOpen: false,
+  formOpen: false,
+  score: null,
+  mapped: [true, true, true, false],
+  msgSel: 'ask-email',
+  ch: {
+    askEmail: true, askSms: true,
+    remEmail: true, remSms: true,
+  },
+};
+
+const PRESETS = {
+  both: {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M15 9a4 4 0 010 6"/><path d="M18 6.5a8 8 0 010 11"/></svg>`,
+    label: 'Public and private',
+    desc: 'One ask. Everyone is invited to review on Google; anyone who had a problem can tell you about it first.',
+    google: true, form: true,
+  },
+  public: {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.7-4.9 4.4 1.4 6.4L12 16.7l-6 3.3 1.4-6.4L2.5 9.2l6.6-.7z"/></svg>`,
+    label: 'Public only',
+    desc: 'Straight to Google. The most reviews, but no early warning when something goes wrong.',
+    google: true, form: false,
+  },
+  private: {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l2 3h4l2-3h4"/><path d="M5.5 5.5h13l2.5 7.5v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5z"/></svg>`,
+    label: 'Private only',
+    desc: 'Feedback comes to you. Nothing is ever posted publicly.',
+    google: false, form: true,
+  },
+};
+
+const googleOn    = () => PRESETS[S.channels].google;
+const formOn      = () => PRESETS[S.channels].form;
+const combined    = () => googleOn() && formOn();
+const fastTrackOn = () => combined() && S.fastTrack;
+const volume      = () => 124;
+
+function setPreset(k) {
+  S.channels = k;
+  ['both','public','private'].forEach(x => {
+    const el = document.getElementById('d-'+x); if (el) el.classList.toggle('on', x===k);
+  });
+  render();
+}
+function toggleChannel(msg, which) {
+  S.ch[msg + which] = !S.ch[msg + which];
+  render();
+}
+function selMsg(k) { S.msgSel = k; render(); }
+function setAfterReview(v) { S.afterReview = v; render(); }
+function openEditor(name) {
+  alert('Opens the message editor for:\n\n' + name + '\n\nSubject line, body copy, merge fields, and a live preview per channel.');
+}
+
+const STEPS = [
+  { id: 'approach', name: 'Choose channels' },
+  { id: 'connect',  name: 'Connect Google',   googleful: true },
+  { id: 'map',      name: 'Map locations',    googleful: true },
+  { id: 'channels', name: 'Senders' },
+  { id: 'branding', name: 'Branding' },
+  { id: 'preview',  name: 'Messages' },
+  { id: 'review',   name: 'Review' },
+];
+
+function setGbp(v) {
+  S.gbp = v;
+  document.getElementById('d-gbp-on').classList.toggle('on', v);
+  document.getElementById('d-gbp-off').classList.toggle('on', !v);
+  render();
+}
+function jump(i) { S.step = i; S.score = null; render({ toTop: true }); }
+function next() { if (S.step < STEPS.length - 1) { S.step++; S.score = null; render({ toTop: true }); } else alert('Activated — reputation is now live.'); }
+function prev() { if (S.step > 0) { S.step--; S.score = null; render({ toTop: true }); } }
+
+/* ═══════════ Sidebar ═══════════ */
+function renderNav() {
+  document.getElementById('snav').innerHTML = STEPS.map((st, i) => {
+    const optional = st.googleful && !googleOn();
+    const cls = i < S.step ? 'done' : i === S.step ? 'cur' : '';
+    const icon = i < S.step ? '✓' : i === S.step ? '—' : '—';
+    return `<div class="sitem ${cls} ${optional && i !== S.step ? 'skip' : ''}" onclick="jump(${i})" style="cursor:pointer">
+      <span class="sicon">${icon}</span><span>${st.name}</span>
+      ${optional ? '<span class="sopt">Optional</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════ Helpers ═══════════ */
+const thrScale = () => Array.from({length:10},(_,i)=>i+1)
+  .map(n => `<div class="tc ${n >= S.threshold ? 'hi' : 'lo'}">${n}</div>`).join('');
+
+function bump(key, d, min, max) { S[key] = Math.max(min, Math.min(max, S[key] + d)); render(); }
+function thr(d) { S.threshold = Math.max(7, Math.min(10, S.threshold + d)); render(); }
+function toggle(key) { S[key] = !S[key]; render(); }
+function toggleForm() {
+  S.formOpen = !S.formOpen;
+  render();
+  if (S.formOpen) { const t=document.querySelector('.dpreview'); if(t) t.scrollIntoView({behavior:'smooth',block:'center'}); }
+}
+function pickScore(n) { S.score = n; render(); }
+function mapLoc(i, v) { S.mapped[i] = !!v; render(); }
+
+/* ═══════════ Steps ═══════════ */
+function stepApproach() {
+  const msgCount = '2 messages';
+  const cards = ['both','public','private'].map(k => {
+    const P = PRESETS[k];
+    return `
+    <button class="pcard ${S.channels===k?'sel':''}" onclick="setPreset('${k}')">
+      <div class="pcard-top"><span class="pcard-ic">${P.icon}</span><span class="pcard-radio"></span></div>
+      <div class="pcard-t">${P.label}${k==='both'?' <span class="rec">Recommended</span>':''}</div>
+      <div class="pcard-d">${P.desc}</div>
+      <div class="pcard-foot"><span class="pcard-vsub">${msgCount} max</span></div>
+    </button>`;
+  }).join('');
+
+  /* ── "What will happen" rows — fixed behaviour, no settings to change ── */
+  const bullets = [];
+  if (formOn()) bullets.push(['\u2709','They get one request after a qualifying visit',
+    `A short form asking how the visit went, with one reminder ${S.reminderDays} days later if they don't respond.`]);
+  else bullets.push(['G','They get one request after a qualifying visit',
+    `A Google review link, with one reminder ${S.reminderDays} days later if they haven't reviewed.`]);
+
+  if (combined()) bullets.push(['\u2605',`Scores of ${S.threshold} or more go straight to Google`,
+    `Anyone scoring below ${S.threshold} gets a comment box — with the same Google button on the same screen.`]);
+
+  if (combined()) bullets.push(['\u25c9','Everyone is invited to Google',
+    `The invitation is part of the same ask — it never depends on what they scored.`]);
+  else if (googleOn()) bullets.push(['\u25c9','Everyone who qualifies is invited',
+    `Same message to every eligible customer. No scoring, no filtering.`]);
+  else bullets.push(['\ud83d\udd12','Nothing is ever published',
+    S.gbp ? 'Your connected Google profile still feeds the dashboard, so you can monitor and reply to reviews you get on your own.'
+          : 'Connect a Google Business Profile later to monitor and reply to reviews you get on your own.']);
+
+  bullets.push(['\u25d4','We won\'t ask the same person too often',
+    `At most once every ${S.resendDays} days — or every ${S.resendNoResponseDays} days if they never responded.`]);
+
+  if (combined()) bullets.push(['\u21bb','Once someone reviews on Google, we keep listening',
+    `They still get the feedback request on the normal schedule. They can only leave one Google review, so the button just won't apply to them.`]);
+  else if (googleOn()) bullets.push(['\u2298','Once someone reviews, we stop asking them',
+    `A person can only leave one Google review, so there's nothing else to ask for.`]);
+
+  const summary = bullets.map(([ic,t,d]) => `
+    <div class="bullet"><div class="bullet-ic">${ic}</div>
+    <div><div class="bullet-t">${t}</div><div class="bullet-d">${d}</div></div></div>`).join('');
+
+  const tryLabel = S.formOpen ? 'Hide preview' : (formOn() ? '\u2922 Try the form' : '\u2922 See what they get');
+
+  return `
+    <h2>What channels do you want to offer?</h2>
+    <p class="lede">You can change this later.</p>
+    <div class="pgrid">${cards}</div>
+
+    <div class="dwrap">
+      <div class="dhead">
+        <span class="dhead-t">What will happen</span>
+        <span class="dhead-r">
+          <span class="pill p-off">~${volume()} sends/mo</span>
+          ${googleOn() || formOn() ? `<button class="dtry" onclick="toggleForm()">${tryLabel}</button>` : ''}
+        </span>
+      </div>
+
+      ${S.formOpen ? `
+      <div class="dpreview">
+        <div class="phone phone-sm"><div class="pnotch"></div><div class="pscr">
+          <div class="pbar"></div>
+          <div class="pbrand"><div class="plogo">HT</div><div><div class="pbiz">Happy Tails Pet Resort</div><div class="pbizs">Austin, TX</div></div></div>
+          <div class="pbody">${formBody()}</div>
+        </div></div>
+        <div class="pcap" style="max-width:300px">${formCap()}</div>
+      </div>` : ''}
+
+      <div class="dbody-rows">${summary}</div>
+    </div>
+  `;
+}
+
+
+function stepConnect() {
+  const optional = !googleOn();
+  return `
+    <h2>Connect Google</h2>
+    <p class="lede">${optional
+      ? 'Not required for your approach.'
+      : 'So we can send customers to the right place.'}</p>
+
+    ${optional ? `<div class="note n-info"><span class="n-ic">◆</span><div>Optional here — but connecting lets you <b>monitor and reply to reviews</b> from the dashboard.</div></div>` : ''}
+
+    <div class="box">
+      <div class="box-h">
+        <div class="box-t"><span style="color:var(--goog)">◉</span> QA Locations (test) Google Business Profile</div>
+        ${S.gbp ? `<span class="pill p-brand">● Connected</span>` : `<button class="btn btn-p" style="padding:7px 16px;font-size:12.5px" onclick="setGbp(true)">Connect</button>`}
+      </div>
+      <div class="box-b">
+        ${S.gbp
+          ? `<div style="font-size:12.5px;color:var(--fg-2)">Connected since Mar 19, 2026</div>`
+          : `<div style="font-size:12.5px;color:var(--fg-2)">Not connected yet.${optional ? ' Optional for this approach.' : ' Required for your selected approach.'}</div>`}
+        <div class="quiet" style="margin-top:8px;padding-top:0;border:none">You must be an Owner or Admin on each location you connect.</div>
+      </div>
+    </div>
+
+    ${!S.gbp && googleOn() ? `<div class="note n-warn"><span class="n-ic">⚠</span><div><b>Google reviews can't send without this.</b> You can skip and connect later from the dashboard — the private feedback stream will run on its own until you do.</div></div>` : ''}
+
+  `;
+}
+
+function stepMap() {
+  const optional = !googleOn();
+  if (!S.gbp) {
+    return `<h2>Map locations</h2>
+      <p class="lede">Connect your locations to Google Business Profile locations.</p>
+      <div class="note n-warn"><span class="n-ic">⚠</span><div><b>Connect a Google Business Profile first.</b> There's nothing to map until an account is linked. Go back a step, or skip — you can map from the dashboard later.</div></div>`;
+  }
+  const locs = [
+    ['Manhattan','4367 Cumberland Street, New York, NY','partner-loc-0'],
+    ['Brooklyn','78812 Blind Lane, Brooklyn, NY','partner-loc-1'],
+    ['Queens','23776 Ladarius Mountains, Queens, NY','partner-loc-2'],
+    ['Bronx','901 Gateway Park, Bronx, NY','partner-loc-3'],
+  ];
+  const count = S.mapped.filter(Boolean).length;
+  return `
+    <h2>Map locations</h2>
+    <p class="lede">${optional ? 'So reviews show per location in your dashboard.' : 'So customers are sent to the right profile.'}</p>
+    <div class="box">
+      <div class="box-h">
+        <div class="box-t">Your Location  ⟷  Google Business Location</div>
+        <span class="pill ${count===4?'p-ok':'p-dark'}">${count} of 4 mapped</span>
+      </div>
+      <div class="box-b">
+        ${locs.map(([n,a,id],i)=>`
+          <div class="loc">
+            <div><div class="locn">${n}</div><div class="loca">${a}</div><div class="locid">ID: ${id}</div></div>
+            <div class="arrow">⟷</div>
+            <div>${S.mapped[i]
+              ? `<div class="locm"><span>✓ ${n}</span><button onclick="mapLoc(${i},false)" style="background:none;border:none;cursor:pointer;color:#166534;font-size:14px">✕</button></div>`
+              : `<select class="locsel" onchange="mapLoc(${i}, this.value)"><option value="">Select a Google location…</option><option value="1">${n}</option><option value="2">${n} — Downtown</option></select>`
+            }</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    ${count < 4 ? `<div class="quiet">Unmapped locations won't ${optional ? 'show reviews' : 'send requests'}. You can finish this later.</div>` : ''}
+  `;
+}
+
+function stepChannels() {
+  return `
+    <h2>Senders</h2>
+    <p class="lede">Who your messages come from. You'll pick email or SMS per message later.</p>
+
+    <div class="box">
+      <div class="box-h"><div class="box-t">Email Channel</div><button class="sw ${S.emailOn?'':'off'}" onclick="toggle('emailOn')"></button></div>
+      ${S.emailOn ? `<div class="box-b">
+        <div class="fld"><label class="fl">Account Email ⓘ</label><select><option>marketing@celtics.dripos.marketing</option></select></div>
+        <div class="fld"><label class="fl">Display Name ⓘ</label><input type="text" value="Dripos"></div>
+        <div class="fld" style="margin-bottom:0"><label class="fl">Reply-to Email ⓘ</label><input type="text" placeholder="Replies from recipients will go to this email"></div>
+      </div>` : ''}
+    </div>
+
+    <div class="box">
+      <div class="box-h"><div class="box-t">SMS Channel</div><button class="sw ${S.smsOn?'':'off'}" onclick="toggle('smsOn')"></button></div>
+      ${S.smsOn ? `<div class="box-b">
+        <div class="fld" style="margin-bottom:0"><label class="fl">Sending Number ⓘ</label><select><option>+1 (555) 014-2277 — registered</option></select></div>
+      </div>` : ''}
+    </div>
+
+    ${!S.emailOn && !S.smsOn ? `<div class="note n-warn"><span class="n-ic">⚠</span><div><b>Configure at least one sender.</b> With both off, no message has a channel available.</div></div>` : ''}
+  `;
+}
+
+function stepBranding() {
+  return `
+    <h2>Branding</h2>
+    <p class="lede">What customers see on the form and in every message.</p>
+
+    <div class="box" style="border-color:var(--brand-border);background:var(--brand-bg)">
+      <div class="box-b" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:240px">
+          <div class="sub">✨ Auto-fill your brand from your site</div>
+          <div class="subd" style="margin-bottom:11px">Add your website and we'll pull your logo, colors and name from it automatically.</div>
+          <button class="btn btn-p" style="padding:9px 18px;font-size:13px">✨ Scan my website</button>
+        </div>
+        <div style="width:180px;height:96px;border:1px solid var(--brand-border);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--fg-3)">Waiting for a website</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-b">
+        <div class="fld"><label class="fl">Brand website</label><input type="text" value="https://dripos.com"><div style="font-size:11.5px;color:var(--fg-3);margin-top:5px">Used to scan your brand and as the destination for links.</div></div>
+        <div class="g2">
+          <div>
+            <div class="fld"><label class="fl">Brand Name</label><input type="text" placeholder="Enter your brand name"></div>
+            <div class="fld" style="margin-bottom:0"><label class="fl">Primary Color</label><input type="text" value="#0f766e"></div>
+          </div>
+          <div>
+            <label class="fl">Brand Logo</label>
+            <div style="border:1.5px dashed var(--border);border-radius:8px;height:132px;display:flex;align-items:center;justify-content:center;background:var(--bg);font-size:12px;color:var(--fg-3)">Drop a logo, or scan your site</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+const MSGS = () => {
+  const goog = !formOn();
+  return [
+    { k:'ask', chKey:'ask', label: goog?'Google Review Request':'Feedback Request',
+      email:{ subject: goog?'How did we do? Leave us a review':'How was your visit?',
+              preview:'It only takes a moment', body: goog?'We\'d love a Google review.':'Tell us how your visit went.',
+              cta: goog?'Review on Google':'Rate your visit' },
+      sms:'Hi {{First Name}}, how was your visit to {{business_name}}? ' },
+    { k:'wait', wait:true, label:`Wait for ${S.reminderDays} days` },
+    { k:'rem', chKey:'rem', label: goog?'Google Review Reminder':'Feedback Reminder',
+      email:{ subject:'A quick reminder', preview:'We\'d still love to hear from you',
+              body:'Just following up — it only takes a moment.', cta: goog?'Review on Google':'Rate your visit' },
+      sms:'Hi {{First Name}}, just following up on your visit to {{business_name}}. ' },
+  ];
+};
+
+function stepPreview() {
+  const msgs = MSGS();
+  const sel  = msgs.find(m => !m.wait && (m.k+'-email'===S.msgSel || m.k+'-sms'===S.msgSel)) || msgs[0];
+  const selCh = S.msgSel.endsWith('-sms') ? 'sms' : 'email';
+
+  const rail = msgs.map(m => {
+    if (m.wait) return `
+      <div class="ar-step"><div class="ar-row ar-wait">
+        <div class="ar-ic ar-ic-wait">◔</div>
+        <div class="ar-txt"><div class="ar-kind">WAIT FOR</div><div class="ar-body">${m.label}</div></div>
+      </div></div>`;
+    const eOn = S.ch[m.chKey+'Email'], sOn = S.ch[m.chKey+'Sms'];
+    return `
+      <div class="ar-step">
+        <div class="ar-row ${S.msgSel===m.k+'-email'?'sel':''} ${eOn?'':'dim'}" onclick="selMsg('${m.k}-email')">
+          <div class="ar-ic ar-ic-email">✉</div>
+          <div class="ar-txt"><div class="ar-kind">EMAIL</div><div class="ar-body">${m.email.subject}</div></div>
+          <button class="ar-sw ${eOn?'on':''}" onclick="event.stopPropagation();toggleChannel('${m.chKey}','Email')"></button>
+        </div>
+        <div class="ar-row ${S.msgSel===m.k+'-sms'?'sel':''} ${sOn?'':'dim'}" onclick="selMsg('${m.k}-sms')">
+          <div class="ar-ic ar-ic-sms">◈</div>
+          <div class="ar-txt"><div class="ar-kind">SMS</div><div class="ar-body">${m.sms}</div></div>
+          <button class="ar-sw ${sOn?'on':''}" onclick="event.stopPropagation();toggleChannel('${m.chKey}','Sms')"></button>
+        </div>
+      </div>`;
+  }).join('<div class="ar-line"></div>');
+
+  const preview = selCh === 'email' ? `
+    <div class="ar-pv-bar">
+      <span class="ar-pv-l">✉ EMAIL PREVIEW</span>
+      <span class="ar-pv-r"><button class="btn" style="padding:6px 12px;font-size:12px">▷ Send Test</button><button class="btn" style="padding:6px 10px;font-size:12px">⤢</button></span>
+    </div>
+    <div class="ar-pv-meta">
+      <div><span class="ar-pv-k">SUBJECT</span> <b>${sel.email.subject}</b></div>
+      <div><span class="ar-pv-k">PREVIEW</span> ${sel.email.preview}</div>
+    </div>
+    <div class="ar-pv-body">
+      <button class="btn ar-edit" onclick="openEditor('${sel.label}')">✎ Edit Email</button>
+      <div class="ar-pv-h">Hello <span class="mf">First Name</span>,</div>
+      <p class="ar-pv-p">${sel.email.body}</p>
+      <button class="ar-pv-cta">${sel.email.cta}</button>
+      <p class="ar-pv-foot">If you no longer wish to receive these emails, <u>unsubscribe here</u>.</p>
+    </div>` : `
+    <div class="ar-pv-bar">
+      <span class="ar-pv-l">◈ SMS PREVIEW</span>
+      <span class="ar-pv-r"><button class="btn" style="padding:6px 12px;font-size:12px">▷ Send Test</button></span>
+    </div>
+    <div class="ar-pv-body" style="background:var(--bg)">
+      <button class="btn ar-edit" onclick="openEditor('${sel.label} — SMS')">✎ Edit SMS</button>
+      <div class="sms-bubble">${sel.sms}<span class="sms-link">reach.link/r/x7Kp</span></div>
+    </div>`;
+
+  return `
+    <h2>Messages</h2>
+    <p class="lede">One automation. Turn a channel off to skip it for that message.</p>
+    <div class="ar-wrap">
+      <div class="ar-rail">${rail}</div>
+      <div class="ar-pv">${preview}</div>
+    </div>
+    <div class="quiet" style="text-align:center;border:none">These previews show generally how your messages will appear to your customers.</div>
+
+    ${formOn() ? `
+    <div class="hr"></div>
+    <div class="sub">Your feedback form</div>
+    <div class="subd">This is what customers land on. Open it to click through it yourself — nothing you do there is saved.</div>
+    <button class="btn formbtn" onclick="toggleForm()">${S.formOpen?'Hide the form':'⤢ Open my form'}</button>
+    ${S.formOpen ? `<div class="advbody" style="border-radius:var(--r);border-top:1px solid var(--border);margin-top:10px;padding:16px">
+      <div class="phones">
+        <div class="pw">
+          <div class="phone"><div class="pnotch"></div><div class="pscr">
+            <div class="pbar"></div>
+            <div class="pbrand"><div class="plogo">HT</div><div><div class="pbiz">Happy Tails Pet Resort</div><div class="pbizs">Austin, TX</div></div></div>
+            <div class="pbody">${formBody()}</div>
+          </div></div>
+          <div class="pcap">${formCap()}</div>
+        </div>
+      </div>
+    </div>` : ''}` : ''}
+  `;
+}
+
+
+function googleSheet() { return `
+    <div class="gwrap">
+      <div class="gbar">
+        <span class="gdot"></span><span class="gdot"></span><span class="gdot"></span>
+        <span class="gurl">google.com</span>
+      </div>
+      <div class="gsheet">
+        <div class="gtop">
+          <div class="gavatar">JD</div>
+          <div style="flex:1;min-width:0">
+            <div class="gname">Jordan D.</div>
+            <div class="gsub">Posting publicly across Google</div>
+          </div>
+        </div>
+        <div class="gbiz">
+          <div class="gbiz-ic">HT</div>
+          <div><div class="gbiz-n">Happy Tails Pet Resort</div><div class="gbiz-a">Austin, TX</div></div>
+        </div>
+        <div class="gstars-row">${'<span class="gstar on">★</span>'.repeat(5)}</div>
+        <div class="gph">Share details of your own experience at this place</div>
+        <div class="gchips"><span class="gchip">Service</span><span class="gchip">Staff</span><span class="gchip">Value</span></div>
+        <div class="gactions"><span class="gcancel">Cancel</span><span class="gpost">Post</span></div>
+      </div>
+    </div>
+    <div class="quiet" style="border:none;padding:8px 0 0;text-align:center">Their rating was saved before this opened. This is Google's own screen — we don't control what's on it.</div>
+    <button class="pbtn pb-ghost" onclick="resetForm()" style="margin-top:6px">Start over</button>`; }
+
+function formBody() {
+  // Public only has no form — the journey is the message, then Google.
+  if (!formOn()) {
+    if (S.score === 'on-google') return googleSheet();
+    return `
+      <div class="mailhead"><span class="mailkind">✉ Email</span><span class="mailto">to you · just now</span></div>
+      <div class="pq" style="font-size:15px;margin-top:12px">How did we do?</div>
+      <div class="ps">Thanks for visiting last week — if you have a moment, a Google review really helps other pet owners find us.</div>
+      <button class="pbtn pb-g" onclick="goGoogle()">Leave a Google review</button>
+      <div class="quiet" style="border:none;padding:10px 0 0;text-align:center;font-size:10.5px">The email your customer receives. Tap the button to see where it goes.</div>`;
+  }
+
+  // Score is picked, then Submit. Submit registers the score, then routes.
+  if (S.score === null || typeof S.score === 'number') {
+    const picked = S.score;
+    return `<div class="pq">How was your visit?</div>
+      <div class="ps">Pick a score, then submit.</div>
+      <div class="pscale">${Array.from({length:10},(_,i)=>i+1).map(n=>
+        `<button class="psc ${picked===n?'on':''}" onclick="pickScore(${n})">${n}</button>`).join('')}</div>
+      <div class="pends"><span>Not great</span><span>Loved it</span></div>
+      <div class="pdiv"></div>
+      <button class="pbtn ${picked===null?'pb-dis':'pb-primary'}" ${picked===null?'disabled':`onclick="submitScore()"`}>Submit</button>`;
+  }
+  // submitted states
+  if (S.score === 'on-google') return googleSheet();
+
+  // Private only never surfaces a public review route.
+  if (!googleOn()) return `
+    <div class="pq" style="font-size:14.5px">Thanks for letting us know.</div>
+    <div class="ps">Anything you'd like to add?</div>
+    <textarea class="ptext" placeholder="Tell us more…"></textarea>
+    <div class="phelp">Your score has already been saved. This goes straight to the owner.</div>
+    <div style="height:14px"></div>
+    <button class="pbtn pb-primary">Submit feedback</button>
+    <button class="pbtn pb-ghost" onclick="resetForm()">Start over</button>`;
+
+  return `
+    <div class="pq" style="font-size:14.5px">We're sorry your experience didn't meet expectations.</div>
+    <div class="ps">What could we have done better?</div>
+    <textarea class="ptext" placeholder="Tell us what happened…"></textarea>
+    <div class="phelp">Your score has already been saved.</div>
+    <div style="height:14px"></div>
+    <button class="pbtn pb-primary">Submit feedback</button>
+    <div class="por"><span></span><em>OR</em><span></span></div>
+    <button class="pbtn pb-g" onclick="goGoogle()">Review on Google</button>
+    <button class="pbtn pb-ghost" onclick="resetForm()">Start over</button>`;
+}
+function submitScore() {
+  const n = S.score;
+  if (typeof n !== 'number') return;
+  S.score = (fastTrackOn() && n >= S.threshold) ? 'on-google' : 'sent-low';
+  render();
+}
+function resetForm() { S.score = null; render(); }
+function goGoogle() { S.score = 'on-google'; render(); }
+function formCap() {
+  if (!formOn()) return S.score === 'on-google'
+    ? `<b>Google's review screen.</b> They arrive with 5 stars ready to post.`
+    : 'The message they get. <b>Tap the button</b> to follow it.';
+  if (S.score === null) return 'Pick a score, then hit <b>Submit</b>.';
+  if (typeof S.score === 'number') return `Picked <b>${S.score}</b> — you can change it before submitting.`;
+  if (S.score === 'on-google') return `Score saved, then <b>straight to Google</b> — 5 stars pre-filled, ready to post.`;
+  return `<b>Below ${S.threshold} submitted.</b> Score saved, comment box opens — Google still offered.`;
+}
+
+
+function stepReview() {
+  const count = S.mapped.filter(Boolean).length;
+  const blockers = [];
+  const anyChannel = Object.values(S.ch).some(Boolean);
+  if (!anyChannel) blockers.push('Every message has both channels turned off — nothing would send.');
+  if (googleOn() && !S.gbp) blockers.push('You\'re offering Google reviews, but no Google Business Profile is connected.');
+
+  return `
+    <h2>Review</h2>
+    <p class="lede">Confirm to activate.</p>
+    ${blockers.length ? `<div class="note n-dgr"><span class="n-ic">⚠</span><div><b>Can't activate yet.</b><ul style="margin:6px 0 0 16px">${blockers.map(b=>`<li>${b}</li>`).join('')}</ul></div></div>`
+      : `<div class="quiet" style="border:none;padding:0;margin:0 0 16px">You can change any of this later from the dashboard.</div>`}
+
+    <div class="g2">
+      <div>
+        <div class="box">
+          <div class="box-h"><div class="box-t">Channels</div><span class="pill p-dark">${PRESETS[S.channels].label}</span></div>
+          <div class="box-b">
+            <div class="cfgrow"><span class="cfgk">Google reviews</span><span class="cfgv">${googleOn()?'Everyone is invited':'Never asked'}</span></div>
+            <div class="cfgrow"><span class="cfgk">Feedback form</span><span class="cfgv">${formOn()?'Yes':'No form'}</span></div>
+            ${combined()?`<div class="cfgrow"><span class="cfgk">Straight to Google at</span><span class="cfgv">${fastTrackOn()?S.threshold+' or above':'Off — same screen for all'}</span></div>`:''}
+            <div class="cfgrow"><span class="cfgk">Reminder</span><span class="cfgv">${S.reminderDays} d</span></div>
+            <div class="cfgrow"><span class="cfgk">Ask again after</span><span class="cfgv">${S.resendDays} d · ${S.resendNoResponseDays} d if no reply</span></div>
+            ${combined()?`<div class="cfgrow"><span class="cfgk">After a Google review</span><span class="cfgv">${S.afterReview==='exclude'?'Never ask again':'Keep asking for feedback'}</span></div>`:''}
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="box-h"><div class="box-t">Communication Channels</div></div>
+          <div class="box-b">
+            ${MSGS().filter(m=>!m.wait).map(m=>{const e=S.ch[m.chKey+'Email'],x=S.ch[m.chKey+'Sms'];
+              const t=[e?'Email':null,x?'SMS':null].filter(Boolean).join(' + ')||'Not sending';
+              return `<div class="row"><div class="row-t"><div class="row-n">${m.label}</div></div><span class="pill ${(e||x)?'p-ok':'p-off'}">${t}</span></div>`;}).join('')}
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="box-h"><div class="box-t">Cadence</div></div>
+          <div class="box-b">
+            <div class="cfgrow"><span class="cfgk">Projected sends / mo</span><span class="cfgv">~${volume()}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="box">
+          <div class="box-h"><div class="box-t"><span style="color:var(--goog)">◉</span> Google Business Profile</div>
+            <span class="pill ${S.gbp?'p-ok':'p-off'}">${S.gbp?'● Connected':'Not connected'}</span></div>
+          <div class="box-b">
+            ${S.gbp?`<div class="cfgrow"><span class="cfgk">Account</span><span class="cfgv">QA Locations (test)</span></div>
+            ${!googleOn()?`<div style="font-size:11.5px;color:var(--fg-2);margin-top:9px;line-height:1.6">Connected for <b>monitoring and replies only</b> — no review requests will be sent.</div>`:''}`
+            :`<div style="font-size:12.5px;color:var(--fg-2)">${googleOn()?'Required for this approach.':'Optional — connect later to monitor and reply to reviews from the dashboard.'}</div>`}
+          </div>
+        </div>
+
+        ${S.gbp?`<div class="box">
+          <div class="box-h"><div class="box-t">Location Mappings</div><span class="pill ${count===4?'p-ok':'p-dark'}">${count} of 4 mapped</span></div>
+          <div class="box-b">
+            ${['Manhattan','Brooklyn','Queens','Bronx'].map((n,i)=>`
+              <div class="row"><div class="row-t"><div class="row-n">${n}</div></div>
+              <span style="color:${S.mapped[i]?'var(--ok)':'var(--fg-3)'};font-size:16px">●</span></div>`).join('')}
+          </div>
+        </div>`:''}
+
+        ${combined()?`<div class="quiet" style="border:none;padding:0">One ask. Everyone who gets it is invited to Google, whatever they score.</div>`:''}
+      </div>
+    </div>
+  `;
+}
+
+/* ═══════════ Render ═══════════ */
+const RENDER = [stepApproach, stepConnect, stepMap, stepChannels, stepBranding, stepPreview, stepReview];
+
+function render(opts = {}) {
+  const main = document.getElementById('main');
+  const keep = opts.toTop ? 0 : main.scrollTop;
+  renderNav();
+  main.innerHTML = RENDER[S.step]();
+  document.getElementById('btn-prev').disabled = S.step === 0;
+  const last = S.step === STEPS.length - 1;
+  document.getElementById('btn-next').textContent = last ? 'Finish' : 'Next';
+  main.scrollTop = keep;
+}
+render();
+</script>
+</body>
+</html>
