@@ -365,7 +365,7 @@ const S = {
   fastTrack: true,            // Grow only; Fix has none by design.
   threshold: 9,
   followUpHours: 24,
-  handoffDays: 3,             // Fix: delay between private feedback and the Google ask
+  handoffDays: 1,             // Fix: delay between private feedback and the Google ask
   privCooldown: 14, privReminder: 5,
   googCooldown: 90, googReminder: 5,
   postReview: 'stop',
@@ -524,7 +524,7 @@ function stepApproach() {
       <div class="flowstrip">${flow}</div>
       <div class="flowcap">${
         S.approach==='listen' ? 'Nobody is ever asked for a public review.'
-        : S.approach==='fix'  ? `Everyone is asked privately first, then everyone gets the Google ask ${S.handoffDays} days later.`
+        : S.approach==='fix'  ? `Everyone is asked privately first, then everyone gets the Google ask ${S.handoffDays} day${S.handoffDays===1?'':'s'} later.`
         : S.useForm ? `Everyone is asked for a Google review${fastTrackOn()?`, and scores of ${S.threshold}+ go straight there`:''}.`
         : 'Everyone gets a Google review request. No form involved.'}</div>
     </div>
@@ -957,7 +957,7 @@ function formBody() {
       <div class="pends"><span>Not great</span><span>Loved it</span></div>`;
   }
   const fast = fastTrackOn() && S.score >= S.threshold;
-  const wait = S.approach==='fix' ? S.handoffDays+' days' : S.followUpHours+' hours';
+  const wait = S.approach==='fix' ? S.handoffDays+' day'+(S.handoffDays===1?'':'s') : S.followUpHours+' hours';
   if (fast) return `
     <div class="pcenter"><div class="pok">✓</div><div class="pq" style="font-size:14.5px">Thanks — that's great to hear</div>
     <div class="ps" style="margin-bottom:0">You scored us ${S.score}/10. Sent to the team.</div></div>
