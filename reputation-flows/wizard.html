@@ -252,6 +252,13 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 .copynote { display:block; font-size:10.5px; color:var(--ok); font-weight:600; margin-top:3px; }
 
 
+
+.flowcard { border: 1px solid var(--border); border-radius: var(--r); padding: 16px; background: var(--surface); margin-top: 14px; }
+.flowcap { font-size: 12.5px; color: var(--fg-2); margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); line-height: 1.55; }
+.inlinerow { border: 1px solid var(--border); border-radius: var(--r); padding: 13px 16px; background: var(--surface); margin-top: 12px; border-bottom: 1px solid var(--border); }
+
+.quiet { font-size: 11.5px; color: var(--fg-3); line-height: 1.55; margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); }
+
 /* journey fork */
 .forkwrap { margin: 6px 0 2px; }
 .forkhead { display: flex; align-items: center; gap: 11px; margin-bottom: 11px; }
@@ -327,7 +334,7 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
   <button class="devbtn" id="d-gbp-off" onclick="setGbp(false)">Not connected</button>
   <div class="devsep"></div>
   <button class="devbtn" onclick="jump(0)">Restart</button>
-  <button class="devbtn" onclick="jump(7)">Jump to Review</button>
+  <button class="devbtn" onclick="jump(7)">Review</button>
 </div>
 
 <div class="stage">
@@ -365,6 +372,7 @@ const S = {
   postReviewCadence: 90,
   emailOn: true, smsOn: true,
   advOpen: false,
+  formOpen: false,
   score: null,
   mapped: [true, true, true, false],
   // per-message channels: [email, sms]
@@ -380,7 +388,7 @@ const PRESETS = {
   grow: {
     label: 'Grow public reviews',
     icon: '★',
-    desc: 'Ask everyone for a Google review. Optionally collect a private rating first so unhappy customers get a chance to tell you directly.',
+    desc: 'Ask everyone for a Google review.',
     tag: 'Google always on',
     google: true,
     formForced: false,        // tenant chooses
@@ -389,7 +397,7 @@ const PRESETS = {
   fix: {
     label: 'Fix issues first',
     icon: '◐',
-    desc: 'Always ask privately first. After a delay, everyone still gets the Google ask — no one is filtered out by their score.',
+    desc: 'Ask privately first, then everyone still gets the Google ask.',
     tag: 'Private first',
     google: true,
     formForced: true,         // form is the whole point
@@ -398,7 +406,7 @@ const PRESETS = {
   listen: {
     label: 'Listen only',
     icon: '◎',
-    desc: 'Collect private feedback and never ask for a public review. Connect Google separately to monitor and reply.',
+    desc: 'Collect private feedback. Never ask publicly.',
     tag: 'No public ask',
     google: false,
     formForced: true,
@@ -429,13 +437,13 @@ function openEditor(name) {
 }
 
 const STEPS = [
-  { id: 'approach', name: 'Choose Approach' },
-  { id: 'connect',  name: 'Connect Accounts',       googleful: true },
-  { id: 'map',      name: 'Map Locations',          googleful: true },
-  { id: 'channels', name: 'Communication Channels' },
-  { id: 'branding', name: 'Customize Branding' },
-  { id: 'settings', name: 'Review Settings' },
-  { id: 'preview',  name: 'Preview Communications' },
+  { id: 'approach', name: 'Choose approach' },
+  { id: 'settings', name: 'Settings' },
+  { id: 'connect',  name: 'Connect Google',   googleful: true },
+  { id: 'map',      name: 'Map locations',    googleful: true },
+  { id: 'channels', name: 'Senders' },
+  { id: 'branding', name: 'Branding' },
+  { id: 'preview',  name: 'Messages' },
   { id: 'review',   name: 'Review' },
 ];
 
@@ -469,6 +477,11 @@ const thrScale = () => Array.from({length:10},(_,i)=>i+1)
 function bump(key, d, min, max) { S[key] = Math.max(min, Math.min(max, S[key] + d)); render(); }
 function thr(d) { S.threshold = Math.max(7, Math.min(10, S.threshold + d)); render(); }
 function toggle(key) { S[key] = !S[key]; render(); }
+function toggleForm() {
+  S.formOpen = !S.formOpen;
+  render();
+  if (S.formOpen) { const t=[...document.querySelectorAll('.advtoggle')].pop(); if(t) t.scrollIntoView({behavior:'smooth',block:'start'}); }
+}
 function toggleAdvanced() {
   S.advOpen = !S.advOpen;
   render();
@@ -485,74 +498,47 @@ function mapLoc(i, v) { S.mapped[i] = !!v; render(); }
 function stepApproach() {
   const cards = ['grow','fix','listen'].map(k => {
     const P = PRESETS[k];
-    const vol = k==='grow' ? '~124–248' : k==='fix' ? '~248' : '~124';
     return `
     <button class="pcard ${S.approach===k?'sel':''}" onclick="setPreset('${k}')">
       <div class="pcard-top"><span class="pcard-ic">${P.icon}</span><span class="pcard-radio"></span></div>
       <div class="pcard-t">${P.label}</div>
       <div class="pcard-d">${P.desc}</div>
-      <div class="pcard-foot">
-        <span><b>${vol}</b> <span class="pcard-vsub">sends/mo</span></span>
-        <span class="pill ${k===S.approach?'p-brand':'p-off'}">${P.tag}</span>
-      </div>
     </button>`;
   }).join('');
 
-  const flow = () => {
-    const node = (ic,lab,cls='') => `<div class="fnode ${cls}"><div class="fnode-ic">${ic}</div><div class="fnode-l">${lab}</div></div>`;
-    const arr = (lab='') => `<div class="farr"><span>→</span>${lab?`<em>${lab}</em>`:''}</div>`;
-    if (S.approach==='listen')
-      return node('👤','Visit') + arr() + node('✉','Private feedback form','f-priv');
-    if (S.approach==='fix')
-      return node('👤','Visit') + arr() + node('✉','Private feedback form','f-priv') + arr(S.handoffDays+' d') + node('G','Google ask — everyone','f-goog');
-    // grow
-    return S.useForm
-      ? node('👤','Visit') + arr() + node('✉','Private rating','f-priv') + arr(fastTrackOn()?'score '+S.threshold+'+':'') + node('G','Google ask','f-goog') + arr(S.followUpHours+' h') + node('G','Follow-up if no review','f-goog')
-      : node('👤','Visit') + arr() + node('G','Google ask — everyone','f-goog') + arr(S.googReminder+' d') + node('G','Reminder','f-goog');
-  };
-
-  const rows = [];
-  rows.push(['Google review ask', googleOn() ? (S.approach==='fix' ? `Yes — after ${S.handoffDays} days` : 'Yes — direct') : 'Never']);
-  rows.push(['Private feedback form', formOn() ? (PRESETS[S.approach].formForced ? 'Yes — always' : 'Yes — you turned it on') : 'No form']);
-  if (combined()) rows.push(['Fast-track high scores', fastTrackOn() ? `Yes — ${S.threshold} and above go straight to Google` : 'No — everyone takes the same path']);
-  if (combined()) rows.push(['Follow-up if no review', `Always — ${S.approach==='fix' ? S.handoffDays+' days' : S.followUpHours+' hours'} later, both branches`]);
-  if (S.approach==='fix') rows.push(['Graduation date', '1 Dec 2026 · check-back scheduled']);
+  const node = (ic,lab,cls='') => `<div class="fnode ${cls}"><div class="fnode-ic">${ic}</div><div class="fnode-l">${lab}</div></div>`;
+  const arr  = (lab='') => `<div class="farr"><span>→</span>${lab?`<em>${lab}</em>`:''}</div>`;
+  let flow;
+  if (S.approach==='listen')   flow = node('👤','Visit') + arr() + node('✉','Private feedback','f-priv');
+  else if (S.approach==='fix') flow = node('👤','Visit') + arr() + node('✉','Private feedback','f-priv') + arr(S.handoffDays+' d') + node('G','Google ask','f-goog');
+  else flow = S.useForm
+    ? node('👤','Visit') + arr() + node('✉','Private rating','f-priv') + arr(fastTrackOn()?S.threshold+'+':'') + node('G','Google ask','f-goog')
+    : node('👤','Visit') + arr() + node('G','Google ask','f-goog');
 
   return `
-    <h2>Choose Your Approach</h2>
-    <p class="lede">Pick what matches your situation. These are starting points — every value stays editable in Review Settings.</p>
+    <h2>How do you want to collect reviews?</h2>
+    <p class="lede">You can change any of this next.</p>
     <div class="pgrid">${cards}</div>
 
+    <div class="flowcard">
+      <div class="flowstrip">${flow}</div>
+      <div class="flowcap">${
+        S.approach==='listen' ? 'Nobody is ever asked for a public review.'
+        : S.approach==='fix'  ? `Everyone is asked privately first, then everyone gets the Google ask ${S.handoffDays} days later.`
+        : S.useForm ? `Everyone is asked for a Google review${fastTrackOn()?`, and scores of ${S.threshold}+ go straight there`:''}.`
+        : 'Everyone gets a Google review request. No form involved.'}</div>
+    </div>
+
     ${S.approach==='grow' ? `
-      <div class="box" style="margin-top:14px">
-        <div class="box-b">
-          <div class="row" style="padding-top:2px">
-            <div class="row-t">
-              <div class="row-n">Collect a private rating first</div>
-              <div class="row-d">Send a short form before the Google ask. High scorers${fastTrackOn()?' go straight through':''}, and anyone unhappy gets to tell you directly instead of only having a public option. <b>Everyone is still asked for a Google review either way.</b></div>
-            </div>
-            <button class="sw ${S.useForm?'':'off'}" onclick="toggle('useForm')"></button>
-          </div>
-          ${!S.useForm ? `<div class="note n-info" style="margin:10px 0 0"><span class="n-ic">◆</span><div><b>No form in this configuration.</b> Customers get a Google review request directly, with a reminder. Nothing is scored and nothing branches.</div></div>` : ''}
+      <div class="row inlinerow">
+        <div class="row-t">
+          <div class="row-n">Ask for a private rating first</div>
+          <div class="row-d">Gives unhappy customers a way to reach you directly. Everyone is still asked for a Google review.</div>
         </div>
+        <button class="sw ${S.useForm?'':'off'}" onclick="toggle('useForm')"></button>
       </div>` : ''}
 
-    <div class="box" style="margin-top:14px">
-      <div class="box-h"><div class="box-t">What this looks like for a customer</div>
-        <span style="font-size:12px;color:var(--fg-3)">${PRESETS[S.approach].label}</span></div>
-      <div class="box-b"><div class="flowstrip">${flow()}</div></div>
-    </div>
-
-    <div class="box">
-      <div class="box-h"><div class="box-t">What this sets</div></div>
-      <div class="box-b">${rows.map(([k,v])=>`<div class="cfgrow"><span class="cfgk">${k}</span><span class="cfgv">${v}</span></div>`).join('')}</div>
-    </div>
-
-    ${S.approach==='fix' ? `<div class="note n-warn"><span class="n-ic">◔</span><div><b>Graduation date required.</b> "Fix issues first" is a temporary state. We'll check back on <b>1 Dec 2026</b> and ask whether you're ready to ask for Google reviews sooner.</div></div>` : ''}
-    ${S.approach==='fix' ? `<div class="note n-ok"><span class="n-ic">✓</span><div><b>This is the most conservative setting we offer.</b> Nobody is fast-tracked, so the score changes nothing about who is asked for a Google review <i>or</i> how quickly they get there — it only decides whether we ask what went wrong.</div></div>` : ''}
-    ${S.approach==='grow' && !S.useForm ? `<div class="note n-ok"><span class="n-ic">✓</span><div><b>No scoring means no gating surface at all.</b> Every qualifying customer receives the same Google request.</div></div>` : ''}
-
-    <div class="mini">Presets write values — they don't lock a mode. Change anything in step 6 and the flow above updates.</div>
+    ${S.approach==='fix' ? `<div class="note n-warn"><span class="n-ic">◔</span><div>We'll check back on <b>1 Dec 2026</b> to see if you're ready to ask sooner.</div></div>` : ''}
   `;
 }
 
@@ -560,25 +546,12 @@ function stepApproach() {
 function stepConnect() {
   const optional = !googleOn();
   return `
-    <h2>Connect Your Review Platform</h2>
+    <h2>Connect Google</h2>
     <p class="lede">${optional
-      ? 'Your approach doesn\'t send Google review requests — but connecting is still worth doing.'
-      : 'Connect your Google Business Profile so customers can be directed to leave a review as part of your setup.'}</p>
+      ? 'Not required for your approach.'
+      : 'So we can send customers to the right place.'}</p>
 
-    ${optional ? `<div class="note n-info"><span class="n-ic">◆</span><div>
-      <b>You don't need this to activate — but you probably still want it.</b> Connecting your Google Business Profile lets you
-      <b>monitor and reply to reviews</b> from the Reputation dashboard, even though we'll never solicit one on your behalf.
-      You'll also see reviews alongside your private feedback in one place. And if you switch on public reviews later,
-      it's already done.
-    </div></div>` : ''}
-
-    <div class="box">
-      <div class="box-h">
-        <div class="box-t"><span style="color:var(--brand)">✉</span> Private Direct Feedback</div>
-        <span class="pill p-ok">Active</span>
-      </div>
-      <div class="box-b"><div style="font-size:12.5px;color:var(--fg-2);line-height:1.6">Capture customer insights right after each visit to improve experiences and spot problems early.</div></div>
-    </div>
+    ${optional ? `<div class="note n-info"><span class="n-ic">◆</span><div>Optional here — but connecting lets you <b>monitor and reply to reviews</b> from the dashboard.</div></div>` : ''}
 
     <div class="box">
       <div class="box-h">
@@ -589,20 +562,20 @@ function stepConnect() {
         ${S.gbp
           ? `<div style="font-size:12.5px;color:var(--fg-2)">Connected since Mar 19, 2026</div>`
           : `<div style="font-size:12.5px;color:var(--fg-2)">Not connected yet.${optional ? ' Optional for this approach.' : ' Required for your selected approach.'}</div>`}
-        <div style="font-size:12px;color:var(--fg-3);margin-top:9px">ⓘ You must be an Owner or Admin on every Google Business Profile location you want to connect.</div>
+        <div class="quiet" style="margin-top:8px;padding-top:0;border:none">You must be an Owner or Admin on each location you connect.</div>
       </div>
     </div>
 
     ${!S.gbp && googleOn() ? `<div class="note n-warn"><span class="n-ic">⚠</span><div><b>Google reviews can't send without this.</b> You can skip and connect later from the dashboard — the private feedback stream will run on its own until you do.</div></div>` : ''}
 
-    ${S.gbp ? `<div class="note n-ok"><span class="n-ic">✓</span><div><b>Review matching for this account: 61%.</b> We link Google reviews to customers by exact name match. The rest can't be tied to a customer — which means suppression ("stop asking once they've reviewed") won't catch everyone. <span class="kbd">median across tenants: 54%</span></div></div>` : ''}
+    ${S.gbp ? `<div class="quiet">We match reviews back to customers by name — currently <b>61%</b> for this account. Unmatched reviews mean some people may be asked again.</div>` : ''}
   `;
 }
 
 function stepMap() {
   const optional = !googleOn();
   if (!S.gbp) {
-    return `<h2>Map Your Locations</h2>
+    return `<h2>Map locations</h2>
       <p class="lede">Connect your locations to Google Business Profile locations.</p>
       <div class="note n-warn"><span class="n-ic">⚠</span><div><b>Connect a Google Business Profile first.</b> There's nothing to map until an account is linked. Go back a step, or skip — you can map from the dashboard later.</div></div>`;
   }
@@ -614,10 +587,8 @@ function stepMap() {
   ];
   const count = S.mapped.filter(Boolean).length;
   return `
-    <h2>Map Your Locations</h2>
-    <p class="lede">${optional
-      ? 'Mapping lets us show reviews per location in the dashboard, even though we won\'t send review requests.'
-      : 'Connect your locations with your Google Business Profile locations so we know where to direct customers.'}</p>
+    <h2>Map locations</h2>
+    <p class="lede">${optional ? 'So reviews show per location in your dashboard.' : 'So customers are sent to the right profile.'}</p>
     <div class="box">
       <div class="box-h">
         <div class="box-t">Your Location  ⟷  Google Business Location</div>
@@ -635,14 +606,14 @@ function stepMap() {
           </div>`).join('')}
       </div>
     </div>
-    ${count < 4 ? `<div class="note n-info"><span class="n-ic">◆</span><div>Unmapped locations simply won't ${optional ? 'show reviews in the dashboard' : 'send review requests'}. You can finish mapping later without redoing setup.</div></div>` : ''}
+    ${count < 4 ? `<div class="quiet">Unmapped locations won't ${optional ? 'show reviews' : 'send requests'}. You can finish this later.</div>` : ''}
   `;
 }
 
 function stepChannels() {
   return `
-    <h2>Configure Channels</h2>
-    <p class="lede">Set up the senders you'll use. Channel selection per message happens in Preview Communications.</p>
+    <h2>Senders</h2>
+    <p class="lede">Who your messages come from. You'll pick email or SMS per message later.</p>
 
     <div class="box">
       <div class="box-h"><div class="box-t">Email Channel</div><button class="sw ${S.emailOn?'':'off'}" onclick="toggle('emailOn')"></button></div>
@@ -660,19 +631,14 @@ function stepChannels() {
       </div>` : ''}
     </div>
 
-    <div class="note n-info"><span class="n-ic">◆</span><div>
-      These are your <b>senders</b>. You'll choose which channel each individual message uses in
-      <b>Preview Communications</b> — so the first ask and the reminder can go out differently.
-    </div></div>
-
     ${!S.emailOn && !S.smsOn ? `<div class="note n-warn"><span class="n-ic">⚠</span><div><b>Configure at least one sender.</b> With both off, no message has a channel available.</div></div>` : ''}
   `;
 }
 
 function stepBranding() {
   return `
-    <h2>Customize Branding</h2>
-    <p class="lede">Customize your brand identity for review requests. This is what customers see on the feedback form and in every message.</p>
+    <h2>Branding</h2>
+    <p class="lede">What customers see on the form and in every message.</p>
 
     <div class="box" style="border-color:var(--brand-border);background:var(--brand-bg)">
       <div class="box-b" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
@@ -832,16 +798,15 @@ function stepSettings() {
           <div class="stepper"><button onclick="bump('postReviewCadence',-30,30,365)">−</button><span>${S.postReviewCadence} d</span><button onclick="bump('postReviewCadence',30,30,365)">+</button></div></div>` : ''}
       </div>` : ''}
 
-      <div class="note n-lock" style="margin:4px 0 0"><span class="n-ic">🔒</span><div><b>Enforced, not configurable.</b> No score, complaint flag, or incident record can decide <b>whether</b> someone gets a Google ask — at most it changes how quickly they reach it.</div></div>
     </div>`;
 
   return `
-    <h2>How this will work</h2>
-    <p class="lede">These are the defaults for <b>${P.label}</b>. Most tenants never change them.</p>
+    <h2>Settings</h2>
+    <p class="lede">Defaults for <b>${P.label}</b>. Most people never change these.</p>
 
     <div class="box">
       <div class="box-h">
-        <div class="box-t">Here's what will happen</div>
+        <div class="box-t">What will happen</div>
         <span class="pill p-off">~${volume()} sends/mo</span>
       </div>
       <div class="box-b" style="padding-top:6px">${summary}</div>
@@ -892,154 +857,96 @@ function eventRow(ic, label, meta) {
 function stepPreview() {
   const isFix = S.approach === 'fix';
   const wait  = isFix ? `${S.handoffDays} day${S.handoffDays===1?'':'s'}` : `${S.followUpHours} hours`;
-
   const googAskCopy = fastTrackOn()
     ? '"Thanks for sharing that — would you post it on Google?"'
     : '"Would you share your experience on Google?"';
-  const googAskNote = combined() && !fastTrackOn()
-    ? 'Same copy for every customer — it can\'t reference how they scored.'
-    : '';
 
-  /* ── ONE journey, not parallel campaigns ──
-     Combined = a single timeline with a fork at the form. Anything else is a
-     straight line. Message numbering runs continuously so the tenant can see
-     the true maximum a customer receives. */
-  let timeline = '';
-  let maxMsgs = 0;
+  let timeline = '', maxMsgs = 0;
 
   if (combined()) {
     maxMsgs = 4;
     timeline = `
       <div class="seq">
-        ${eventRow('▸','Visit completes','Customer enters the qualifying segment')}
-        ${waitRow('Wait until 9:00am','Next available send window')}
+        ${eventRow('▸','Visit completes','')}
         ${msgRow('privAsk', 1, 'Rating Request', '"How was your experience with {{business_name}}?"')}
-        ${waitRow('Wait '+S.privReminder+' days','Only if they haven\'t responded yet')}
+        ${waitRow('Wait '+S.privReminder+' days','Only if they haven\'t responded')}
         ${msgRow('privRem', 2, 'Rating Reminder', '"A quick reminder — your feedback for {{business_name}}"')}
       </div>
 
       <div class="forkwrap">
-        <div class="forkhead">
-          <span class="forkline"></span>
-          <span class="forklabel">They submit a score — the journey forks</span>
-          <span class="forkline"></span>
-        </div>
-        <div class="forkgrid">
-
-          ${fastTrackOn() ? `
-          <div class="forkcol fc-hi">
-            <div class="forkcol-h"><span class="forkcol-t">Scores ${S.threshold}+</span><span class="pill p-ok">~85%</span></div>
-            <div class="forkcol-b">
-              <div class="forkstep"><b>Google opens immediately</b><span>Redirected from the form — no message sent</span></div>
-              <div class="forkstep"><b>Left a review?</b><span>Journey ends. Nothing further.</span></div>
-              <div class="forkstep dim"><b>Didn't leave one?</b><span>Rejoins the messages below</span></div>
+        <div class="forkhead"><span class="forkline"></span><span class="forklabel">They submit a score</span><span class="forkline"></span></div>
+        ${fastTrackOn() ? `
+          <div class="forkgrid">
+            <div class="forkcol fc-hi">
+              <div class="forkcol-h"><span class="forkcol-t">${S.threshold} or above</span><span class="pill p-ok">~85%</span></div>
+              <div class="forkcol-b"><div class="forkstep"><b>Google opens right away</b><span>No message sent</span></div></div>
             </div>
-          </div>
-          <div class="forkcol fc-lo">
-            <div class="forkcol-h"><span class="forkcol-t">Scores below ${S.threshold}</span><span class="pill p-off">~15%</span></div>
-            <div class="forkcol-b">
-              <div class="forkstep"><b>Asked what went wrong</b><span>Optional box, plus the same Google button</span></div>
-              <div class="forkstep"><b>Left a review?</b><span>Journey ends. Nothing further.</span></div>
-              <div class="forkstep dim"><b>Didn't leave one?</b><span>Continues to the messages below</span></div>
+            <div class="forkcol fc-lo">
+              <div class="forkcol-h"><span class="forkcol-t">Below ${S.threshold}</span><span class="pill p-off">~15%</span></div>
+              <div class="forkcol-b"><div class="forkstep"><b>Asked what went wrong</b><span>Same Google button underneath</span></div></div>
             </div>
           </div>` : `
-          <div class="forkcol fc-same" style="grid-column:1/-1">
-            <div class="forkcol-h"><span class="forkcol-t">Every score — one path</span><span class="pill p-lock">🔒 No fast-track</span></div>
-            <div class="forkcol-b" style="display:flex;gap:22px;flex-wrap:wrap">
-              <div class="forkstep" style="flex:1;min-width:180px"><b>Below ${S.threshold}: asked what went wrong</b><span>Optional box only. Nobody is redirected.</span></div>
-              <div class="forkstep" style="flex:1;min-width:180px"><b>Everyone continues below</b><span>Same wait, same message, whatever they scored</span></div>
-            </div>
+          <div class="forkcol fc-same">
+            <div class="forkcol-b" style="padding:11px 13px"><div class="forkstep" style="margin:0"><b>Every score takes the same path</b><span>Below ${S.threshold} we also ask what went wrong. Nobody is redirected.</span></div></div>
           </div>`}
-
-        </div>
       </div>
 
-      <div class="seq" style="margin-top:4px">
-        ${waitRow('Wait '+wait, 'Identical for everyone, whatever they scored')}
-        ${!isFix ? `<div class="sstep"><div class="srail"><div class="snode wait">⊘</div><div class="sline"></div></div>
-          <div class="scont" style="padding-bottom:13px"><div class="slab">Skip anyone who already reviewed</div>
-          <div class="smeta">Catches the fast-tracked customers who followed through — limited by the 61% match rate</div></div></div>` : ''}
-        ${msgRow('googAsk', 3, 'Google Review Request', googAskCopy + (googAskNote?` <span class="copynote">${googAskNote}</span>`:''))}
+      <div class="seq" style="margin-top:2px">
+        ${waitRow('Wait '+wait, 'Same for everyone. Skipped if they already reviewed.')}
+        ${msgRow('googAsk', 3, 'Google Review Request', googAskCopy)}
         ${waitRow('Wait '+S.googReminder+' days','Only if they still haven\'t reviewed')}
         ${msgRow('googRem', 4, 'Google Review Reminder', '"Following up — a Google review for {{business_name}}"')}
       </div>`;
   } else if (googleOn()) {
     maxMsgs = 2;
     timeline = `<div class="seq">
-      ${eventRow('▸','Visit completes','Customer enters the qualifying segment')}
-      ${waitRow('Wait until 9:00am','Next available send window')}
+      ${eventRow('▸','Visit completes','')}
       ${msgRow('googAsk', 1, 'Google Review Request', googAskCopy)}
-      ${waitRow('Wait '+S.googReminder+' days','Only if they haven\'t reviewed yet')}
+      ${waitRow('Wait '+S.googReminder+' days','Only if they haven\'t reviewed')}
       ${msgRow('googRem', 2, 'Google Review Reminder', '"Following up — a Google review for {{business_name}}"')}
     </div>`;
   } else {
     maxMsgs = 2;
     timeline = `<div class="seq">
-      ${eventRow('▸','Visit completes','Customer enters the qualifying segment')}
-      ${waitRow('Wait until 9:00am','Next available send window')}
+      ${eventRow('▸','Visit completes','')}
       ${msgRow('privAsk', 1, 'Rating Request', '"How was your experience with {{business_name}}?"')}
-      ${waitRow('Wait '+S.privReminder+' days','Only if they haven\'t responded yet')}
+      ${waitRow('Wait '+S.privReminder+' days','Only if they haven\'t responded')}
       ${msgRow('privRem', 2, 'Rating Reminder', '"A quick reminder — your feedback for {{business_name}}"')}
     </div>`;
   }
 
-  const listenNote = !googleOn() ? `
-    <div class="note n-info"><span class="n-ic">◆</span><div>
-      <b>No public review requests in this approach.</b> ${S.gbp
-        ? 'Your connected Google profile still feeds the Reputation dashboard, so reviews you receive on your own appear alongside this private feedback and you can reply to them there.'
-        : 'Connect a Google Business Profile from the dashboard to monitor and reply to reviews you receive on your own.'}
-    </div></div>` : '';
-
-  const noFormNote = googleOn() && !formOn() ? `
-    <div class="note n-ok"><span class="n-ic">✓</span><div>
-      <b>No form, no scoring, no branching.</b> Every qualifying customer receives the same two messages.
-    </div></div>` : '';
-
   const formSection = formOn() ? `
-    <div class="hr"></div>
-    <div class="sub">The form itself</div>
-    <div class="subd">${!googleOn()
-      ? `No public review is ever offered — the form collects feedback and ends there.`
-      : (fastTrackOn()
-        ? `Tap a score to see which side of the fork the customer lands on. Threshold is <b>${S.threshold}</b>.`
-        : `Tap any score — <b>every one leads to the same place</b>. Nobody is redirected; the score only decides whether we ask what went wrong.`)}</div>
-    <div class="phones">
-      <div class="pw">
-        <div class="phone"><div class="pnotch"></div><div class="pscr">
-          <div class="pbar"></div>
-          <div class="pbrand"><div class="plogo">HT</div><div><div class="pbiz">Happy Tails Pet Resort</div><div class="pbizs">Austin, TX</div></div></div>
-          <div class="pbody">${formBody()}</div>
-        </div></div>
-        <div class="pcap">${formCap()}</div>
+    <button class="advtoggle ${S.formOpen?'open':''}" style="margin-top:14px" onclick="toggleForm()">
+      <span class="advchev">▸</span><span>See the form customers fill in</span>
+      <span class="advhint">${S.formOpen?'Hide':'Tap a score to try it'}</span>
+    </button>
+    ${S.formOpen ? `<div class="advbody" style="padding:16px">
+      <div class="phones">
+        <div class="pw">
+          <div class="phone"><div class="pnotch"></div><div class="pscr">
+            <div class="pbar"></div>
+            <div class="pbrand"><div class="plogo">HT</div><div><div class="pbiz">Happy Tails Pet Resort</div><div class="pbizs">Austin, TX</div></div></div>
+            <div class="pbody">${formBody()}</div>
+          </div></div>
+          <div class="pcap">${formCap()}</div>
+        </div>
       </div>
-      <div style="max-width:300px">
-        <div class="sub" style="font-size:13px">What's happening</div>
-        <div class="subd" style="font-size:12px">${formExplain()}</div>
-        <div class="note n-ok" style="font-size:11.5px"><span class="n-ic">✓</span><div><b>Submitting the score counts.</b> A promoter never has to write anything for their feedback to be captured.</div></div>
-        ${googleOn() ? `<div class="note n-lock" style="font-size:11.5px;margin-bottom:0"><span class="n-ic">🔒</span><div>${fastTrackOn()
-          ? `<b>Both sides of the fork end at Google.</b> The score changes how fast someone gets there. It never changes whether they're asked.`
-          : `<b>Neither side reaches Google faster.</b> The score changes nothing about the public ask — not who gets it, not when.`}</div></div>` : ''}
-      </div>
-    </div>` : '';
+    </div>` : ''}` : '';
 
   return `
-    <h2>Preview Communications</h2>
-    <p class="lede">One journey per customer${combined()?', with a fork at the form':''}. Click a channel chip to turn that channel on or off for a message, or edit the content.</p>
-
+    <h2>Messages</h2>
+    <p class="lede">One journey per customer. Click a channel to turn it on or off.</p>
     <div class="box">
       <div class="box-h">
-        <div class="box-t">A customer's journey, start to finish</div>
+        <div class="box-t">Start to finish</div>
         <span class="pill p-off">${maxMsgs} messages max</span>
       </div>
       <div class="box-b">
         ${timeline}
-        <div class="note n-info" style="margin:14px 0 0"><span class="n-ic">◆</span><div>
-          <b>Nobody receives all ${maxMsgs}.</b> Each step is skipped once the customer does the thing it's asking for${combined()?` — responding to the form, or leaving a review`:''}.
-        </div></div>
+        <div class="quiet">Nobody gets all ${maxMsgs} — each step is skipped once they've done what it asks.</div>
       </div>
     </div>
-
-    ${listenNote}${noFormNote}${formSection}
+    ${formSection}
   `;
 }
 
@@ -1104,10 +1011,10 @@ function stepReview() {
   if (googleOn() && !S.gbp) blockers.push('This approach sends Google review requests, but no Google Business Profile is connected.');
 
   return `
-    <h2>Review & Activate</h2>
-    <p class="lede">Review your configuration and confirm to activate.</p>
+    <h2>Review</h2>
+    <p class="lede">Confirm to activate.</p>
     ${blockers.length ? `<div class="note n-dgr"><span class="n-ic">⚠</span><div><b>Can't activate yet.</b><ul style="margin:6px 0 0 16px">${blockers.map(b=>`<li>${b}</li>`).join('')}</ul></div></div>`
-      : `<div class="note n-info"><span class="n-ic">ⓘ</span><div><b>Pro Tip</b> — you can modify all of these settings anytime from the Reputation dashboard after activation.</div></div>`}
+      : `<div class="quiet" style="border:none;padding:0;margin:0 0 16px">You can change any of this later from the dashboard.</div>`}
 
     <div class="g2">
       <div>
@@ -1165,14 +1072,14 @@ function stepReview() {
           </div>
         </div>`:''}
 
-        ${combined()?`<div class="note n-lock" style="margin-bottom:0"><span class="n-ic">🔒</span><div><b>Compliance summary.</b> Every customer who is asked privately is also asked for a Google review. The follow-up is required and cannot be disabled per group. No score filters a public request at any layer.</div></div>`:''}
+        ${combined()?`<div class="quiet" style="border:none;padding:0">Every customer asked privately is also asked for a Google review.</div>`:''}
       </div>
     </div>
   `;
 }
 
 /* ═══════════ Render ═══════════ */
-const RENDER = [stepApproach, stepConnect, stepMap, stepChannels, stepBranding, stepSettings, stepPreview, stepReview];
+const RENDER = [stepApproach, stepSettings, stepConnect, stepMap, stepChannels, stepBranding, stepPreview, stepReview];
 
 function render(opts = {}) {
   const main = document.getElementById('main');
