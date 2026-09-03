@@ -270,6 +270,31 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 .por span { flex: 1; height: 1px; background: var(--border); }
 .por em { font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; color: var(--fg-3); }
 
+
+/* Google review sheet */
+.gwrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
+.gbar { display: flex; align-items: center; gap: 5px; padding: 7px 10px; background: #f1f3f4; border-bottom: 1px solid #e0e3e6; }
+.gdot { width: 7px; height: 7px; border-radius: 50%; background: #d0d4d8; }
+.gurl { margin-left: 6px; font-size: 10px; color: #5f6368; background: #fff; border-radius: 100px; padding: 2px 10px; flex: 1; }
+.gsheet { padding: 14px; }
+.gtop { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; }
+.gavatar { width: 30px; height: 30px; border-radius: 50%; background: #1a73e8; color: #fff; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.gname { font-size: 12.5px; font-weight: 600; color: #202124; }
+.gsub { font-size: 10.5px; color: #5f6368; }
+.gbiz { display: flex; align-items: center; gap: 9px; padding: 9px; border: 1px solid #e0e3e6; border-radius: 8px; margin-bottom: 13px; }
+.gbiz-ic { width: 26px; height: 26px; border-radius: 6px; background: #0f766e; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.gbiz-n { font-size: 12px; font-weight: 600; color: #202124; }
+.gbiz-a { font-size: 10.5px; color: #5f6368; }
+.gstars-row { display: flex; gap: 5px; justify-content: center; margin-bottom: 13px; }
+.gstar { font-size: 27px; color: #dadce0; line-height: 1; }
+.gstar.on { color: #fbbc04; }
+.gph { font-size: 11.5px; color: #80868b; border: 1px solid #e0e3e6; border-radius: 8px; padding: 11px; min-height: 58px; }
+.gchips { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.gchip { font-size: 10.5px; color: #1a73e8; border: 1px solid #d2e3fc; background: #f8fbff; border-radius: 100px; padding: 3px 10px; }
+.gactions { display: flex; justify-content: flex-end; gap: 16px; align-items: center; margin-top: 14px; }
+.gcancel { font-size: 12px; font-weight: 600; color: #1a73e8; }
+.gpost { font-size: 12px; font-weight: 600; color: #fff; background: #1a73e8; border-radius: 100px; padding: 7px 20px; }
+
 /* automation editor */
 .ar-wrap { display: grid; grid-template-columns: 1fr 1.1fr; gap: 18px; align-items: start; }
 .ar-rail { display: flex; flex-direction: column; }
@@ -927,13 +952,42 @@ function formBody() {
   }
   // submitted states
   if (S.score === 'sent-high') return `
-    <div class="pcenter" style="padding:40px 0">
+    <div class="pcenter" style="padding:34px 0 10px">
       <div class="pok">✓</div>
-      <div class="pq" style="font-size:14.5px">Thanks!</div>
-      <div class="ps" style="margin-bottom:0">Taking you to Google…</div>
+      <div class="pq" style="font-size:14.5px">Thanks — that's great to hear</div>
+      <div class="ps" style="margin-bottom:0">Your rating was saved.</div>
     </div>
-    <div class="predir">Your rating was saved first. Google is opening now.</div>
+    <div class="predir">Opening Google…</div>
+    <button class="pbtn pb-g" onclick="goGoogle()">See what happens next →</button>
     <button class="pbtn pb-ghost" onclick="resetForm()">Start over</button>`;
+
+  // The actual Google review sheet the customer lands on.
+  if (S.score === 'on-google') return `
+    <div class="gwrap">
+      <div class="gbar">
+        <span class="gdot"></span><span class="gdot"></span><span class="gdot"></span>
+        <span class="gurl">google.com</span>
+      </div>
+      <div class="gsheet">
+        <div class="gtop">
+          <div class="gavatar">JD</div>
+          <div style="flex:1;min-width:0">
+            <div class="gname">Jordan D.</div>
+            <div class="gsub">Posting publicly across Google</div>
+          </div>
+        </div>
+        <div class="gbiz">
+          <div class="gbiz-ic">HT</div>
+          <div><div class="gbiz-n">Happy Tails Pet Resort</div><div class="gbiz-a">Austin, TX</div></div>
+        </div>
+        <div class="gstars-row">${'<span class="gstar on">★</span>'.repeat(5)}</div>
+        <div class="gph">Share details of your own experience at this place</div>
+        <div class="gchips"><span class="gchip">Service</span><span class="gchip">Staff</span><span class="gchip">Value</span></div>
+        <div class="gactions"><span class="gcancel">Cancel</span><span class="gpost">Post</span></div>
+      </div>
+    </div>
+    <div class="quiet" style="border:none;padding:8px 0 0;text-align:center">This is Google's own review screen — we don't control what's on it.</div>
+    <button class="pbtn pb-ghost" onclick="resetForm()" style="margin-top:6px">Start over</button>`;
 
   // Private only never surfaces a public review route.
   if (!googleOn()) return `
@@ -953,7 +1007,7 @@ function formBody() {
     <div style="height:14px"></div>
     <button class="pbtn pb-primary">Submit feedback</button>
     <div class="por"><span></span><em>OR</em><span></span></div>
-    <button class="pbtn pb-g">Review on Google</button>
+    <button class="pbtn pb-g" onclick="goGoogle()">Review on Google</button>
     <button class="pbtn pb-ghost" onclick="resetForm()">Start over</button>`;
 }
 function submitScore() {
@@ -963,10 +1017,12 @@ function submitScore() {
   render();
 }
 function resetForm() { S.score = null; render(); }
+function goGoogle() { S.score = 'on-google'; render(); }
 function formCap() {
   if (S.score === null) return 'Pick a score, then hit <b>Submit</b>.';
   if (typeof S.score === 'number') return `Picked <b>${S.score}</b> — you can change it before submitting.`;
-  if (S.score === 'sent-high') return `<b>${S.threshold}+ submitted.</b> Score saved, then straight to Google.`;
+  if (S.score === 'sent-high') return `<b>${S.threshold}+ submitted.</b> Score saved — Google opens automatically.`;
+  if (S.score === 'on-google') return `<b>Google's review screen.</b> Pre-filled 5 stars, ready to post.`;
   return `<b>Below ${S.threshold} submitted.</b> Score saved, comment box opens — Google still offered.`;
 }
 
