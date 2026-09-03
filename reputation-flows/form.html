@@ -126,7 +126,7 @@ h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size:30px; font-weight:800
   <div class="head">
     <div class="eyebrow">Reputation · Public and private</div>
     <h1>The feedback form</h1>
-    <p class="sub">What a customer sees after a visit. Pick a score on either phone — the two sides show what happens above and below the fast-track threshold.</p>
+    <p class="sub">What a customer sees after a visit. Pick a rating on either phone — the two sides show what happens above and below the fast-track threshold.</p>
     <div class="ctl">
       <span class="ctl-l">Fast-track at</span>
       <div class="stepper"><button onclick="thr(-1)">−</button><span id="thr">9</span><button onclick="thr(1)">+</button></div>
@@ -139,8 +139,8 @@ h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size:30px; font-weight:800
     <div class="col hi">
       <div class="col-h">
         <div class="col-tag" id="tag-hi">9 or above</div>
-        <div class="col-t">Straight to Google</div>
-        <div class="col-d">The score is saved first, then Google opens with five stars already filled in.</div>
+        <div class="col-t">Goes straight to Google</div>
+        <div class="col-d">The rating is saved first, then Google opens with five stars already filled in.</div>
       </div>
       <div class="pw">
         <div class="phone"><div class="pnotch"></div><div class="pscr">
@@ -155,8 +155,8 @@ h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size:30px; font-weight:800
     <div class="col lo">
       <div class="col-h">
         <div class="col-tag" id="tag-lo">Below 9</div>
-        <div class="col-t">Tell us what went wrong</div>
-        <div class="col-d">A comment box opens — with the same Google button on the same screen, as a peer action.</div>
+        <div class="col-t">Adds a comment box</div>
+        <div class="col-d">An optional box to say more — with the same Google invitation on the same screen, offered equally.</div>
       </div>
       <div class="pw">
         <div class="phone"><div class="pnotch"></div><div class="pscr">
@@ -171,7 +171,7 @@ h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size:30px; font-weight:800
 
   <div class="note">
     <span>✓</span>
-    <div><b>Both sides end at Google.</b> The score changes how quickly someone gets there and whether we ask what went wrong — it never changes whether they're invited. The Google button on the low-score side is the same size, colour and weight as everything else on the screen.</div>
+    <div><b>Every customer is invited to Google.</b> The rating decides whether we also offer a comment box — it never decides who is invited, when they're invited, or how the invitation is worded. Nothing on either screen discourages a public review, and the Google action carries the same weight as the private one.</div>
   </div>
 
   <div class="foot">Reach · Internal design review · Not for external distribution</div>
@@ -218,14 +218,18 @@ function bodyFor(side) {
     `<div class="phelp" style="text-align:center;margin-top:12px">Their rating was saved before this opened.</div>
      <button class="pbtn pb-ghost" style="margin-top:10px" onclick="reset('${side}')">Start over</button>`;
   return `
-    <div class="pq" style="font-size:16.5px">We're sorry your experience didn't meet expectations.</div>
-    <div class="ps">What could we have done better?</div>
-    <textarea class="ptext" placeholder="Tell us what happened…"></textarea>
-    <div class="phelp">Your score has already been saved.</div>
-    <div style="height:16px"></div>
-    <button class="pbtn pb-primary">Submit feedback</button>
+    <div class="pcenter" style="padding:20px 0 4px">
+      <div class="pok">✓</div>
+      <div class="pq" style="font-size:16.5px">Thanks — your rating is saved</div>
+    </div>
+    <div class="pdiv"></div>
+    <div class="ps" style="margin-bottom:9px">Anything you'd like to add? <span style="color:var(--fg-3)">Optional</span></div>
+    <textarea class="ptext" placeholder="Tell us more about your visit…"></textarea>
+    <div class="phelp">This goes to the owner. It isn't published anywhere.</div>
+    <div style="height:18px"></div>
+    <button class="pbtn pb-primary">Send to the owner</button>
     <div class="por"><span></span><em>OR</em><span></span></div>
-    <button class="pbtn pb-g" onclick="goGoogle('${side}')">Review on Google</button>
+    <button class="pbtn pb-g" onclick="goGoogle('${side}')">Share your experience on Google</button>
     <button class="pbtn pb-ghost" onclick="reset('${side}')">Start over</button>`;
 }
 
@@ -239,7 +243,7 @@ function capFor(side) {
                  : `<b>${v}</b> is ${side==='hi'?'below':'at or above'} the threshold, so this one goes to the other side.`;
   }
   if (v === 'on-google') return `<b>Google's review screen</b> — five stars pre-filled, ready to post.`;
-  return `Score saved. <b>Comment box opens</b>, Google offered right below it.`;
+  return `Rating saved. <b>Optional comment box</b>, with the Google invitation offered right below it.`;
 }
 
 function pick(side, n) { S[side] = n; render(); }
