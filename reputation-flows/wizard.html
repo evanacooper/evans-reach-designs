@@ -951,16 +951,6 @@ function formBody() {
       <button class="pbtn ${picked===null?'pb-dis':'pb-primary'}" ${picked===null?'disabled':`onclick="submitScore()"`}>Submit</button>`;
   }
   // submitted states
-  if (S.score === 'sent-high') return `
-    <div class="pcenter" style="padding:34px 0 10px">
-      <div class="pok">✓</div>
-      <div class="pq" style="font-size:14.5px">Thanks — that's great to hear</div>
-      <div class="ps" style="margin-bottom:0">Your rating was saved.</div>
-    </div>
-    <div class="predir">Opening Google…</div>
-    <button class="pbtn pb-g" onclick="goGoogle()">See what happens next →</button>
-    <button class="pbtn pb-ghost" onclick="resetForm()">Start over</button>`;
-
   // The actual Google review sheet the customer lands on.
   if (S.score === 'on-google') return `
     <div class="gwrap">
@@ -986,7 +976,7 @@ function formBody() {
         <div class="gactions"><span class="gcancel">Cancel</span><span class="gpost">Post</span></div>
       </div>
     </div>
-    <div class="quiet" style="border:none;padding:8px 0 0;text-align:center">This is Google's own review screen — we don't control what's on it.</div>
+    <div class="quiet" style="border:none;padding:8px 0 0;text-align:center">Their rating was saved before this opened. This is Google's own screen — we don't control what's on it.</div>
     <button class="pbtn pb-ghost" onclick="resetForm()" style="margin-top:6px">Start over</button>`;
 
   // Private only never surfaces a public review route.
@@ -1013,7 +1003,7 @@ function formBody() {
 function submitScore() {
   const n = S.score;
   if (typeof n !== 'number') return;
-  S.score = (fastTrackOn() && n >= S.threshold) ? 'sent-high' : 'sent-low';
+  S.score = (fastTrackOn() && n >= S.threshold) ? 'on-google' : 'sent-low';
   render();
 }
 function resetForm() { S.score = null; render(); }
@@ -1021,8 +1011,7 @@ function goGoogle() { S.score = 'on-google'; render(); }
 function formCap() {
   if (S.score === null) return 'Pick a score, then hit <b>Submit</b>.';
   if (typeof S.score === 'number') return `Picked <b>${S.score}</b> — you can change it before submitting.`;
-  if (S.score === 'sent-high') return `<b>${S.threshold}+ submitted.</b> Score saved — Google opens automatically.`;
-  if (S.score === 'on-google') return `<b>Google's review screen.</b> Pre-filled 5 stars, ready to post.`;
+  if (S.score === 'on-google') return `Score saved, then <b>straight to Google</b> — 5 stars pre-filled, ready to post.`;
   return `<b>Below ${S.threshold} submitted.</b> Score saved, comment box opens — Google still offered.`;
 }
 
