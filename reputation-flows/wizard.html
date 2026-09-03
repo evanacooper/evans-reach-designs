@@ -420,6 +420,7 @@ const S = {
   reminderDays: 2,            // wait before the single reminder
   resendDays: 90,             // how often the whole ask can repeat
   resendNoResponseDays: 30,   // sooner if they never responded
+  afterReview: 'feedback',    // feedback = keep asking for feedback | exclude = never ask again
   emailOn: true, smsOn: true,
   advOpen: false,
   formOpen: false,
@@ -471,6 +472,7 @@ function toggleChannel(msg, which) {
   render();
 }
 function selMsg(k) { S.msgSel = k; render(); }
+function setAfterReview(v) { S.afterReview = v; render(); }
 function openEditor(name) {
   alert('Opens the message editor for:\n\n' + name + '\n\nSubject line, body copy, merge fields, and a live preview per channel.');
 }
@@ -723,6 +725,12 @@ function stepSettings() {
   bullets.push(['◔','We won\'t ask the same person too often',
     `At most once every ${S.resendDays} days — or every ${S.resendNoResponseDays} days if they never responded.`]);
 
+  if (googleOn()) bullets.push(S.afterReview === 'exclude'
+    ? ['⊘','Once someone reviews on Google, we stop',
+       `They're excluded from this ask permanently — no more feedback requests either.`]
+    : ['↻','Once someone reviews on Google, we keep listening',
+       `They still get the feedback request on the normal schedule. They can only leave one Google review, so the button just won't apply to them.`]);
+
   const summary = bullets.map(([ic,t,d]) => `
     <div class="bullet"><div class="bullet-ic">${ic}</div>
     <div><div class="bullet-t">${t}</div><div class="bullet-d">${d}</div></div></div>`).join('');
@@ -768,8 +776,18 @@ function stepSettings() {
         <div class="row"><div class="row-t"><div class="row-n">Who gets asked</div>
           <div class="row-d">Completed standard visit, excluding meet-and-greet, behavioral eval and intro visits. Has an email address.</div></div>
           <span class="pill p-off">Partner-set</span></div>
-        ${googleOn() ? `<div class="row"><div class="row-t"><div class="row-n">Skip people who already reviewed</div>
-          <div class="row-d">Matched by name — about 61% on this account.</div></div><span class="pill p-off">Always on</span></div>` : ''}
+        ${googleOn() ? `
+        <div class="row">
+          <div class="row-t"><div class="row-n">After someone leaves a Google review</div>
+          <div class="row-d">${S.afterReview==='exclude'
+            ? 'They are removed from this ask for good.'
+            : 'They keep getting the feedback request — you stay in touch, and the Google button simply will not apply to them again.'}</div></div>
+          <select style="width:auto" onchange="setAfterReview(this.value)">
+            <option value="feedback" ${S.afterReview==='feedback'?'selected':''}>Keep asking for feedback</option>
+            <option value="exclude" ${S.afterReview==='exclude'?'selected':''}>Never ask again</option>
+          </select>
+        </div>
+        <div class="quiet" style="margin-top:2px">We match reviews to customers by name — about <b>61%</b> on this account. Anyone we cannot match is treated as not having reviewed.</div>` : ''}
       </div>
     </div>`;
 
@@ -958,6 +976,7 @@ function stepReview() {
             ${combined()?`<div class="cfgrow"><span class="cfgk">Straight to Google at</span><span class="cfgv">${fastTrackOn()?S.threshold+' or above':'Off — same screen for all'}</span></div>`:''}
             <div class="cfgrow"><span class="cfgk">Reminder</span><span class="cfgv">${S.reminderDays} d</span></div>
             <div class="cfgrow"><span class="cfgk">Ask again after</span><span class="cfgv">${S.resendDays} d · ${S.resendNoResponseDays} d if no reply</span></div>
+            ${googleOn()?`<div class="cfgrow"><span class="cfgk">After a Google review</span><span class="cfgv">${S.afterReview==='exclude'?'Never ask again':'Keep asking for feedback'}</span></div>`:''}
           </div>
         </div>
 
