@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback Form — Public and Private</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f9fafb; --surface:#fff; --border:#e5e7eb; --fg:#111827; --fg-2:#6b7280; --fg-3:#9ca3af;
+  --brand:#6d5ef7; --brand-bg:#f5f3ff; --brand-border:#ddd6fe;
+  --ok:#16a34a; --ok-bg:#f0fdf4; --ok-border:#bbf7d0;
+  --warn:#d97706; --warn-bg:#fffbeb; --warn-border:#fde68a;
+  --goog:#4285F4; --goog-bg:#eff6ff; --goog-border:#bfdbfe;
+}
+html, body { font-family:'Inter',-apple-system,sans-serif; font-size:14px; line-height:1.5; color:var(--fg); background:var(--bg); -webkit-font-smoothing:antialiased; }
+
+.back { position:fixed; top:16px; left:20px; z-index:60; display:inline-flex; align-items:center; gap:6px;
+  font-size:12.5px; font-weight:500; color:var(--fg-2); text-decoration:none; background:var(--surface);
+  border:1px solid var(--border); border-radius:100px; padding:6px 13px; }
+.back:hover { color:var(--fg); }
+
+.page { max-width:1180px; margin:0 auto; padding:74px 24px 70px; }
+.head { text-align:center; margin-bottom:34px; }
+.eyebrow { font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--fg-3); margin-bottom:10px; }
+h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size:30px; font-weight:800; letter-spacing:-.025em; margin-bottom:11px; }
+.sub { font-size:15px; color:var(--fg-2); line-height:1.6; max-width:600px; margin:0 auto; }
+
+/* threshold control */
+.ctl { display:flex; align-items:center; justify-content:center; gap:14px; margin:26px 0 8px; flex-wrap:wrap; }
+.ctl-l { font-size:12.5px; color:var(--fg-2); }
+.stepper { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface); }
+.stepper button { width:30px; height:30px; border:none; background:var(--surface); cursor:pointer; font-size:15px; color:var(--fg-2); font-family:inherit; }
+.stepper button:hover { background:var(--bg); color:var(--fg); }
+.stepper span { min-width:44px; text-align:center; font-size:13px; font-weight:700; border-left:1px solid var(--border); border-right:1px solid var(--border); padding:4px 0; }
+.reset { font-family:inherit; font-size:12px; font-weight:600; padding:7px 14px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--fg-2); cursor:pointer; }
+.reset:hover { color:var(--fg); }
+
+/* two-column stage */
+.stage { display:grid; grid-template-columns:1fr 1fr; gap:26px; margin-top:22px; }
+.col { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px; }
+.col.hi { border-color:var(--ok-border); background:linear-gradient(180deg,var(--ok-bg) 0%, #fff 120px); }
+.col.lo { border-color:var(--warn-border); background:linear-gradient(180deg,var(--warn-bg) 0%, #fff 120px); }
+.col-h { text-align:center; margin-bottom:18px; }
+.col-tag { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:3px 11px; border-radius:100px; margin-bottom:8px; }
+.hi .col-tag { color:var(--ok); background:#fff; border:1px solid var(--ok-border); }
+.lo .col-tag { color:var(--warn); background:#fff; border:1px solid var(--warn-border); }
+.col-t { font-family:'Plus Jakarta Sans',sans-serif; font-size:17px; font-weight:700; letter-spacing:-.015em; }
+.col-d { font-size:12.5px; color:var(--fg-2); line-height:1.55; margin-top:5px; max-width:330px; margin-left:auto; margin-right:auto; }
+
+/* phone — large */
+.pw { display:flex; flex-direction:column; align-items:center; gap:13px; }
+.phone { width:340px; height:700px; border-radius:40px; padding:11px; background:#1f2937; box-shadow:0 20px 54px rgba(0,0,0,.22); flex-shrink:0; position:relative; }
+.pnotch { position:absolute; top:11px; left:50%; transform:translateX(-50%); width:112px; height:23px; background:#1f2937; border-radius:0 0 13px 13px; z-index:3; }
+.pscr { width:100%; height:100%; background:#fff; border-radius:30px; overflow-y:auto; }
+.pscr::-webkit-scrollbar { width:0; }
+.pbar { height:34px; }
+.pbrand { padding:19px 21px 15px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:10px; }
+.plogo { width:33px; height:33px; border-radius:8px; background:#0f766e; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; }
+.pbiz { font-size:14px; font-weight:650; }
+.pbizs { font-size:11px; color:var(--fg-3); }
+.pbody { padding:21px; }
+.pq { font-size:18px; font-weight:650; line-height:1.35; letter-spacing:-.015em; margin-bottom:6px; }
+.ps { font-size:13.5px; color:var(--fg-2); line-height:1.55; margin-bottom:18px; }
+.pscale { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; }
+.psc { aspect-ratio:1; border:1.5px solid var(--border); border-radius:9px; background:#fff; font-family:inherit; font-size:15px; font-weight:650; cursor:pointer; color:var(--fg); display:flex; align-items:center; justify-content:center; transition:all .13s; }
+.psc:hover { border-color:#0f766e; background:#f0fdfa; transform:scale(1.05); }
+.psc.on { border-color:#0f766e; background:#0f766e; color:#fff; }
+.pends { display:flex; justify-content:space-between; margin-top:9px; font-size:11.5px; color:var(--fg-3); }
+.pdiv { height:1px; background:#f1f5f9; margin:19px 0; }
+.ptext { width:100%; border:1.5px solid var(--border); border-radius:9px; padding:12px; font-family:inherit; font-size:13.5px; resize:none; min-height:96px; }
+.ptext:focus { outline:none; border-color:#0f766e; }
+.phelp { font-size:11.5px; color:var(--fg-3); margin-top:7px; }
+.pbtn { width:100%; padding:14px; border-radius:10px; border:none; font-family:inherit; font-size:14.5px; font-weight:650; cursor:pointer; transition:filter .14s; }
+.pbtn:hover { filter:brightness(.94); }
+.pbtn + .pbtn { margin-top:9px; }
+.pb-primary { background:#0f766e; color:#fff; }
+.pb-g { background:#4285F4; color:#fff; }
+.pb-ghost { background:#fff; color:var(--fg-2); border:1.5px solid var(--border); }
+.pb-dis { background:#e5e7eb; color:#9ca3af; cursor:not-allowed; }
+.pok { width:50px; height:50px; border-radius:50%; background:var(--ok-bg); border:1.5px solid var(--ok-border); color:var(--ok); display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 14px; }
+.pcenter { text-align:center; padding:28px 0 6px; }
+.predir { border:1px dashed var(--goog-border); background:var(--goog-bg); border-radius:9px; padding:13px; margin-top:16px; font-size:12.5px; color:#1e40af; text-align:center; }
+.por { display:flex; align-items:center; gap:11px; margin:14px 0; }
+.por span { flex:1; height:1px; background:var(--border); }
+.por em { font-style:normal; font-size:11.5px; font-weight:700; letter-spacing:.08em; color:var(--fg-3); }
+.pcap { font-size:12.5px; color:var(--fg-2); text-align:center; max-width:340px; line-height:1.55; }
+.pcap b { color:var(--fg); font-weight:650; }
+
+/* Google sheet */
+.gwrap { border:1px solid var(--border); border-radius:11px; overflow:hidden; background:#fff; }
+.gbar { display:flex; align-items:center; gap:6px; padding:8px 11px; background:#f1f3f4; border-bottom:1px solid #e0e3e6; }
+.gdot { width:8px; height:8px; border-radius:50%; background:#d0d4d8; }
+.gurl { margin-left:7px; font-size:11px; color:#5f6368; background:#fff; border-radius:100px; padding:3px 12px; flex:1; }
+.gsheet { padding:16px; }
+.gtop { display:flex; align-items:center; gap:10px; margin-bottom:15px; }
+.gavatar { width:36px; height:36px; border-radius:50%; background:#1a73e8; color:#fff; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.gname { font-size:14px; font-weight:600; color:#202124; }
+.gsub { font-size:11.5px; color:#5f6368; }
+.gbiz { display:flex; align-items:center; gap:10px; padding:11px; border:1px solid #e0e3e6; border-radius:9px; margin-bottom:15px; }
+.gbiz-ic { width:30px; height:30px; border-radius:7px; background:#0f766e; color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.gbiz-n { font-size:13.5px; font-weight:600; color:#202124; }
+.gbiz-a { font-size:11.5px; color:#5f6368; }
+.gstars-row { display:flex; gap:6px; justify-content:center; margin-bottom:15px; }
+.gstar { font-size:34px; color:#dadce0; line-height:1; }
+.gstar.on { color:#fbbc04; }
+.gph { font-size:13px; color:#80868b; border:1px solid #e0e3e6; border-radius:9px; padding:13px; min-height:70px; }
+.gchips { display:flex; gap:7px; margin-top:11px; flex-wrap:wrap; }
+.gchip { font-size:11.5px; color:#1a73e8; border:1px solid #d2e3fc; background:#f8fbff; border-radius:100px; padding:4px 11px; }
+.gactions { display:flex; justify-content:flex-end; gap:18px; align-items:center; margin-top:16px; }
+.gcancel { font-size:13.5px; font-weight:600; color:#1a73e8; }
+.gpost { font-size:13.5px; font-weight:600; color:#fff; background:#1a73e8; border-radius:100px; padding:8px 24px; }
+
+.note { max-width:900px; margin:34px auto 0; border-radius:12px; padding:15px 18px; font-size:13px; line-height:1.65;
+  background:var(--ok-bg); border:1px solid var(--ok-border); color:#166534; display:flex; gap:11px; }
+.note b { font-weight:700; }
+.foot { text-align:center; margin-top:36px; padding-top:22px; border-top:1px solid var(--border); font-size:12.5px; color:var(--fg-3); }
+@media (max-width: 900px) { .stage { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<a class="back" href="index.html">← Back to project</a>
+
+<div class="page">
+  <div class="head">
+    <div class="eyebrow">Reputation · Public and private</div>
+    <h1>The feedback form</h1>
+    <p class="sub">What a customer sees after a visit. Pick a score on either phone — the two sides show what happens above and below the fast-track threshold.</p>
+    <div class="ctl">
+      <span class="ctl-l">Fast-track at</span>
+      <div class="stepper"><button onclick="thr(-1)">−</button><span id="thr">9</span><button onclick="thr(1)">+</button></div>
+      <span class="ctl-l">and above</span>
+      <button class="reset" onclick="resetAll()">Reset both</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="col hi">
+      <div class="col-h">
+        <div class="col-tag" id="tag-hi">9 or above</div>
+        <div class="col-t">Straight to Google</div>
+        <div class="col-d">The score is saved first, then Google opens with five stars already filled in.</div>
+      </div>
+      <div class="pw">
+        <div class="phone"><div class="pnotch"></div><div class="pscr">
+          <div class="pbar"></div>
+          <div class="pbrand"><div class="plogo">HT</div><div><div class="pbiz">Happy Tails Pet Resort</div><div class="pbizs">Austin, TX</div></div></div>
+          <div class="pbody" id="body-hi"></div>
+        </div></div>
+        <div class="pcap" id="cap-hi"></div>
+      </div>
+    </div>
+
+    <div class="col lo">
+      <div class="col-h">
+        <div class="col-tag" id="tag-lo">Below 9</div>
+        <div class="col-t">Tell us what went wrong</div>
+        <div class="col-d">A comment box opens — with the same Google button on the same screen, as a peer action.</div>
+      </div>
+      <div class="pw">
+        <div class="phone"><div class="pnotch"></div><div class="pscr">
+          <div class="pbar"></div>
+          <div class="pbrand"><div class="plogo">HT</div><div><div class="pbiz">Happy Tails Pet Resort</div><div class="pbizs">Austin, TX</div></div></div>
+          <div class="pbody" id="body-lo"></div>
+        </div></div>
+        <div class="pcap" id="cap-lo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span>✓</span>
+    <div><b>Both sides end at Google.</b> The score changes how quickly someone gets there and whether we ask what went wrong — it never changes whether they're invited. The Google button on the low-score side is the same size, colour and weight as everything else on the screen.</div>
+  </div>
+
+  <div class="foot">Reach · Internal design review · Not for external distribution</div>
+</div>
+
+<script>
+let THRESHOLD = 9;
+const S = { hi: null, lo: null };   // null | number | 'on-google' | 'sent-low'
+
+function googleSheet() {
+  return `
+    <div class="gwrap">
+      <div class="gbar"><span class="gdot"></span><span class="gdot"></span><span class="gdot"></span><span class="gurl">google.com</span></div>
+      <div class="gsheet">
+        <div class="gtop">
+          <div class="gavatar">JD</div>
+          <div style="flex:1;min-width:0"><div class="gname">Jordan D.</div><div class="gsub">Posting publicly across Google</div></div>
+        </div>
+        <div class="gbiz"><div class="gbiz-ic">HT</div><div><div class="gbiz-n">Happy Tails Pet Resort</div><div class="gbiz-a">Austin, TX</div></div></div>
+        <div class="gstars-row">${'<span class="gstar on">★</span>'.repeat(5)}</div>
+        <div class="gph">Share details of your own experience at this place</div>
+        <div class="gchips"><span class="gchip">Service</span><span class="gchip">Staff</span><span class="gchip">Value</span></div>
+        <div class="gactions"><span class="gcancel">Cancel</span><span class="gpost">Post</span></div>
+      </div>
+    </div>`;
+}
+
+function scaleFor(side) {
+  const picked = S[side];
+  return `
+    <div class="pq">How was your visit?</div>
+    <div class="ps">Pick a score, then submit.</div>
+    <div class="pscale">${Array.from({length:10},(_,i)=>i+1).map(n =>
+      `<button class="psc ${picked===n?'on':''}" onclick="pick('${side}',${n})">${n}</button>`).join('')}</div>
+    <div class="pends"><span>Not great</span><span>Loved it</span></div>
+    <div class="pdiv"></div>
+    <button class="pbtn ${typeof picked==='number'?'pb-primary':'pb-dis'}" ${typeof picked==='number'?`onclick="submit('${side}')"`:'disabled'}>Submit</button>`;
+}
+
+function bodyFor(side) {
+  const v = S[side];
+  if (v === null || typeof v === 'number') return scaleFor(side);
+  if (v === 'on-google') return googleSheet() +
+    `<div class="phelp" style="text-align:center;margin-top:12px">Their rating was saved before this opened.</div>
+     <button class="pbtn pb-ghost" style="margin-top:10px" onclick="reset('${side}')">Start over</button>`;
+  return `
+    <div class="pq" style="font-size:16.5px">We're sorry your experience didn't meet expectations.</div>
+    <div class="ps">What could we have done better?</div>
+    <textarea class="ptext" placeholder="Tell us what happened…"></textarea>
+    <div class="phelp">Your score has already been saved.</div>
+    <div style="height:16px"></div>
+    <button class="pbtn pb-primary">Submit feedback</button>
+    <div class="por"><span></span><em>OR</em><span></span></div>
+    <button class="pbtn pb-g" onclick="goGoogle('${side}')">Review on Google</button>
+    <button class="pbtn pb-ghost" onclick="reset('${side}')">Start over</button>`;
+}
+
+function capFor(side) {
+  const v = S[side];
+  const want = side === 'hi' ? `${THRESHOLD} or above` : `below ${THRESHOLD}`;
+  if (v === null) return `Tap a score <b>${want}</b>, then Submit.`;
+  if (typeof v === 'number') {
+    const right = side === 'hi' ? v >= THRESHOLD : v < THRESHOLD;
+    return right ? `Picked <b>${v}</b> — hit Submit.`
+                 : `<b>${v}</b> is ${side==='hi'?'below':'at or above'} the threshold, so this one goes to the other side.`;
+  }
+  if (v === 'on-google') return `<b>Google's review screen</b> — five stars pre-filled, ready to post.`;
+  return `Score saved. <b>Comment box opens</b>, Google offered right below it.`;
+}
+
+function pick(side, n) { S[side] = n; render(); }
+function submit(side) {
+  const n = S[side];
+  S[side] = (n >= THRESHOLD) ? 'on-google' : 'sent-low';
+  render();
+}
+function goGoogle(side) { S[side] = 'on-google'; render(); }
+function reset(side) { S[side] = null; render(); }
+function resetAll() { S.hi = null; S.lo = null; render(); }
+function thr(d) { THRESHOLD = Math.max(7, Math.min(10, THRESHOLD + d)); resetAll(); }
+
+function render() {
+  document.getElementById('thr').textContent = THRESHOLD;
+  document.getElementById('tag-hi').textContent = `${THRESHOLD} or above`;
+  document.getElementById('tag-lo').textContent = `Below ${THRESHOLD}`;
+  for (const side of ['hi','lo']) {
+    document.getElementById('body-'+side).innerHTML = bodyFor(side);
+    document.getElementById('cap-'+side).innerHTML = capFor(side);
+  }
+}
+render();
+</script>
+</body>
+</html>
