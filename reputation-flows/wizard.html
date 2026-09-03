@@ -358,7 +358,8 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 .pcard:hover { border-color: var(--border-h); box-shadow: 0 3px 12px rgba(0,0,0,.05); transform: translateY(-1px); }
 .pcard.sel { border-color: var(--brand); background: var(--brand-bg); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
 .pcard-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
-.pcard-ic { font-size: 17px; color: var(--brand); line-height: 1; }
+.pcard-ic { color: var(--brand); line-height: 0; }
+.pcard-ic svg { width: 22px; height: 22px; display: block; }
 .pcard-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border-h);
   flex-shrink: 0; position: relative; background: var(--surface); }
 .pcard.sel .pcard-radio { border-color: var(--brand); border-width: 5px; }
@@ -433,20 +434,20 @@ const S = {
 
 const PRESETS = {
   both: {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M15 9a4 4 0 010 6"/><path d="M18 6.5a8 8 0 010 11"/></svg>`,
     label: 'Public and private',
-    icon: '◉',
     desc: 'One ask. Everyone is invited to review on Google; anyone who had a problem can tell you about it first.',
     google: true, form: true,
   },
   public: {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.7-4.9 4.4 1.4 6.4L12 16.7l-6 3.3 1.4-6.4L2.5 9.2l6.6-.7z"/></svg>`,
     label: 'Public only',
-    icon: '★',
     desc: 'Straight to Google. The most reviews, but no early warning when something goes wrong.',
     google: true, form: false,
   },
   private: {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l2 3h4l2-3h4"/><path d="M5.5 5.5h13l2.5 7.5v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5z"/></svg>`,
     label: 'Private only',
-    icon: '🔒',
     desc: 'Feedback comes to you. Nothing is ever posted publicly.',
     google: false, form: true,
   },
