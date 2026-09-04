@@ -228,16 +228,18 @@ html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; l
 /* ══════════════════════ VARIANT E — live hi-fi form ══════════════════════ */
 :root { --biz: #22624c; --biz-d: #1a4d3b; }
 
-.esplit { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: center; }
+.esplit { display: grid; grid-template-columns: 344px 1fr; gap: 22px; align-items: center; }
 
-.eopt { border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface); padding: 14px 15px;
+.eopt { border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); padding: 18px 18px;
   width: 100%; text-align: left; font-family: inherit; cursor: pointer; display: flex; gap: 10px;
-  margin-bottom: 9px; transition: border-color .16s, box-shadow .16s; }
+  margin-bottom: 12px; transition: border-color .16s, box-shadow .16s; }
 .eopt:hover { border-color: var(--border-h); }
 .eopt.sel { border-color: var(--brand); background: var(--brand-bg); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
 .eopt-txt { flex: 1; min-width: 0; }
-.eopt-t { font-size: 13.5px; font-weight: 680; letter-spacing: -.012em; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-.eopt-d { font-size: 11.5px; color: var(--fg-2); line-height: 1.45; margin-top: 3px; }
+.eopt-t { font-size: 15.5px; font-weight: 680; letter-spacing: -.012em; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.eopt .rec { background: none; border: none; padding: 0; color: var(--brand);
+  font-size: 10px; font-weight: 800; letter-spacing: .07em; }
+.eopt-d { display: block; font-size: 12.5px; color: var(--fg-2); line-height: 1.45; margin-top: 5px; }
 .eopt-m { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
 .mchip { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 650; padding: 2px 7px;
   border-radius: 100px; border: 1px solid var(--border); background: var(--bg); color: var(--fg-3); white-space: nowrap; }
@@ -256,7 +258,7 @@ html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; l
   box-shadow: 0 18px 46px rgba(15,23,42,.24); position: relative; flex-shrink: 0; }
 .inotch { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 100px; height: 24px;
   background: #1d2126; border-radius: 0 0 14px 14px; z-index: 5; }
-.iscreen { width: 296px; height: 504px; background: #f3f5f8; border-radius: 31px; overflow: hidden;
+.iscreen { width: 296px; height: 540px; background: #f3f5f8; border-radius: 31px; overflow: hidden;
   display: flex; flex-direction: column; }
 .istatus { display: flex; justify-content: space-between; align-items: center;
   padding: 9px 20px 4px; font-size: 10.5px; font-weight: 650; color: #111827; flex-shrink: 0; }
@@ -275,6 +277,7 @@ html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; l
 .flogo u { text-decoration: none; font-size: 5px; color: #a98b62; letter-spacing: .01em; font-style: italic; }
 
 .fbody { padding: 39px 16px 18px; flex: 1; }
+.fcard.gsheet .fbody { display: flex; flex-direction: column; justify-content: center; padding: 18px 16px; }
 .fh1 { font-size: 17.5px; font-weight: 800; letter-spacing: -.032em; text-align: center; color: #111827; line-height: 1.2; }
 .fsub { font-size: 11.5px; color: #6b7280; text-align: center; line-height: 1.5; margin: 6px auto 0; }
 .fsec { margin-top: 24px; }
@@ -318,9 +321,12 @@ html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; l
 .tstep.on { color: var(--fg); border-color: var(--fg); }
 .tstep.done { color: var(--ok); border-color: var(--ok-border); background: var(--ok-bg); }
 .tarr { color: var(--fg-3); font-size: 11px; }
-.treset { margin-left: auto; font-family: inherit; font-size: 11.5px; font-weight: 600; color: var(--brand);
+.prehead { display: flex; justify-content: flex-end; min-height: 24px;
+  width: 314px; margin: 0 auto 4px; }
+.treset { font-family: inherit; font-size: 11.5px; font-weight: 600; color: var(--brand);
   background: none; border: none; cursor: pointer; padding: 4px 2px; }
 .treset:hover { text-decoration: underline; }
+.treset[aria-hidden="true"] { visibility: hidden; }
 .tcap { font-size: 11.5px; color: var(--fg-2); line-height: 1.55; margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border); }
 .tcap b { color: var(--fg); font-weight: 650; }
 
@@ -402,6 +408,7 @@ const OPT = {
     label: 'Public and private',
     plain: 'Ask them privately, then invite them to Google',
     tight: 'Private first, then Google review',
+    line: 'A 9 or 10 goes straight through.',
     icon: ICONS.megaphone,
     google: true, private: true, rec: true,
     /* variant A one-liner */
@@ -413,6 +420,7 @@ const OPT = {
     label: 'Public only',
     plain: 'Send them straight to Google',
     tight: 'Google review only',
+    line: 'No form. Nothing reaches you first.',
     icon: ICONS.star,
     google: true, private: false, rec: false,
     d: 'One tap from the message to the Google review box. Fewest steps, most reviews — and no warning before a bad one goes up.',
@@ -424,6 +432,7 @@ const OPT = {
     label: 'Private only',
     plain: 'Keep every answer between you and them',
     tight: 'Private feedback only',
+    line: 'Nothing is ever posted publicly.',
     icon: ICONS.inbox,
     google: false, private: true, rec: false,
     d: 'Scores and comments come to your dashboard. Nothing is ever posted publicly, and Google is never mentioned.',
@@ -899,7 +908,7 @@ function fMessageScreen() {
 /* ── Google's own screen ── */
 function fGoogleScreen() {
   return `
-    <div class="fcard" style="max-width:400px">
+    <div class="fcard gsheet">
       <div class="fbody" style="padding:18px 20px 20px">
         <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
           <span style="width:32px;height:32px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">JD</span>
@@ -939,6 +948,8 @@ function fSubmitScore() {
 }
 function fSubmit() { S.fstage = 'thanks'; render(); }
 function fGo(stage) { S.fstage = stage; render(); }
+const started = () => S.fscore !== null || !(S.fstage === 'score' || S.fstage === 'message');
+
 function fReset() { S.fstage = formWanted() ? 'score' : 'message'; S.fscore = null; S.ftick++; render(); }
 
 function fScreen() {
@@ -952,45 +963,7 @@ function fScreen() {
   }
 }
 
-function fTrail() {
-  const st = S.fstage;
-  const step = (label, key, reached) =>
-    `<span class="tstep ${st === key ? 'on' : (reached ? 'done' : '')}">${label}</span>`;
 
-  let steps;
-  if (!formWanted()) {
-    steps = [step('The message', 'message', st === 'google'), step('Google', 'google', false)];
-  } else if (st === 'redirect' || (st === 'google' && S.fscore >= S.threshold)) {
-    steps = [step('Score ' + S.fscore, 'x', true), step('Straight to Google', 'google', false)];
-  } else if (st === 'score') {
-    steps = [step('Score', 'score', false), step('…depends on the score', 'x', false)];
-  } else {
-    steps = [
-      step('Score ' + S.fscore, 'x', true),
-      step('What went wrong', 'followup', st !== 'followup'),
-      step('Thanks', 'thanks', st === 'google'),
-      ...(googleWanted() ? [step('Google, if they want it', 'google', false)] : []),
-    ];
-  }
-  return steps.join('<span class="tarr">›</span>');
-}
-
-function fCaption() {
-  if (!formWanted()) return S.fstage === 'google'
-    ? `<b>Google's own screen.</b>`
-    : `No form. The message links straight out.`;
-  switch (S.fstage) {
-    case 'score':    return S.fscore === null ? `One question. That's the whole screen.` : `Pick, then Submit.`;
-    case 'redirect': return `<b>${S.fscore}</b> saved. No second question.`;
-    case 'followup': return googleWanted()
-      ? `<b>${S.fscore}</b> saved before this screen.`
-      : `<b>${S.fscore}</b> saved. Google is never mentioned.`;
-    case 'thanks':   return googleWanted()
-      ? `The invite comes after, not beside the complaint.`
-      : `Nothing here is published.`;
-    case 'google':   return `<b>Google's own screen.</b>`;
-  }
-}
 
 
 function variantE() {
@@ -1001,10 +974,7 @@ function variantE() {
       <span class="radio ${on ? 'on' : ''}"></span>
       <span class="eopt-txt">
         <span class="eopt-t">${O.tight}${O.rec ? '<span class="rec">Recommended</span>' : ''}</span>
-        <span class="eopt-m">
-          <span class="mchip ${O.google ? 'yes' : ''}">${O.google ? '✓' : '✕'} Google reviews</span>
-          <span class="mchip ${O.private ? 'yes' : ''}">${O.private ? '✓' : '✕'} Private heads-up</span>
-        </span>
+        <span class="eopt-d">${O.line}</span>
       </span>
     </button>`;
   }).join('');
@@ -1017,6 +987,7 @@ function variantE() {
       <div>${opts}</div>
 
       <div>
+        <div class="prehead"><button class="treset" onclick="fReset()" ${started() ? '' : 'aria-hidden="true"'}>&#8634; Start over</button></div>
         <div class="pwrap">
           <div class="iphone">
             <div class="inotch"></div>
@@ -1026,8 +997,6 @@ function variantE() {
             </div>
           </div>
         </div>
-        <div class="trail">${fTrail()}<button class="treset" onclick="fReset()">Start over</button></div>
-        <div class="tcap">${fCaption()}</div>
       </div>
     </div>`;
 }
