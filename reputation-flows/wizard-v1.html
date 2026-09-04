@@ -214,15 +214,6 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 
 
 
-/* plain-English summary bullets */
-.bullet { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
-.bullet:last-child { border-bottom: none; }
-.bullet-ic { width: 26px; height: 26px; border-radius: 7px; background: var(--bg); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
-  color: var(--fg-2); flex-shrink: 0; margin-top: 1px; }
-.bullet-t { font-size: 13.5px; font-weight: 650; letter-spacing: -.008em; }
-.bullet-d { font-size: 12.5px; color: var(--fg-2); line-height: 1.55; margin-top: 2px; }
-
 /* advanced disclosure */
 .advtoggle { display: flex; align-items: center; gap: 9px; width: 100%; font-family: inherit;
   font-size: 13px; font-weight: 600; padding: 12px 15px; border: 1px solid var(--border);
@@ -273,13 +264,7 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 
 
 /* approach diagram */
-.dwrap { border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); margin-top: 14px; overflow: hidden; }
-.dhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--border); }
-.dhead-t { font-size: 12.5px; font-weight: 650; }
 .dbody { display: flex; gap: 20px; padding: 16px 15px; align-items: flex-start; }
-.dhead-r { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
-.dbody-rows { padding: 4px 16px 12px; }
-.dbody-rows .bullet:first-child { padding-top: 8px; }
 .dleft { flex: 1; min-width: 0; }
 .dright { display: flex; flex-direction: column; align-items: center; gap: 9px; flex-shrink: 0; }
 .phone-sm { width: 230px; height: 452px; padding: 8px; border-radius: 27px; }
@@ -919,36 +904,6 @@ function stepApproach() {
     </button>`;
   }).join('');
 
-  /* ── "What will happen" rows — fixed behaviour, no settings to change ── */
-  const bullets = [];
-  if (formOn()) bullets.push(['\u2709','They get one request after a qualifying visit',
-    `A short form asking how the visit went, with one reminder ${S.reminderDays} days later if they don't respond.`]);
-  else bullets.push(['G','They get one request after a qualifying visit',
-    `A Google review link, with one reminder ${S.reminderDays} days later if they haven't reviewed.`]);
-
-  if (combined()) bullets.push(['\u2605',`Scores of ${S.threshold} or more go straight to Google`,
-    `Anyone scoring below ${S.threshold} gets asked what went wrong, and is offered the Google link on the screen after that.`]);
-
-  if (combined()) bullets.push(['\u25c9','Everyone is invited to Google',
-    `The invitation is part of the same ask — it never depends on what they scored.`]);
-  else if (googleOn()) bullets.push(['\u25c9','Everyone who qualifies is invited',
-    `Same message to every eligible customer. No scoring, no filtering.`]);
-  else bullets.push(['\ud83d\udd12','Nothing is ever published',
-    S.gbp ? 'Your connected Google profile still feeds the dashboard, so you can monitor and reply to reviews you get on your own.'
-          : 'Connect a Google Business Profile later to monitor and reply to reviews you get on your own.']);
-
-  bullets.push(['\u25d4','We won\'t ask the same person too often',
-    `At most once every ${S.resendDays} days — or every ${S.resendNoResponseDays} days if they never responded.`]);
-
-  if (combined()) bullets.push(['\u21bb','Once someone reviews on Google, we keep listening',
-    `They still get the feedback request on the normal schedule. They can only leave one Google review, so the button just won't apply to them.`]);
-  else if (googleOn()) bullets.push(['\u2298','Once someone reviews, we stop asking them',
-    `A person can only leave one Google review, so there's nothing else to ask for.`]);
-
-  const summary = bullets.map(([ic,t,d]) => `
-    <div class="bullet"><div class="bullet-ic">${ic}</div>
-    <div><div class="bullet-t">${t}</div><div class="bullet-d">${d}</div></div></div>`).join('');
-
   return `
     <h2>How should we ask your customers for reviews?</h2>
     <p class="lede">Pick one. The phone shows what your customer gets.</p>
@@ -968,14 +923,6 @@ function stepApproach() {
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="dwrap">
-      <div class="dhead">
-        <span class="dhead-t">What will happen</span>
-        <span class="dhead-r"><span class="pill p-off">~${volume()} sends/mo</span></span>
-      </div>
-      <div class="dbody-rows">${summary}</div>
     </div>
   `;
 }
