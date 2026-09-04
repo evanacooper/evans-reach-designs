@@ -276,12 +276,8 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 .dwrap { border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); margin-top: 14px; overflow: hidden; }
 .dhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--border); }
 .dhead-t { font-size: 12.5px; font-weight: 650; }
-.dtry { font-family: inherit; font-size: 11.5px; font-weight: 600; padding: 5px 11px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--fg-2); cursor: pointer; white-space: nowrap; }
-.dtry:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-bg); }
 .dbody { display: flex; gap: 20px; padding: 16px 15px; align-items: flex-start; }
 .dhead-r { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
-.dpreview { display: flex; flex-direction: column; align-items: center; gap: 10px;
-  padding: 18px 15px 4px; }
 .dbody-rows { padding: 4px 16px 12px; }
 .dbody-rows .bullet:first-child { padding-top: 8px; }
 .dleft { flex: 1; min-width: 0; }
@@ -450,6 +446,92 @@ label.fl { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6
 .pcard-vsub { font-size: 10.5px; color: var(--fg-3); }
 @media (max-width: 1080px) { .pgrid { grid-template-columns: 1fr; } }
 @media (max-width: 980px) { .g2 { grid-template-columns: 1fr; } .side { display: none; } }
+
+/* ═══ Option E — live-form channel step (ported from channel-step-variants.html) ═══ */
+.radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border-h); flex-shrink: 0; background: var(--surface); }
+.sel-on .radio, .radio.on { border-color: var(--brand); border-width: 5.5px; }
+:root { --biz: #22624c; --biz-d: #1a4d3b; }
+
+.esplit { display: grid; grid-template-columns: 344px 1fr; gap: 22px; align-items: center; }
+
+.eopt { border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); padding: 18px 18px;
+  width: 100%; text-align: left; font-family: inherit; cursor: pointer; display: flex; gap: 10px;
+  margin-bottom: 12px; transition: border-color .16s, box-shadow .16s; }
+.eopt:hover { border-color: var(--border-h); }
+.eopt.sel { border-color: var(--brand); background: var(--brand-bg); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
+.eopt-txt { flex: 1; min-width: 0; }
+.eopt-t { font-size: 15.5px; font-weight: 680; letter-spacing: -.012em; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.eopt .rec { background: none; border: none; padding: 0; color: var(--brand);
+  font-size: 10px; font-weight: 800; letter-spacing: .07em; }
+.eopt-d { display: block; font-size: 12.5px; color: var(--fg-2); line-height: 1.45; margin-top: 5px; }
+.eopt-m { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+.pwrap { display: flex; flex-direction: column; align-items: center; }
+.iphone { width: 314px; border-radius: 40px; padding: 9px; background: #1d2126;
+  box-shadow: 0 18px 46px rgba(15,23,42,.24); position: relative; flex-shrink: 0; }
+.inotch { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 100px; height: 24px;
+  background: #1d2126; border-radius: 0 0 14px 14px; z-index: 5; }
+.iscreen { width: 296px; height: 540px; background: #f3f5f8; border-radius: 31px; overflow: hidden;
+  display: flex; flex-direction: column; }
+.istatus { display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 20px 4px; font-size: 10.5px; font-weight: 650; color: #111827; flex-shrink: 0; }
+.istatus span:last-child { letter-spacing: .5px; }
+.iview { flex: 1; overflow-y: auto; padding: 8px 9px 12px; display: flex; }
+.iview::-webkit-scrollbar { width: 0; }
+
+.fcard { width: 100%; min-height: 100%; display: flex; flex-direction: column; background: #fff;
+  border-radius: 15px; box-shadow: 0 2px 10px rgba(15,23,42,.09); overflow: hidden; }
+.fband { height: 52px; flex-shrink: 0; background: var(--biz); position: relative; }
+.flogo { position: absolute; left: 50%; bottom: -29px; transform: translateX(-50%); width: 62px; height: 62px; border-radius: 50%;
+  background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.14); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.flogo b { font-size: 12px; font-weight: 800; letter-spacing: -.03em; color: #8a5222; line-height: 1; font-style: italic; }
+.flogo i { font-style: normal; font-size: 5.5px; font-weight: 800; letter-spacing: .11em; color: #fff; background: var(--biz);
+  border-radius: 100px; padding: 2px 6px; line-height: 1; }
+.flogo u { text-decoration: none; font-size: 5px; color: #a98b62; letter-spacing: .01em; font-style: italic; }
+
+.fbody { padding: 39px 16px 18px; flex: 1; }
+.fcard.gsheet .fbody { display: flex; flex-direction: column; justify-content: center; padding: 18px 16px; }
+.fh1 { font-size: 17.5px; font-weight: 800; letter-spacing: -.032em; text-align: center; color: #111827; line-height: 1.2; }
+.fsub { font-size: 11.5px; color: #6b7280; text-align: center; line-height: 1.5; margin: 6px auto 0; }
+.fsec { margin-top: 24px; }
+.fq { font-size: 12.5px; font-weight: 700; color: #111827; margin-bottom: 9px; }
+.fq i { font-style: normal; color: #ef4444; margin-left: 2px; }
+.fscale { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.fsc { aspect-ratio: 1; border: 1px solid #dbe2ea; border-radius: 9px; background: #eef2f6; color: #334155;
+  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: background .13s, transform .13s; padding: 0; }
+.fsc:hover { background: #dde5ee; transform: translateY(-1px); }
+.fsc.on { background: var(--biz); border-color: var(--biz); color: #fff; }
+.fends { display: flex; justify-content: space-between; margin-top: 8px; font-size: 9.5px; color: #6b7280; }
+.fta { width: 100%; border: 1px solid #dfe3e8; border-radius: 10px; padding: 12px; font-family: inherit; font-size: 13px;
+  min-height: 92px; resize: none; color: #111827; }
+.fta::placeholder { color: #a3adb8; }
+.ffoot { border-top: 1px solid #eef1f4; padding: 14px 16px 18px; margin-top: auto; }
+.fbtn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.fbtn:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+.fbtn-p { background: var(--biz); color: #fff; }
+.fbtn-p:hover { background: var(--biz-d); }
+.fbtn-g { background: #4285F4; color: #fff; }
+.fbtn-g:hover { background: #3367d6; }
+.fbtn-ghost { background: #fff; color: #6b7280; border: 1px solid #dfe3e8; margin-top: 9px; font-weight: 600; font-size: 13px; padding: 11px; }
+.fscored { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 650; color: #15803d;
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 100px; padding: 4px 11px; }
+.fcenter { text-align: center; }
+.fok { width: 46px; height: 46px; border-radius: 50%; background: #f0fdf4; border: 1.5px solid #bbf7d0; color: #16a34a;
+  display: flex; align-items: center; justify-content: center; margin: 4px auto 14px; }
+.fdivider { display: flex; align-items: center; gap: 11px; margin: 18px 0 14px; }
+.fdivider i { flex: 1; height: 1px; background: #eef1f4; }
+.fdivider em { font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: .09em; color: #b0b8c1; }
+.fbar { height: 3px; border-radius: 100px; background: #e6ebf0; overflow: hidden; margin-top: 18px; }
+.fbar i { display: block; height: 100%; background: var(--biz); border-radius: 100px; animation: fill 1.4s linear forwards; }
+@keyframes fill { from { width: 0 } to { width: 100% } }
+
+.prehead { display: flex; justify-content: flex-end; min-height: 24px;
+  width: 314px; margin: 0 auto 4px; }
+.treset { font-family: inherit; font-size: 11.5px; font-weight: 600; color: var(--brand);
+  background: none; border: none; cursor: pointer; padding: 4px 2px; }
+.treset:hover { text-decoration: underline; }
+.treset[aria-hidden="true"] { visibility: hidden; }
 </style>
 </head>
 <body>
@@ -504,6 +586,9 @@ const S = {
   advOpen: false,
   formOpen: false,
   score: null,
+  fstage: 'score',            // live form preview: score | followup | redirect | thanks | google | message
+  fscore: null,
+  ftick: 0,                   // guards the redirect timer
   mapped: [true, true, true, false],
   msgSel: 'ask-email',
   ch: {
@@ -544,6 +629,9 @@ function setPreset(k) {
   ['both','public','private'].forEach(x => {
     const el = document.getElementById('d-'+x); if (el) el.classList.toggle('on', x===k);
   });
+  S.fscore = null;
+  S.ftick++;
+  S.fstage = PRESETS[k].form ? 'score' : 'message';
   render();
 }
 function toggleChannel(msg, which) {
@@ -605,16 +693,229 @@ function pickScore(n) { S.score = n; render(); }
 function mapLoc(i, v) { S.mapped[i] = !!v; render(); }
 
 /* ═══════════ Steps ═══════════ */
-function stepApproach() {
-  const msgCount = '2 messages';
-  const cards = ['both','public','private'].map(k => {
-    const P = PRESETS[k];
+/* ═══════════════════ Live hi-fi form preview (Option E) ═══════════════════ */
+const BIZ = { name: 'Safari Pet Resort', city: 'Austin, TX', host: 'safaripetresort.reach.reviews/v/8fk21' };
+
+const CHECK = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>`;
+const SEND  = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2.5L11 13"/><path d="M21.5 2.5l-6.7 19-3.8-8.5L2.5 9.2z"/></svg>`;
+
+function fLogo() {
+  return `<div class="flogo"><b>SAFARI</b><i>PET RESORT</i><u>Where pets go on adventure!</u></div>`;
+}
+
+function fShell(body, foot) {
+  return `
+    <div class="fcard">
+      <div class="fband">${fLogo()}</div>
+      <div class="fbody">${body}</div>
+      ${foot ? `<div class="ffoot">${foot}</div>` : ''}
+    </div>`;
+}
+
+/* ── screen 1: the only question we ask up front ── */
+function fScoreScreen() {
+  const squares = Array.from({ length: 11 }, (_, i) =>
+    `<button class="fsc ${S.fscore === i ? 'on' : ''}" onclick="fSelect(${i})" aria-label="Score ${i}">${i}</button>`).join('');
+  const picked = S.fscore !== null;
+  return fShell(`
+    <div class="fh1">How was your visit?</div>
+    <div class="fsub">Takes a few seconds &mdash; and helps us take better care of every pet that comes through.</div>
+    <div class="fsec">
+      <div class="fq">How would you rate your experience?<i>*</i></div>
+      <div class="fscale" role="group" aria-label="Rate 0 to 10">${squares}</div>
+      <div class="fends"><span>0 &middot; Not at all likely</span><span>10 &middot; Extremely likely</span></div>
+    </div>`,
+    `<button class="fbtn fbtn-p" onclick="fSubmitScore()" ${picked ? '' : 'disabled'}>${SEND} Submit Feedback</button>`);
+}
+
+/* ── 9–10: hand off to Google, no further questions ── */
+function fRedirectScreen() {
+  return fShell(`
+    <div class="fcenter">
+      <div class="fok">${CHECK}</div>
+      <div class="fh1">That's great to hear!</div>
+      <div class="fsub">Taking you to Google…</div>
+      <div class="fbar"><i></i></div>
+    </div>`);
+}
+
+/* ── 0–8: one follow-up question ── */
+function fFollowupScreen() {
+  const low = S.fscore <= 8;
+  const q = low ? 'What could we have done better?' : 'What stood out?';
+  const ph = low ? 'Tell us what happened — it comes straight to the owner.'
+                 : 'What did we get right?';
+  return fShell(`
+    <div class="fcenter"><span class="fscored">${CHECK.replace('20','13').replace('20','13')} You scored us ${S.fscore}</span></div>
+    <div class="fh1" style="margin-top:14px">${low ? 'Thanks for telling us.' : 'Thanks for letting us know.'}</div>
+    <div class="fsub">${low
+      ? 'Anything you can tell us helps us put it right.'
+      : 'Anything else you\'d like to add?'}</div>
+    <div class="fsec">
+      <div class="fq">${q}</div>
+      <textarea class="fta" placeholder="${ph}"></textarea>
+    </div>`,
+    `<button class="fbtn fbtn-p" onclick="fSubmit()">${SEND} Send feedback</button>`);
+}
+
+/* ── after the follow-up: the Google invite lives here, not next to the complaint ── */
+function fThanksScreen() {
+  const invite = googleWanted();
+  return fShell(`
+    <div class="fcenter">
+      <div class="fok">${CHECK}</div>
+      <div class="fh1">Thank you — we've got it.</div>
+      <div class="fsub">${invite
+        ? 'Someone from the team will read this today.'
+        : 'Someone from the team will read this today. Nothing you\'ve written is posted anywhere public.'}</div>
+    </div>
+    ${invite ? `
+      <div class="fdivider"><i></i><em>ONE MORE THING</em><i></i></div>
+      <div class="fsub" style="max-width:none;margin:0">Would you share it on Google too?</div>` : ''}`,
+    invite
+      ? `<button class="fbtn fbtn-g" onclick="fGo('google')">Leave a Google review</button>
+         <button class="fbtn fbtn-ghost" onclick="fReset()">No thanks, I'm done</button>`
+      : '');
+}
+
+/* ── public only: there is no form, the message links straight out ── */
+function fMessageScreen() {
+  return `
+    <div class="fcard">
+      <div class="fbody" style="padding:22px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #eef1f4;padding-bottom:11px;margin-bottom:15px">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.07em;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:5px;padding:3px 8px">EMAIL</span>
+          <span style="font-size:10.5px;color:#9ca3af">to you · just now</span>
+        </div>
+        <div style="font-size:17px;font-weight:750;letter-spacing:-.025em">How did we do?</div>
+        <div class="fsub" style="text-align:left;margin:8px 0 0;max-width:none">Thanks for visiting ${BIZ.name} last week. If you have a moment, a Google review really helps other pet owners find us.</div>
+      </div>
+      <div class="ffoot"><button class="fbtn fbtn-g" onclick="fGo('google')">Leave a Google review</button></div>
+    </div>`;
+}
+
+/* ── Google's own screen ── */
+function fGoogleScreen() {
+  return `
+    <div class="fcard gsheet">
+      <div class="fbody" style="padding:18px 20px 20px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+          <span style="width:32px;height:32px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">JD</span>
+          <div><div style="font-size:13px;font-weight:600;color:#202124">Jordan D.</div><div style="font-size:11px;color:#5f6368">Posting publicly across Google</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #e0e3e6;border-radius:8px;margin-bottom:14px">
+          <span style="width:28px;height:28px;border-radius:6px;background:var(--biz);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">SP</span>
+          <div><div style="font-size:12.5px;font-weight:600;color:#202124">${BIZ.name}</div><div style="font-size:11px;color:#5f6368">${BIZ.city}</div></div>
+        </div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px">${'<span style="font-size:29px;color:#fbbc04;line-height:1">★</span>'.repeat(5)}</div>
+        <div style="font-size:12px;color:#80868b;border:1px solid #e0e3e6;border-radius:8px;padding:12px;min-height:60px">Share details of your own experience at this place</div>
+        <div style="display:flex;justify-content:flex-end;gap:18px;align-items:center;margin-top:15px">
+          <span style="font-size:12.5px;font-weight:600;color:#1a73e8">Cancel</span>
+          <span style="font-size:12.5px;font-weight:600;color:#fff;background:#1a73e8;border-radius:100px;padding:8px 22px">Post</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+const googleWanted = () => PRESETS[S.channels].google;
+const formWanted   = () => PRESETS[S.channels].form;
+
+function fSelect(n) { S.fscore = n; render(); }
+
+function fSubmitScore() {
+  const n = S.fscore;
+  if (typeof n !== 'number') return;
+  if (googleWanted() && formWanted() && n >= S.threshold) {
+    S.fstage = 'redirect';
+    const tick = ++S.ftick;
+    render();
+    setTimeout(() => { if (S.ftick === tick && S.fstage === 'redirect') { S.fstage = 'google'; render(); } }, 1450);
+  } else {
+    S.fstage = 'followup';
+    render();
+  }
+}
+function fSubmit() { S.fstage = 'thanks'; render(); }
+function fGo(stage) { S.fstage = stage; render(); }
+const started = () => S.fscore !== null || !(S.fstage === 'score' || S.fstage === 'message');
+
+function fReset() { S.fstage = formWanted() ? 'score' : 'message'; S.fscore = null; S.ftick++; render(); }
+
+function fScreen() {
+  if (!formWanted()) return S.fstage === 'google' ? fGoogleScreen() : fMessageScreen();
+  switch (S.fstage) {
+    case 'redirect': return fRedirectScreen();
+    case 'followup': return fFollowupScreen();
+    case 'thanks':   return fThanksScreen();
+    case 'google':   return fGoogleScreen();
+    default:         return fScoreScreen();
+  }
+}
+
+
+
+
+function variantE() {
+  const opts = ['both','public','private'].map(k => {
+    const O = OPT[k], on = S.pick === k;
     return `
-    <button class="pcard ${S.channels===k?'sel':''}" onclick="setPreset('${k}')">
-      <div class="pcard-top"><span class="pcard-ic">${P.icon}</span><span class="pcard-radio"></span></div>
-      <div class="pcard-t">${P.label}${k==='both'?' <span class="rec">Recommended</span>':''}</div>
-      <div class="pcard-d">${P.desc}</div>
-      <div class="pcard-foot"><span class="pcard-vsub">${msgCount} max</span></div>
+    <button class="eopt ${on ? 'sel' : ''}" onclick="setPick('${k}')">
+      <span class="radio ${on ? 'on' : ''}"></span>
+      <span class="eopt-txt">
+        <span class="eopt-t">${O.tight}${O.rec ? '<span class="rec">Recommended</span>' : ''}</span>
+        <span class="eopt-d">${O.line}</span>
+      </span>
+    </button>`;
+  }).join('');
+
+  return `
+    <h2>How should we ask your customers for reviews?</h2>
+    <p class="lede">Pick one. The phone shows what your customer gets.</p>
+
+    <div class="esplit">
+      <div>${opts}</div>
+
+      <div>
+        <div class="prehead"><button class="treset" onclick="fReset()" ${started() ? '' : 'aria-hidden="true"'}>&#8634; Start over</button></div>
+        <div class="pwrap">
+          <div class="iphone">
+            <div class="inotch"></div>
+            <div class="iscreen">
+              <div class="istatus"><span>9:41</span><span>&#9679;&#9679;&#9679; &#9679;&#9679;</span></div>
+              <div class="iview">${fScreen()}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+const OPT = {
+  both: {
+    tight: 'Ask for private feedback first, then a Google review',
+    line: 'Every customer answers one 0–10 question from you first. A 9 or 10 goes on to Google. Anything lower is asked what went wrong, then still offered the Google link.',
+    rec: true,
+  },
+  public: {
+    tight: 'Ask for a Google review only',
+    line: 'Customers go straight to your Google page, with no questions from you. You won’t hear about a bad visit until the review is already public.',
+  },
+  private: {
+    tight: 'Ask for private feedback only',
+    line: 'Customers answer your 0–10 question and can add a comment. It comes only to you. Google is never mentioned, so your rating won’t change.',
+  },
+};
+
+function stepApproach() {
+  const opts = ['both','public','private'].map(k => {
+    const O = OPT[k], on = S.channels === k;
+    return `
+    <button class="eopt ${on ? 'sel' : ''}" onclick="setPreset('${k}')">
+      <span class="radio ${on ? 'on' : ''}"></span>
+      <span class="eopt-txt">
+        <span class="eopt-t">${O.tight}${O.rec ? '<span class="rec">Recommended</span>' : ''}</span>
+        <span class="eopt-d">${O.line}</span>
+      </span>
     </button>`;
   }).join('');
 
@@ -626,7 +927,7 @@ function stepApproach() {
     `A Google review link, with one reminder ${S.reminderDays} days later if they haven't reviewed.`]);
 
   if (combined()) bullets.push(['\u2605',`Scores of ${S.threshold} or more go straight to Google`,
-    `Anyone scoring below ${S.threshold} gets a comment box — with the same Google button on the same screen.`]);
+    `Anyone scoring below ${S.threshold} gets asked what went wrong, and is offered the Google link on the screen after that.`]);
 
   if (combined()) bullets.push(['\u25c9','Everyone is invited to Google',
     `The invitation is part of the same ask — it never depends on what they scored.`]);
@@ -648,32 +949,32 @@ function stepApproach() {
     <div class="bullet"><div class="bullet-ic">${ic}</div>
     <div><div class="bullet-t">${t}</div><div class="bullet-d">${d}</div></div></div>`).join('');
 
-  const tryLabel = S.formOpen ? 'Hide preview' : (formOn() ? '\u2922 Try the form' : '\u2922 See what they get');
-
   return `
-    <h2>What channels do you want to offer?</h2>
-    <p class="lede">You can change this later.</p>
-    <div class="pgrid">${cards}</div>
+    <h2>How should we ask your customers for reviews?</h2>
+    <p class="lede">Pick one. The phone shows what your customer gets.</p>
+
+    <div class="esplit">
+      <div>${opts}</div>
+
+      <div>
+        <div class="prehead"><button class="treset" onclick="fReset()" ${started() ? '' : 'aria-hidden="true"'}>&#8634; Start over</button></div>
+        <div class="pwrap">
+          <div class="iphone">
+            <div class="inotch"></div>
+            <div class="iscreen">
+              <div class="istatus"><span>9:41</span><span>&#9679;&#9679;&#9679; &#9679;&#9679;</span></div>
+              <div class="iview">${fScreen()}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="dwrap">
       <div class="dhead">
         <span class="dhead-t">What will happen</span>
-        <span class="dhead-r">
-          <span class="pill p-off">~${volume()} sends/mo</span>
-          ${googleOn() || formOn() ? `<button class="dtry" onclick="toggleForm()">${tryLabel}</button>` : ''}
-        </span>
+        <span class="dhead-r"><span class="pill p-off">~${volume()} sends/mo</span></span>
       </div>
-
-      ${S.formOpen ? `
-      <div class="dpreview">
-        <div class="phone phone-sm"><div class="pnotch"></div><div class="pscr">
-          <div class="pbar"></div>
-          <div class="pbrand"><div class="plogo">HT</div><div><div class="pbiz">Happy Tails Pet Resort</div><div class="pbizs">Austin, TX</div></div></div>
-          <div class="pbody">${formBody()}</div>
-        </div></div>
-        <div class="pcap" style="max-width:300px">${formCap()}</div>
-      </div>` : ''}
-
       <div class="dbody-rows">${summary}</div>
     </div>
   `;
