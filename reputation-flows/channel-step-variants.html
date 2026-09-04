@@ -228,9 +228,9 @@ html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; l
 /* ══════════════════════ VARIANT E — live hi-fi form ══════════════════════ */
 :root { --biz: #22624c; --biz-d: #1a4d3b; }
 
-.esplit { display: grid; grid-template-columns: 316px 1fr; gap: 20px; align-items: start; }
+.esplit { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: center; }
 
-.eopt { border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface); padding: 12px 13px;
+.eopt { border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface); padding: 14px 15px;
   width: 100%; text-align: left; font-family: inherit; cursor: pointer; display: flex; gap: 10px;
   margin-bottom: 9px; transition: border-color .16s, box-shadow .16s; }
 .eopt:hover { border-color: var(--border-h); }
@@ -255,7 +255,7 @@ html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; l
 .bdot { width: 8px; height: 8px; border-radius: 50%; background: #d0d4d8; flex-shrink: 0; }
 .burl { margin-left: 7px; font-size: 10.5px; color: #5f6368; background: #fff; border-radius: 100px; padding: 3px 12px; flex: 1;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bview { background: #f4f6f8; padding: 20px 22px; height: 466px; overflow-y: auto; display: flex; }
+.bview { background: #f4f6f8; padding: 20px 22px; height: 424px; overflow-y: auto; display: flex; }
 
 /* ── the customer-facing form card, hi-fi ── */
 .fcard { width: 100%; max-width: 430px; margin: auto; background: #fff; border-radius: 14px; box-shadow: 0 5px 22px rgba(15,23,42,.10); overflow: hidden; }
@@ -393,6 +393,7 @@ const OPT = {
   both: {
     label: 'Public and private',
     plain: 'Ask them privately, then invite them to Google',
+    tight: 'Privately first, then Google',
     icon: ICONS.megaphone,
     google: true, private: true, rec: true,
     /* variant A one-liner */
@@ -403,6 +404,7 @@ const OPT = {
   public: {
     label: 'Public only',
     plain: 'Send them straight to Google',
+    tight: 'Straight to Google',
     icon: ICONS.star,
     google: true, private: false, rec: false,
     d: 'One tap from the message to the Google review box. Fewest steps, most reviews — and no warning before a bad one goes up.',
@@ -413,6 +415,7 @@ const OPT = {
   private: {
     label: 'Private only',
     plain: 'Keep every answer between you and them',
+    tight: 'Private only',
     icon: ICONS.inbox,
     google: false, private: true, rec: false,
     d: 'Scores and comments come to your dashboard. Nothing is ever posted publicly, and Google is never mentioned.',
@@ -965,20 +968,21 @@ function fTrail() {
 
 function fCaption() {
   if (!formWanted()) return S.fstage === 'google'
-    ? `<b>Google's own screen.</b> No score was ever collected — you see this review when everyone else does.`
-    : `There's no form in this approach. The message links <b>straight to Google</b>.`;
+    ? `<b>Google's own screen.</b>`
+    : `No form. The message links straight out.`;
   switch (S.fstage) {
-    case 'score':    return `This is the whole first screen. <b>Tap any number</b> — nothing else is asked until they do.`;
-    case 'redirect': return `<b>${S.fscore} out of 10.</b> The score is already saved. No comment box, no second question — Google is opening now.`;
+    case 'score':    return `One question. That's the whole screen.`;
+    case 'redirect': return `<b>${S.fscore}</b> saved. No second question.`;
     case 'followup': return googleWanted()
-      ? `<b>${S.fscore} out of 10.</b> Saved before this screen appeared, so you have the score even if they close the tab here.`
-      : `<b>${S.fscore} out of 10.</b> Saved to your dashboard. Google is never mentioned in this approach.`;
+      ? `<b>${S.fscore}</b> saved before this screen.`
+      : `<b>${S.fscore}</b> saved. Google is never mentioned.`;
     case 'thanks':   return googleWanted()
-      ? `The Google invite comes <b>after</b> they've had their say — never sitting next to the complaint box.`
-      : `Nothing here is published. This is the last screen they see.`;
-    case 'google':   return `<b>Google's own screen.</b> We don't control what's on it — we only decide when they arrive.`;
+      ? `The invite comes after, not beside the complaint.`
+      : `Nothing here is published.`;
+    case 'google':   return `<b>Google's own screen.</b>`;
   }
 }
+
 
 function variantE() {
   const opts = ['both','public','private'].map(k => {
@@ -987,8 +991,7 @@ function variantE() {
     <button class="eopt ${on ? 'sel' : ''}" onclick="setPick('${k}')">
       <span class="radio ${on ? 'on' : ''}"></span>
       <span class="eopt-txt">
-        <span class="eopt-t">${O.plain}${O.rec ? '<span class="rec">Recommended</span>' : ''}</span>
-        <span class="eopt-d">${O.short}</span>
+        <span class="eopt-t">${O.tight}${O.rec ? '<span class="rec">Recommended</span>' : ''}</span>
         <span class="eopt-m">
           <span class="mchip ${O.google ? 'yes' : ''}">${O.google ? '✓' : '✕'} Google reviews</span>
           <span class="mchip ${O.private ? 'yes' : ''}">${O.private ? '✓' : '✕'} Private heads-up</span>
@@ -998,19 +1001,11 @@ function variantE() {
   }).join('');
 
   return `
-    <h2>This is what your customers will see.</h2>
-    <p class="lede">Pick an approach on the left. The preview on the right is the real form — <b>tap a score in it</b> to follow where that customer ends up.</p>
+    <h2>This is what your customers see.</h2>
+    <p class="lede">Tap a score in the preview to follow that customer.</p>
 
     <div class="esplit">
-      <div>
-        ${opts}
-        <div class="enote">
-          <div class="enote-t">The same for all three</div>
-          <div class="enote-l">${ICONS.clock}<div>One request per visit, one reminder after <b>2 days</b>.</div></div>
-          <div class="enote-l">${ICONS.clock}<div>Never the same person more than once every <b>90 days</b>.</div></div>
-          <div class="enote-l">${ICONS.shield}<div>A score never decides whether someone <i>may</i> review — only how fast they get there.</div></div>
-        </div>
-      </div>
+      <div>${opts}</div>
 
       <div>
         <div class="bframe">
