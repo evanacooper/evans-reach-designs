@@ -407,8 +407,8 @@ const OPT = {
   both: {
     label: 'Public and private',
     plain: 'Ask them privately, then invite them to Google',
-    tight: 'Private first, then Google review',
-    line: 'A 9 or 10 goes straight through.',
+    tight: 'Ask for private feedback first, then a Google review',
+    line: 'Every customer answers one 0–10 question from you first. A 9 or 10 goes on to Google. Anything lower is asked what went wrong, then still offered the Google link.',
     icon: ICONS.megaphone,
     google: true, private: true, rec: true,
     /* variant A one-liner */
@@ -419,8 +419,8 @@ const OPT = {
   public: {
     label: 'Public only',
     plain: 'Send them straight to Google',
-    tight: 'Google review only',
-    line: 'No form. Nothing reaches you first.',
+    tight: 'Ask for a Google review only',
+    line: 'Customers go straight to your Google page, with no questions from you. You won’t hear about a bad visit until the review is already public.',
     icon: ICONS.star,
     google: true, private: false, rec: false,
     d: 'One tap from the message to the Google review box. Fewest steps, most reviews — and no warning before a bad one goes up.',
@@ -431,8 +431,8 @@ const OPT = {
   private: {
     label: 'Private only',
     plain: 'Keep every answer between you and them',
-    tight: 'Private feedback only',
-    line: 'Nothing is ever posted publicly.',
+    tight: 'Ask for private feedback only',
+    line: 'Customers answer your 0–10 question and can add a comment. It comes only to you. Google is never mentioned, so your rating won’t change.',
     icon: ICONS.inbox,
     google: false, private: true, rec: false,
     d: 'Scores and comments come to your dashboard. Nothing is ever posted publicly, and Google is never mentioned.',
@@ -845,7 +845,7 @@ function fRedirectScreen() {
     <div class="fcenter">
       <div class="fok">${CHECK}</div>
       <div class="fh1">That's great to hear!</div>
-      <div class="fsub">Taking you to Google so you can share it — one tap and you're done.</div>
+      <div class="fsub">Taking you to Google…</div>
       <div class="fbar"><i></i></div>
     </div>`);
 }
@@ -858,10 +858,10 @@ function fFollowupScreen() {
                  : 'What did we get right?';
   return fShell(`
     <div class="fcenter"><span class="fscored">${CHECK.replace('20','13').replace('20','13')} You scored us ${S.fscore}</span></div>
-    <div class="fh1" style="margin-top:14px">${low ? 'Thanks for the honesty.' : 'Thanks for letting us know.'}</div>
+    <div class="fh1" style="margin-top:14px">${low ? 'Thanks for telling us.' : 'Thanks for letting us know.'}</div>
     <div class="fsub">${low
-      ? 'Your score is already saved. Anything you can tell us helps us fix it.'
-      : 'Your score is already saved. Anything else you\'d like to add?'}</div>
+      ? 'Anything you can tell us helps us put it right.'
+      : 'Anything else you\'d like to add?'}</div>
     <div class="fsec">
       <div class="fq">${q}</div>
       <textarea class="fta" placeholder="${ph}"></textarea>
@@ -882,7 +882,7 @@ function fThanksScreen() {
     </div>
     ${invite ? `
       <div class="fdivider"><i></i><em>ONE MORE THING</em><i></i></div>
-      <div class="fsub" style="max-width:none;margin:0">If you'd also like to share your experience publicly, you're very welcome to.</div>` : ''}`,
+      <div class="fsub" style="max-width:none;margin:0">Would you share it on Google too?</div>` : ''}`,
     invite
       ? `<button class="fbtn fbtn-g" onclick="fGo('google')">Leave a Google review</button>
          <button class="fbtn fbtn-ghost" onclick="fReset()">No thanks, I'm done</button>`
@@ -980,8 +980,8 @@ function variantE() {
   }).join('');
 
   return `
-    <h2>This is what your customers see.</h2>
-    <p class="lede">Try the form on the right.</p>
+    <h2>How should we ask your customers for reviews?</h2>
+    <p class="lede">Pick one. The phone shows what your customer gets.</p>
 
     <div class="esplit">
       <div>${opts}</div>
