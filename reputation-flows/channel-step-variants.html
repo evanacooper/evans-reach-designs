@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Channel step — 5 design variations</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f9fafb; --surface: #fff; --border: #e5e7eb; --border-h: #d1d5db;
+  --fg: #111827; --fg-2: #6b7280; --fg-3: #9ca3af;
+  --brand: #6d5ef7; --brand-h: #5b4de0; --brand-bg: #f5f3ff; --brand-border: #ddd6fe;
+  --ok: #16a34a; --ok-bg: #f0fdf4; --ok-border: #bbf7d0;
+  --warn: #d97706; --warn-bg: #fffbeb; --warn-border: #fde68a;
+  --dgr: #dc2626; --dgr-bg: #fef2f2; --dgr-border: #fecaca;
+  --goog: #4285F4; --goog-bg: #eff6ff; --goog-border: #bfdbfe;
+  --lock: #0f766e; --lock-bg: #f0fdfa; --lock-border: #99f6e4;
+  --r: 10px;
+}
+html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; line-height: 1.5; color: var(--fg); background: #e8eaed; -webkit-font-smoothing: antialiased; }
+
+.back-link { position: fixed; top: 14px; left: 18px; z-index: 90; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 500; color: var(--fg-2); text-decoration: none; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 100px; padding: 6px 13px 6px 10px; }
+.back-link:hover { color: var(--fg); }
+
+.devbar { position: fixed; top: 0; left: 0; right: 0; z-index: 80; display: flex; flex-wrap: wrap; align-items: center;
+  gap: 5px; padding: 11px 18px 11px 140px; background: rgba(255,255,255,.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.devbtn { font-family: inherit; font-size: 11.5px; font-weight: 500; padding: 4px 10px; border-radius: 100px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--fg-2); white-space: nowrap; }
+.devbtn:hover { border-color: var(--border-h); color: var(--fg); }
+.devbtn.on { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+.devlabel { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); margin-right: 3px; }
+.devsep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+.devnote { font-size: 11px; color: var(--fg-3); margin-left: auto; }
+
+.stage { padding: 62px 16px 20px; max-width: 1180px; margin: 0 auto; }
+.vtitle { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 6px 2px 10px; }
+.vtitle b { font-size: 13px; font-weight: 700; letter-spacing: -.01em; color: #374151; }
+.vtitle span { font-size: 12px; color: #6b7280; }
+
+/* modal shell — mirrors production */
+.modal { background: var(--surface); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.16); overflow: hidden; display: flex; flex-direction: column; min-height: 852px; }
+.mhead { padding: 20px 26px 16px; border-bottom: 1px solid var(--border); position: relative; }
+.mhead h1 { font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
+.mhead p { font-size: 13px; color: var(--fg-2); margin-top: 3px; }
+.mclose { position: absolute; top: 18px; right: 22px; background: none; border: none; cursor: pointer; color: var(--fg-2); font-size: 20px; line-height: 1; padding: 4px; }
+.mclose:hover { color: var(--fg); }
+
+.mbody { display: flex; flex: 1; min-height: 0; }
+.side { width: 268px; flex-shrink: 0; padding: 22px 18px; border-right: 1px solid var(--border); }
+.snav { display: flex; flex-direction: column; gap: 2px; }
+.sitem { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 9px; font-size: 13.5px; color: var(--fg-3); border: 1.5px solid transparent; cursor: default; }
+.sitem.cur { color: var(--fg); font-weight: 600; border-color: var(--brand); background: #fff; }
+.sicon { width: 15px; text-align: center; flex-shrink: 0; font-size: 13px; }
+.sitem.cur .sicon { color: var(--brand); }
+
+.main { flex: 1; padding: 20px 30px; overflow-y: auto; max-height: 752px; min-width: 0; }
+.main h2 { font-size: 20px; font-weight: 700; letter-spacing: -.022em; margin-bottom: 6px; }
+.lede { font-size: 13.5px; color: var(--fg-2); line-height: 1.6; margin-bottom: 20px; max-width: 730px; }
+
+.mfoot { padding: 14px 26px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--surface); }
+.mfoot-l { font-size: 12px; color: var(--fg-3); }
+.mfoot-r { display: flex; gap: 10px; }
+.btn { font-family: inherit; font-size: 13.5px; font-weight: 600; padding: 10px 26px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
+.btn:hover { border-color: var(--border-h); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-p { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn-p:hover:not(:disabled) { background: var(--brand-h); border-color: var(--brand-h); }
+
+.rec { font-size: 9.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--brand);
+  background: var(--brand-bg); border: 1px solid var(--brand-border); padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
+.quiet { font-size: 11.5px; color: var(--fg-3); line-height: 1.55; }
+.radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border-h); flex-shrink: 0; background: var(--surface); }
+.sel-on .radio, .radio.on { border-color: var(--brand); border-width: 5.5px; }
+
+/* ══════════════════════ shared: mini storyboard tiles ══════════════════════ */
+.tile { border: 1px solid var(--border); border-radius: 9px; background: #fff; padding: 9px 10px; min-width: 0; }
+.tile-k { font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 4px; }
+.tile-t { font-size: 12px; font-weight: 650; line-height: 1.3; letter-spacing: -.008em; }
+.tile-s { font-size: 10.5px; color: var(--fg-2); line-height: 1.45; margin-top: 3px; }
+.tile.t-goog { background: var(--goog-bg); border-color: var(--goog-border); }
+.tile.t-goog .tile-k { color: #1d4ed8; }
+.tile.t-priv { background: var(--lock-bg); border-color: var(--lock-border); }
+.tile.t-priv .tile-k { color: var(--lock); }
+.tile.t-warn { background: var(--warn-bg); border-color: var(--warn-border); }
+.tile.t-warn .tile-k { color: var(--warn); }
+.tile.t-dgr { background: var(--dgr-bg); border-color: var(--dgr-border); }
+.tile.t-dgr .tile-k { color: var(--dgr); }
+
+.arr { display: flex; align-items: center; justify-content: center; color: var(--fg-3); font-size: 13px; flex-shrink: 0; width: 22px; }
+.arr em { font-style: normal; }
+
+/* mini score strip */
+.mscale { display: flex; gap: 2px; margin-top: 6px; }
+.mscale i { flex: 1; height: 13px; border-radius: 2.5px; background: #eef1f4; border: 1px solid #e3e7eb; font-style: normal;
+  font-size: 7.5px; font-weight: 700; color: #9aa3ad; display: flex; align-items: center; justify-content: center; }
+.mscale i.lo { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn); }
+.mscale i.hi { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
+.mscale i.pick { outline: 2px solid #111827; outline-offset: 1px; z-index: 2; }
+
+/* ══════════════════════ VARIANT A — storyboard rows ══════════════════════ */
+.arow { border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); padding: 0; margin-bottom: 12px;
+  cursor: pointer; text-align: left; font-family: inherit; width: 100%; display: block; transition: border-color .16s, box-shadow .16s; }
+.arow:hover { border-color: var(--border-h); }
+.arow.sel { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
+.arow-h { display: flex; align-items: center; gap: 12px; padding: 14px 16px 12px; }
+.arow.sel .arow-h { background: var(--brand-bg); border-radius: 10.5px 10.5px 0 0; }
+.arow-t { font-size: 15.5px; font-weight: 680; letter-spacing: -.015em; }
+.arow-d { font-size: 12.5px; color: var(--fg-2); margin-top: 2px; line-height: 1.45; }
+.arow-txt { flex: 1; min-width: 0; }
+.arow-chips { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+.chipf { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 4px 10px;
+  border-radius: 100px; border: 1px solid var(--border); background: var(--bg); color: var(--fg-3); white-space: nowrap; }
+.chipf.yes { background: var(--ok-bg); border-color: var(--ok-border); color: #15803d; }
+.chipf.no { background: var(--bg); border-color: var(--border); color: var(--fg-3); }
+.chipf b { font-weight: 700; }
+.arow-b { padding: 13px 16px 14px; border-top: 1px solid var(--border); }
+.arow.sel .arow-b { border-top-color: var(--brand-border); }
+.sb { display: flex; align-items: center; gap: 3px; }
+.sb > .tile { flex: 1; }
+.sb-fork { flex: 1.55; display: flex; flex-direction: column; gap: 5px; position: relative; }
+.sb-fork .tile { flex: 1; }
+.forkbadge { position: absolute; left: -14px; top: 50%; transform: translateY(-50%); font-size: 9px; font-weight: 700;
+  color: var(--fg-3); writing-mode: vertical-rl; letter-spacing: .06em; }
+.arow-foot { display: flex; align-items: center; gap: 8px; margin-top: 11px; padding-top: 10px; border-top: 1px dashed var(--border);
+  font-size: 11.5px; color: var(--fg-2); line-height: 1.5; }
+.arow-foot svg { flex-shrink: 0; }
+
+/* ══════════════════════ VARIANT B — two questions ══════════════════════ */
+.qblock { margin-bottom: 18px; }
+.qnum { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%;
+  background: #111827; color: #fff; font-size: 11px; font-weight: 700; margin-right: 9px; flex-shrink: 0; }
+.qtitle { display: flex; align-items: center; font-size: 15.5px; font-weight: 680; letter-spacing: -.015em; }
+.qsub { font-size: 12.5px; color: var(--fg-2); margin: 4px 0 11px 29px; line-height: 1.55; max-width: 620px; }
+.qopts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-left: 29px; }
+.qopt { border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface); padding: 13px 14px; cursor: pointer;
+  text-align: left; font-family: inherit; display: flex; gap: 11px; align-items: flex-start; transition: border-color .16s, box-shadow .16s; }
+.qopt:hover { border-color: var(--border-h); }
+.qopt.on { border-color: var(--brand); background: var(--brand-bg); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
+.qopt-t { display: block; font-size: 13.5px; font-weight: 650; letter-spacing: -.01em; }
+.qopt-d { display: block; font-size: 11.5px; color: var(--fg-2); line-height: 1.45; margin-top: 3px; }
+.qdiv { height: 1px; background: var(--border); margin: 20px 0; }
+.result { border: 1.5px solid var(--brand); background: var(--brand-bg); border-radius: 12px; overflow: hidden; }
+.result.bad { border-color: var(--warn-border); background: var(--warn-bg); }
+.result-h { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--brand-border); }
+.result.bad .result-h { border-bottom-color: var(--warn-border); }
+.result-k { font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--brand); }
+.result.bad .result-k { color: var(--warn); }
+.result-t { font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
+.result-b { padding: 13px 16px 15px; background: #fff; }
+.result-note { font-size: 12.5px; color: var(--fg-2); line-height: 1.55; margin-top: 11px; padding-top: 10px; border-top: 1px dashed var(--border); }
+
+/* ══════════════════════ VARIANT C — recommendation first ══════════════════════ */
+.hero { border: 1.5px solid var(--brand); border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
+.hero-h { padding: 15px 18px 14px; background: var(--brand-bg); border-bottom: 1px solid var(--brand-border); display: flex; align-items: center; gap: 13px; }
+.hero-ic { width: 38px; height: 38px; border-radius: 10px; background: #fff; border: 1px solid var(--brand-border);
+  display: flex; align-items: center; justify-content: center; color: var(--brand); flex-shrink: 0; }
+.hero-ic svg { width: 20px; height: 20px; }
+.hero-t { font-size: 17.5px; font-weight: 700; letter-spacing: -.022em; }
+.hero-d { font-size: 12.5px; color: var(--fg-2); margin-top: 2px; }
+.hero-b { padding: 15px 18px 16px; }
+.why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border); }
+.whyc { }
+.whyv { font-size: 19px; font-weight: 720; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.whyl { font-size: 11.5px; color: var(--fg-2); line-height: 1.45; margin-top: 2px; }
+.alts-h { display: flex; align-items: center; gap: 11px; margin: 22px 0 11px; }
+.alts-h span { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); white-space: nowrap; }
+.alts-h i { flex: 1; height: 1px; background: var(--border); }
+.alt { border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface); padding: 13px 15px; margin-bottom: 9px;
+  cursor: pointer; text-align: left; font-family: inherit; width: 100%; display: flex; gap: 12px; align-items: center; transition: border-color .16s; }
+.alt:hover { border-color: var(--border-h); }
+.alt-t { display: flex; font-size: 14px; font-weight: 650; letter-spacing: -.012em; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.alt-d { display: block; font-size: 12px; color: var(--fg-2); line-height: 1.45; margin-top: 3px; }
+.alt-txt { flex: 1; min-width: 0; display: block; }
+.tradeoff { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--warn);
+  background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 6px; padding: 3px 8px; margin-top: 7px; }
+
+/* ══════════════════════ VARIANT D — simulator lanes ══════════════════════ */
+.simbar { border: 1px solid var(--border); border-radius: 11px; background: var(--surface); padding: 13px 16px 14px; margin-bottom: 14px; }
+.simbar-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.simbar-t { font-size: 13.5px; font-weight: 650; letter-spacing: -.01em; }
+.simbar-s { font-size: 11.5px; color: var(--fg-3); }
+.scale { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; }
+.sq { aspect-ratio: 1.35; border: 1.5px solid var(--border); border-radius: 7px; background: #fff; font-family: inherit;
+  font-size: 13px; font-weight: 650; cursor: pointer; color: var(--fg-2); display: flex; align-items: center; justify-content: center; transition: all .12s; }
+.sq:hover { border-color: var(--fg-3); color: var(--fg); }
+.sq.lo.on { background: var(--warn); border-color: var(--warn); color: #fff; }
+.sq.hi.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+.scale-ends { display: flex; justify-content: space-between; margin-top: 7px; font-size: 10.5px; color: var(--fg-3); }
+
+.lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; }
+.lane { border: 1.5px solid var(--border); border-radius: 11px; background: var(--surface); overflow: hidden; cursor: pointer;
+  text-align: left; font-family: inherit; display: flex; flex-direction: column; transition: border-color .16s, box-shadow .16s; }
+.lane:hover { border-color: var(--border-h); }
+.lane.sel { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
+.lane-h { padding: 11px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 9px; }
+.lane.sel .lane-h { background: var(--brand-bg); border-bottom-color: var(--brand-border); }
+.lane-t { font-size: 13px; font-weight: 680; letter-spacing: -.012em; line-height: 1.2; }
+.lane-b { padding: 11px 12px 12px; flex: 1; display: flex; flex-direction: column; }
+.step { display: flex; gap: 9px; }
+.step-rail { display: flex; flex-direction: column; align-items: center; width: 18px; flex-shrink: 0; }
+.step-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); background: #fff; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: var(--fg-3); }
+.step-dot.k-goog { background: var(--goog); border-color: var(--goog); color: #fff; }
+.step-dot.k-priv { background: var(--lock); border-color: var(--lock); color: #fff; }
+.step-dot.k-warn { background: var(--warn); border-color: var(--warn); color: #fff; }
+.step-dot.k-dgr  { background: var(--dgr);  border-color: var(--dgr);  color: #fff; }
+.step-line { width: 1.5px; flex: 1; background: var(--border); min-height: 10px; }
+.step:last-of-type .step-line { display: none; }
+.step-c { flex: 1; min-width: 0; padding-bottom: 11px; }
+.step:last-of-type .step-c { padding-bottom: 0; }
+.step-t { font-size: 12px; font-weight: 650; line-height: 1.35; letter-spacing: -.008em; }
+.step-s { font-size: 11px; color: var(--fg-2); line-height: 1.45; margin-top: 2px; }
+.insight { margin-top: auto; padding-top: 11px; font-size: 11.5px; line-height: 1.5; border-radius: 8px; }
+.insight-in { padding: 9px 10px; border-radius: 8px; }
+.i-ok   { background: var(--ok-bg);   border: 1px solid var(--ok-border);   color: #166534; }
+.i-warn { background: var(--warn-bg); border: 1px solid var(--warn-border); color: #92400e; }
+.i-dgr  { background: var(--dgr-bg);  border: 1px solid var(--dgr-border);  color: #991b1b; }
+.i-info { background: var(--goog-bg); border: 1px solid var(--goog-border); color: #1e40af; }
+.insight b { font-weight: 700; }
+
+.footline { display: flex; align-items: flex-start; gap: 8px; font-size: 11.5px; color: var(--fg-3); line-height: 1.55; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+
+/* ══════════════════════ VARIANT E — live hi-fi form ══════════════════════ */
+:root { --biz: #22624c; --biz-d: #1a4d3b; }
+
+.esplit { display: grid; grid-template-columns: 344px 1fr; gap: 22px; align-items: center; }
+
+.eopt { border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); padding: 18px 18px;
+  width: 100%; text-align: left; font-family: inherit; cursor: pointer; display: flex; gap: 10px;
+  margin-bottom: 12px; transition: border-color .16s, box-shadow .16s; }
+.eopt:hover { border-color: var(--border-h); }
+.eopt.sel { border-color: var(--brand); background: var(--brand-bg); box-shadow: 0 0 0 3px rgba(109,94,247,.09); }
+.eopt-txt { flex: 1; min-width: 0; }
+.eopt-t { font-size: 15.5px; font-weight: 680; letter-spacing: -.012em; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.eopt .rec { background: none; border: none; padding: 0; color: var(--brand);
+  font-size: 10px; font-weight: 800; letter-spacing: .07em; }
+.eopt-d { display: block; font-size: 12.5px; color: var(--fg-2); line-height: 1.45; margin-top: 5px; }
+.eopt-m { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+.mchip { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 650; padding: 2px 7px;
+  border-radius: 100px; border: 1px solid var(--border); background: var(--bg); color: var(--fg-3); white-space: nowrap; }
+.mchip.yes { background: var(--ok-bg); border-color: var(--ok-border); color: #15803d; }
+
+.enote { border: 1px solid var(--border); border-radius: 10px; background: var(--bg); padding: 11px 13px; margin-top: 14px; }
+.enote-t { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 6px; }
+.enote-l { display: flex; gap: 7px; font-size: 11.5px; color: var(--fg-2); line-height: 1.5; margin-bottom: 5px; }
+.enote-l:last-child { margin-bottom: 0; }
+.enote-l b { color: var(--fg); font-weight: 650; }
+
+/* browser chrome */
+/* a real phone, not a squat card in a browser frame */
+.pwrap { display: flex; flex-direction: column; align-items: center; }
+.iphone { width: 314px; border-radius: 40px; padding: 9px; background: #1d2126;
+  box-shadow: 0 18px 46px rgba(15,23,42,.24); position: relative; flex-shrink: 0; }
+.inotch { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 100px; height: 24px;
+  background: #1d2126; border-radius: 0 0 14px 14px; z-index: 5; }
+.iscreen { width: 296px; height: 540px; background: #f3f5f8; border-radius: 31px; overflow: hidden;
+  display: flex; flex-direction: column; }
+.istatus { display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 20px 4px; font-size: 10.5px; font-weight: 650; color: #111827; flex-shrink: 0; }
+.istatus span:last-child { letter-spacing: .5px; }
+.iview { flex: 1; overflow-y: auto; padding: 8px 9px 12px; display: flex; }
+.iview::-webkit-scrollbar { width: 0; }
+
+.fcard { width: 100%; min-height: 100%; display: flex; flex-direction: column; background: #fff;
+  border-radius: 15px; box-shadow: 0 2px 10px rgba(15,23,42,.09); overflow: hidden; }
+.fband { height: 52px; flex-shrink: 0; background: var(--biz); position: relative; }
+.flogo { position: absolute; left: 50%; bottom: -29px; transform: translateX(-50%); width: 62px; height: 62px; border-radius: 50%;
+  background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.14); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.flogo b { font-size: 12px; font-weight: 800; letter-spacing: -.03em; color: #8a5222; line-height: 1; font-style: italic; }
+.flogo i { font-style: normal; font-size: 5.5px; font-weight: 800; letter-spacing: .11em; color: #fff; background: var(--biz);
+  border-radius: 100px; padding: 2px 6px; line-height: 1; }
+.flogo u { text-decoration: none; font-size: 5px; color: #a98b62; letter-spacing: .01em; font-style: italic; }
+
+.fbody { padding: 39px 16px 18px; flex: 1; }
+.fcard.gsheet .fbody { display: flex; flex-direction: column; justify-content: center; padding: 18px 16px; }
+.fh1 { font-size: 17.5px; font-weight: 800; letter-spacing: -.032em; text-align: center; color: #111827; line-height: 1.2; }
+.fsub { font-size: 11.5px; color: #6b7280; text-align: center; line-height: 1.5; margin: 6px auto 0; }
+.fsec { margin-top: 24px; }
+.fq { font-size: 12.5px; font-weight: 700; color: #111827; margin-bottom: 9px; }
+.fq i { font-style: normal; color: #ef4444; margin-left: 2px; }
+.fscale { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.fsc { aspect-ratio: 1; border: 1px solid #dbe2ea; border-radius: 9px; background: #eef2f6; color: #334155;
+  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: background .13s, transform .13s; padding: 0; }
+.fsc:hover { background: #dde5ee; transform: translateY(-1px); }
+.fsc.on { background: var(--biz); border-color: var(--biz); color: #fff; }
+.fends { display: flex; justify-content: space-between; margin-top: 8px; font-size: 9.5px; color: #6b7280; }
+.fta { width: 100%; border: 1px solid #dfe3e8; border-radius: 10px; padding: 12px; font-family: inherit; font-size: 13px;
+  min-height: 92px; resize: none; color: #111827; }
+.fta::placeholder { color: #a3adb8; }
+.ffoot { border-top: 1px solid #eef1f4; padding: 14px 16px 18px; margin-top: auto; }
+.fbtn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.fbtn:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+.fbtn-p { background: var(--biz); color: #fff; }
+.fbtn-p:hover { background: var(--biz-d); }
+.fbtn-g { background: #4285F4; color: #fff; }
+.fbtn-g:hover { background: #3367d6; }
+.fbtn-ghost { background: #fff; color: #6b7280; border: 1px solid #dfe3e8; margin-top: 9px; font-weight: 600; font-size: 13px; padding: 11px; }
+.fscored { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 650; color: #15803d;
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 100px; padding: 4px 11px; }
+.fcenter { text-align: center; }
+.fok { width: 46px; height: 46px; border-radius: 50%; background: #f0fdf4; border: 1.5px solid #bbf7d0; color: #16a34a;
+  display: flex; align-items: center; justify-content: center; margin: 4px auto 14px; }
+.fdivider { display: flex; align-items: center; gap: 11px; margin: 18px 0 14px; }
+.fdivider i { flex: 1; height: 1px; background: #eef1f4; }
+.fdivider em { font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: .09em; color: #b0b8c1; }
+.fbar { height: 3px; border-radius: 100px; background: #e6ebf0; overflow: hidden; margin-top: 18px; }
+.fbar i { display: block; height: 100%; background: var(--biz); border-radius: 100px; animation: fill 1.4s linear forwards; }
+@keyframes fill { from { width: 0 } to { width: 100% } }
+
+/* step trail under the preview */
+.trail { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.tstep { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: var(--fg-3);
+  border: 1px solid var(--border); background: var(--surface); border-radius: 100px; padding: 4px 11px; white-space: nowrap; }
+.tstep.on { color: var(--fg); border-color: var(--fg); }
+.tstep.done { color: var(--ok); border-color: var(--ok-border); background: var(--ok-bg); }
+.tarr { color: var(--fg-3); font-size: 11px; }
+.prehead { display: flex; justify-content: flex-end; min-height: 24px;
+  width: 314px; margin: 0 auto 4px; }
+.treset { font-family: inherit; font-size: 11.5px; font-weight: 600; color: var(--brand);
+  background: none; border: none; cursor: pointer; padding: 4px 2px; }
+.treset:hover { text-decoration: underline; }
+.treset[aria-hidden="true"] { visibility: hidden; }
+.tcap { font-size: 11.5px; color: var(--fg-2); line-height: 1.55; margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border); }
+.tcap b { color: var(--fg); font-weight: 650; }
+
+@media (max-width: 1040px) { .esplit { grid-template-columns: 1fr; } }
+
+@media (max-width: 1080px) { .lanes { grid-template-columns: 1fr; } .why { grid-template-columns: 1fr; } }
+@media (max-width: 980px) { .side { display: none; } .qopts { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← Review flows</a>
+
+<div class="devbar">
+  <span class="devlabel">Variation</span>
+  <button class="devbtn on" id="v-e" onclick="setVar('e')">E · Live form</button>
+  <button class="devbtn" id="v-a" onclick="setVar('a')">A · Storyboard</button>
+  <button class="devbtn" id="v-b" onclick="setVar('b')">B · Two questions</button>
+  <button class="devbtn" id="v-c" onclick="setVar('c')">C · Recommendation</button>
+  <button class="devbtn" id="v-d" onclick="setVar('d')">D · Simulator</button>
+  <div class="devsep"></div>
+  <span class="devlabel">Pick</span>
+  <button class="devbtn on" id="p-both" onclick="setPick('both')">Public + private</button>
+  <button class="devbtn" id="p-public" onclick="setPick('public')">Public only</button>
+  <button class="devbtn" id="p-private" onclick="setPick('private')">Private only</button>
+  <span class="devnote">Same step, four ways of asking</span>
+</div>
+
+<div class="stage">
+  <div class="vtitle"><b id="vt-name"></b><span id="vt-desc"></span></div>
+  <div class="modal">
+    <div class="mhead">
+      <h1>Set up Reputation</h1>
+      <p>Choose your approach, connect Google Business Profile, configure how requests go out, and review before activating.</p>
+      <button class="mclose" onclick="return false">✕</button>
+    </div>
+    <div class="mbody">
+      <nav class="side"><div class="snav" id="snav"></div></nav>
+      <div class="main" id="main"></div>
+    </div>
+    <div class="mfoot">
+      <div class="mfoot-l" id="foot-l"></div>
+      <div class="mfoot-r">
+        <button class="btn" disabled>Previous</button>
+        <button class="btn btn-p" id="btn-next">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════ State ═══════════════════ */
+const S = {
+  variant: 'e',
+  pick: 'both',          // both | public | private
+  wantGoogle: true,      // variant B
+  wantPrivate: true,     // variant B
+  score: 10,             // variant D
+  threshold: 9,
+  fstage: 'score',       // variant E: score | followup | redirect | thanks | google | message
+  fscore: null,
+  ftick: 0,              // guards the redirect timer
+};
+
+const STEPS = ['Choose channels','Connect Google','Map locations','Senders','Branding','Messages','Review'];
+
+const ICONS = {
+  megaphone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M15 9a4 4 0 010 6"/><path d="M18 6.5a8 8 0 010 11"/></svg>`,
+  star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.7-4.9 4.4 1.4 6.4L12 16.7l-6 3.3 1.4-6.4L2.5 9.2l6.6-.7z"/></svg>`,
+  inbox: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l2 3h4l2-3h4"/><path d="M5.5 5.5h13l2.5 7.5v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5z"/></svg>`,
+  info: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5M12 7.6v.1"/></svg>`,
+  clock: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 6.8V12l3.4 2"/></svg>`,
+  shield: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l7.5 3v5.6c0 4.6-3.1 8.3-7.5 9.8-4.4-1.5-7.5-5.2-7.5-9.8V5.8z"/><path d="M9.2 12.2l2 2 3.6-3.9"/></svg>`,
+};
+
+/* ═══════════════════ Option model ═══════════════════ */
+const OPT = {
+  both: {
+    label: 'Public and private',
+    plain: 'Ask them privately, then invite them to Google',
+    tight: 'Ask for private feedback first, then a Google review',
+    line: 'Every customer answers one 0–10 question from you first. A 9 or 10 goes on to Google. Anything lower is asked what went wrong, then still offered the Google link.',
+    icon: ICONS.megaphone,
+    google: true, private: true, rec: true,
+    /* variant A one-liner */
+    d: 'Everyone lands on your own form first. Everyone gets the Google invite — a great score just gets there faster.',
+    altd: 'One ask that does both jobs: you hear about problems, and Google still gets the reviews.',
+    short: 'Score first. A 9 or 10 goes straight to Google; anything lower gets one follow-up question, then the invite.',
+  },
+  public: {
+    label: 'Public only',
+    plain: 'Send them straight to Google',
+    tight: 'Ask for a Google review only',
+    line: 'Customers go straight to your Google page, with no questions from you. You won’t hear about a bad visit until the review is already public.',
+    icon: ICONS.star,
+    google: true, private: false, rec: false,
+    d: 'One tap from the message to the Google review box. Fewest steps, most reviews — and no warning before a bad one goes up.',
+    altd: 'The shortest path to a review. You read the unhappy ones on Google, at the same time as everyone else.',
+    short: 'No form at all. The message links straight to the Google review box.',
+    tradeoff: 'You lose the private heads-up',
+  },
+  private: {
+    label: 'Private only',
+    plain: 'Keep every answer between you and them',
+    tight: 'Ask for private feedback only',
+    line: 'Customers answer your 0–10 question and can add a comment. It comes only to you. Google is never mentioned, so your rating won’t change.',
+    icon: ICONS.inbox,
+    google: false, private: true, rec: false,
+    d: 'Scores and comments come to your dashboard. Nothing is ever posted publicly, and Google is never mentioned.',
+    altd: 'A pure listening channel. Good while you fix something — but your Google rating stays where it is.',
+    short: 'Score first, then one follow-up question. Google is never mentioned.',
+    tradeoff: 'You get no new Google reviews',
+  },
+};
+
+/* ═══════════════════ Helpers ═══════════════════ */
+const T = (n) => n >= S.threshold;
+
+function chip(on, label) {
+  return `<span class="chipf ${on ? 'yes' : 'no'}">${on
+    ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>`
+    : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`}${label}</span>`;
+}
+
+function miniScale(mode) {
+  // mode: 'split' (colour 9-10 green, 0-8 amber) | 'flat'
+  let out = '';
+  for (let n = 0; n <= 10; n++) {
+    const cls = mode === 'split' ? (T(n) ? 'hi' : 'lo') : '';
+    out += `<i class="${cls}">${n}</i>`;
+  }
+  return `<div class="mscale">${out}</div>`;
+}
+
+/* ═══════════════════ VARIANT A — storyboard rows ═══════════════════ */
+function storyboard(k) {
+  if (k === 'both') return `
+    <div class="sb">
+      <div class="tile">
+        <div class="tile-k">1 · The ask</div>
+        <div class="tile-t">One message</div>
+        <div class="tile-s">Email or text after a visit, plus one reminder.</div>
+      </div>
+      <div class="arr"><em>→</em></div>
+      <div class="tile t-priv">
+        <div class="tile-k">2 · Your form</div>
+        <div class="tile-t">“How was your visit?”</div>
+        <div class="tile-s">0–10. The score is yours either way.</div>
+        ${miniScale('split')}
+      </div>
+      <div class="arr"><em>→</em></div>
+      <div class="sb-fork">
+        <div class="tile t-goog">
+          <div class="tile-k">9–10 · straight through</div>
+          <div class="tile-t">Google opens right away</div>
+          <div class="tile-s">No extra questions — 5 stars ready to post.</div>
+        </div>
+        <div class="tile t-warn">
+          <div class="tile-k">0–8 · one more question</div>
+          <div class="tile-t">“What could we have done better?”</div>
+          <div class="tile-s">Comment box — with the Google link on the same screen.</div>
+        </div>
+      </div>
+    </div>
+    <div class="arow-foot">${ICONS.shield}<div><b>Nobody is filtered out.</b> The Google invitation is part of the ask for every single customer — the score only changes how quickly they get there.</div></div>`;
+
+  if (k === 'public') return `
+    <div class="sb">
+      <div class="tile">
+        <div class="tile-k">1 · The ask</div>
+        <div class="tile-t">One message</div>
+        <div class="tile-s">Email or text after a visit, plus one reminder.</div>
+      </div>
+      <div class="arr"><em>→</em></div>
+      <div class="tile t-goog">
+        <div class="tile-k">2 · Google</div>
+        <div class="tile-t">Straight to the review box</div>
+        <div class="tile-s">One tap from the message. No form in between.</div>
+      </div>
+      <div class="arr" style="opacity:.3"><em>→</em></div>
+      <div class="tile" style="opacity:.55;border-style:dashed">
+        <div class="tile-k">Nothing in between</div>
+        <div class="tile-t">You read it when they post it</div>
+        <div class="tile-s">There's no private step, so an unhappy customer goes public first.</div>
+      </div>
+    </div>
+    <div class="arow-foot">${ICONS.info}<div>Best when your ratings are already healthy and you just want volume.</div></div>`;
+
+  return `
+    <div class="sb">
+      <div class="tile">
+        <div class="tile-k">1 · The ask</div>
+        <div class="tile-t">One message</div>
+        <div class="tile-s">Email or text after a visit, plus one reminder.</div>
+      </div>
+      <div class="arr"><em>→</em></div>
+      <div class="tile t-priv">
+        <div class="tile-k">2 · Your form</div>
+        <div class="tile-t">“How was your visit?”</div>
+        <div class="tile-s">0–10, same question for everyone.</div>
+        ${miniScale('flat')}
+      </div>
+      <div class="arr"><em>→</em></div>
+      <div class="tile t-priv">
+        <div class="tile-k">3 · Straight to you</div>
+        <div class="tile-t">“Anything you'd like to add?”</div>
+        <div class="tile-s">Optional comment. Lands in your dashboard, nowhere else.</div>
+      </div>
+    </div>
+    <div class="arow-foot">${ICONS.info}<div>Google is never mentioned, so your public rating won't move either way.</div></div>`;
+}
+
+function variantA() {
+  const rows = ['both','public','private'].map(k => {
+    const O = OPT[k], on = S.pick === k;
+    return `
+    <button class="arow ${on ? 'sel' : ''}" onclick="setPick('${k}')">
+      <div class="arow-h">
+        <span class="radio ${on ? 'on' : ''}"></span>
+        <div class="arow-txt">
+          <div class="arow-t">${O.plain}${O.rec ? ' <span class="rec">Recommended</span>' : ''}</div>
+          <div class="arow-d">${O.d}</div>
+        </div>
+        <div class="arow-chips">
+          ${chip(O.google, 'Google reviews')}
+          ${chip(O.private, 'Private heads-up')}
+        </div>
+      </div>
+      <div class="arow-b">${storyboard(k)}</div>
+    </button>`;
+  }).join('');
+
+  return `
+    <h2>What will your customers actually see?</h2>
+    <p class="lede">Three ways to ask. Read across each one — that's the whole journey, start to finish.</p>
+    ${rows}
+    <div class="footline">${ICONS.clock}<div>Whichever you pick: one request per visit with a single reminder 2 days later, and we won't ask the same person more than once every 90 days. About <b>124 sends a month</b> at your current volume.</div></div>`;
+}
+
+/* ═══════════════════ VARIANT B — two questions ═══════════════════ */
+function resolveB() {
+  if (S.wantGoogle && S.wantPrivate) return 'both';
+  if (S.wantGoogle) return 'public';
+  if (S.wantPrivate) return 'private';
+  return null;
+}
+
+function variantB() {
+  const k = resolveB();
+
+  const q = (num, title, sub, key, yes, no) => {
+    const v = S[key];
+    return `
+    <div class="qblock">
+      <div class="qtitle"><span class="qnum">${num}</span>${title}</div>
+      <div class="qsub">${sub}</div>
+      <div class="qopts">
+        <button class="qopt ${v ? 'on' : ''}" onclick="setB('${key}', true)">
+          <span class="radio ${v ? 'on' : ''}"></span>
+          <span><span class="qopt-t">${yes[0]}</span><span class="qopt-d">${yes[1]}</span></span>
+        </button>
+        <button class="qopt ${!v ? 'on' : ''}" onclick="setB('${key}', false)">
+          <span class="radio ${!v ? 'on' : ''}"></span>
+          <span><span class="qopt-t">${no[0]}</span><span class="qopt-d">${no[1]}</span></span>
+        </button>
+      </div>
+    </div>`;
+  };
+
+  let result;
+  if (!k) {
+    result = `
+      <div class="result bad">
+        <div class="result-h">
+          <div><div class="result-k">Nothing to send</div><div class="result-t">Pick at least one</div></div>
+        </div>
+        <div class="result-b">
+          <div style="font-size:12.5px;color:var(--fg-2);line-height:1.6">
+            With both answers set to no there's no message to send and nothing to collect. Say yes to one of them to carry on.
+          </div>
+        </div>
+      </div>`;
+  } else {
+    const O = OPT[k];
+    result = `
+      <div class="result">
+        <div class="result-h">
+          <div><div class="result-k">Your setup</div><div class="result-t">${O.plain}</div></div>
+          <span class="rec" style="margin-left:auto">${O.label}</span>
+        </div>
+        <div class="result-b">
+          ${storyboard(k)}
+          <div class="result-note">${k === 'both'
+            ? `Because you said yes to both, the form comes first and Google comes second — but <b>everyone is invited to Google</b>, whatever they score. A 9 or 10 skips the comment box and goes straight there.`
+            : k === 'public'
+              ? `No form means no private warning: an unhappy customer's first stop is your public listing.`
+              : `No Google step means your public rating won't move — this is a listening channel only.`}</div>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <h2>Two questions and we'll set this up.</h2>
+    <p class="lede">Answer these the way you'd say them out loud. We'll turn them into the right configuration.</p>
+
+    ${q(1, 'Do you want more Google reviews?',
+        'Google reviews are public and show up in search. This is the part that grows your rating.',
+        'wantGoogle',
+        ['Yes — invite everyone', 'Every customer we contact gets a Google review link.'],
+        ['No — leave Google alone', 'We never send anyone to Google or mention it.'])}
+
+    ${q(2, 'Do you want to hear from unhappy customers first?',
+        'We can put your own short form in front — one 0–10 score, and a comment box if they had a problem.',
+        'wantPrivate',
+        ['Yes — ask me first', 'A quick 0–10 form. Scores and comments come to your dashboard.'],
+        ['No — keep it to one tap', 'Skip the form. Fewer steps for the customer.'])}
+
+    <div class="qdiv"></div>
+    ${result}`;
+}
+
+/* ═══════════════════ VARIANT C — recommendation first ═══════════════════ */
+function variantC() {
+  const k = S.pick, O = OPT[k];
+  const others = ['both','public','private'].filter(x => x !== k);
+
+  const why = k === 'both' ? `
+    <div class="why">
+      <div class="whyc"><div class="whyv">85%</div><div class="whyl">of the people who answer give you a 9 or 10 — they never even see the comment box.</div></div>
+      <div class="whyc"><div class="whyv">1 tap</div><div class="whyl">extra for a happy customer. The score screen is the only thing standing between them and Google.</div></div>
+      <div class="whyc"><div class="whyv">0</div><div class="whyl">customers are held back from Google. The invite goes out regardless of score — that's what keeps this compliant.</div></div>
+    </div>` : k === 'public' ? `
+    <div class="why">
+      <div class="whyc"><div class="whyv">Fewest steps</div><div class="whyl">Message straight to the Google review box, nothing in between.</div></div>
+      <div class="whyc"><div class="whyv">No warning</div><div class="whyl">A one-star review is the first you hear about a bad visit.</div></div>
+      <div class="whyc"><div class="whyv">No scores</div><div class="whyl">Nothing lands in your dashboard — there's no form to fill in.</div></div>
+    </div>` : `
+    <div class="why">
+      <div class="whyc"><div class="whyv">Fully private</div><div class="whyl">Nothing is ever posted publicly and Google is never mentioned.</div></div>
+      <div class="whyc"><div class="whyv">Every score</div><div class="whyl">0–10 plus optional comments, straight to your dashboard.</div></div>
+      <div class="whyc"><div class="whyv">No growth</div><div class="whyl">Your public rating stays exactly where it is today.</div></div>
+    </div>`;
+
+  const alts = others.map(x => {
+    const A = OPT[x];
+    return `
+    <button class="alt" onclick="setPick('${x}')">
+      <span class="radio"></span>
+      <span class="alt-txt">
+        <span class="alt-t">${A.plain}${A.rec ? ' <span class="rec">Recommended</span>' : ''}</span>
+        <span class="alt-d">${A.altd}</span>
+        ${A.tradeoff ? `<span class="tradeoff">${ICONS.info} ${A.tradeoff}</span>` : ''}
+      </span>
+    </button>`;
+  }).join('');
+
+  return `
+    <h2>${O.rec ? "Here's what we'd set up for you." : 'Your approach'}</h2>
+    <p class="lede">${O.rec
+      ? 'This is what most businesses your size run. You can take it as-is and move on, or look at the alternatives below.'
+      : `You've moved off the recommendation. Here's what this one does — the recommended approach is still available below.`}</p>
+
+    <div class="hero">
+      <div class="hero-h">
+        <span class="hero-ic">${O.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div class="hero-t">${O.plain}</div>
+          <div class="hero-d">${O.label}${O.rec ? ' · what we recommend' : ''}</div>
+        </div>
+        ${O.rec ? `<span class="rec">Recommended</span>` : ''}
+      </div>
+      <div class="hero-b">
+        ${storyboard(k)}
+        ${why}
+      </div>
+    </div>
+
+    <div class="alts-h"><span>Or choose a different approach</span><i></i></div>
+    ${alts}
+
+    <div class="footline">${ICONS.clock}<div>Whichever you pick: one request per visit with a single reminder 2 days later, and we won't ask the same person more than once every 90 days.</div></div>`;
+}
+
+/* ═══════════════════ VARIANT D — simulator ═══════════════════ */
+function lanePath(k, n) {
+  const hi = T(n);
+  const ask = { t: 'Gets one message', s: 'Email or text after their visit.', k: '' };
+
+  if (k === 'both') {
+    return {
+      steps: [
+        ask,
+        { t: `Opens your form and picks ${n}`, s: 'The score is saved to your dashboard the moment they tap it.', k: 'priv' },
+        hi
+          ? { t: 'Google opens immediately', s: 'No further questions — 5 stars, ready to post.', k: 'goog' }
+          : { t: '“What could we have done better?”', s: 'A comment box — with the Google review button on the same screen.', k: 'warn' },
+      ],
+      insight: hi
+        ? { cls: 'i-ok', html: `You get the <b>${n}</b> on your dashboard <i>and</i> the public review. One extra tap for them.` }
+        : { cls: 'i-warn', html: `You hear about this <b>before</b> anyone else does — and they're still free to review on Google.` },
+    };
+  }
+
+  if (k === 'public') {
+    return {
+      steps: [
+        ask,
+        { t: 'Taps through to Google', s: 'No form, no score — the review box opens straight away.', k: 'goog' },
+        hi
+          ? { t: `Posts something glowing`, s: 'Public, immediately, and it lifts your rating.', k: 'goog' }
+          : { t: `Posts a ${n <= 3 ? 'one or two' : 'three'}-star review`, s: 'Public, immediately, and it drags your rating down.', k: 'dgr' },
+      ],
+      insight: hi
+        ? { cls: 'i-info', html: `Fastest route to a public review — you just never see the score on its own.` }
+        : { cls: 'i-dgr', html: `You find out at the same moment your next customer does. <b>No chance to fix it first.</b>` },
+    };
+  }
+
+  return {
+    steps: [
+      ask,
+      { t: `Opens your form and picks ${n}`, s: 'Saved to your dashboard.', k: 'priv' },
+      { t: '“Anything you\'d like to add?”', s: 'Optional comment. Goes to you and nowhere else.', k: 'priv' },
+    ],
+    insight: hi
+      ? { cls: 'i-warn', html: `A <b>${n}</b> that never becomes a public review. You'd have earned one here.` }
+      : { cls: 'i-ok', html: `Handled quietly — nothing about this visit reaches your listing.` },
+  };
+}
+
+function variantD() {
+  const n = S.score;
+
+  const lanes = ['both','public','private'].map(k => {
+    const O = OPT[k], on = S.pick === k;
+    const P = lanePath(k, n);
+    const steps = P.steps.map((s, i) => `
+      <div class="step">
+        <div class="step-rail"><span class="step-dot ${s.k ? 'k-' + s.k : ''}">${i + 1}</span><span class="step-line"></span></div>
+        <div class="step-c"><div class="step-t">${s.t}</div><div class="step-s">${s.s}</div></div>
+      </div>`).join('');
+    return `
+    <button class="lane ${on ? 'sel' : ''}" onclick="setPick('${k}')">
+      <div class="lane-h">
+        <span class="radio ${on ? 'on' : ''}"></span>
+        <div style="flex:1;min-width:0"><div class="lane-t">${O.label}</div></div>
+        ${O.rec ? `<span class="rec">Rec</span>` : ''}
+      </div>
+      <div class="lane-b">
+        ${steps}
+        <div class="insight"><div class="insight-in ${P.insight.cls}">${P.insight.html}</div></div>
+      </div>
+    </button>`;
+  }).join('');
+
+  const squares = Array.from({ length: 11 }, (_, i) => `
+    <button class="sq ${T(i) ? 'hi' : 'lo'} ${i === n ? 'on' : ''}" onclick="setScore(${i})">${i}</button>`).join('');
+
+  return `
+    <h2>One customer, three set-ups.</h2>
+    <p class="lede">Pick a score below and watch what happens to that customer under each approach. Then choose the column you want.</p>
+
+    <div class="simbar">
+      <div class="simbar-h">
+        <span class="simbar-t">Say a customer would rate you a <b style="font-variant-numeric:tabular-nums">${n}</b> out of 10…</span>
+        <span class="simbar-s">Try a 10, then try a 4</span>
+      </div>
+      <div class="scale">${squares}</div>
+      <div class="scale-ends"><span>0 · Never coming back</span><span>10 · Would recommend you</span></div>
+    </div>
+
+    <div class="lanes">${lanes}</div>
+
+    <div class="footline">${ICONS.shield}<div>In <b>Public and private</b>, the score never decides whether someone is <i>allowed</i> to review — only how fast they get there. Google requires that, and it's built into the form rather than left as a setting.</div></div>`;
+}
+
+
+/* ═══════════════════ VARIANT E — live hi-fi form ═══════════════════ */
+const BIZ = { name: 'Safari Pet Resort', city: 'Austin, TX', host: 'safaripetresort.reach.reviews/v/8fk21' };
+
+const CHECK = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>`;
+const SEND  = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2.5L11 13"/><path d="M21.5 2.5l-6.7 19-3.8-8.5L2.5 9.2z"/></svg>`;
+
+function fLogo() {
+  return `<div class="flogo"><b>SAFARI</b><i>PET RESORT</i><u>Where pets go on adventure!</u></div>`;
+}
+
+function fShell(body, foot) {
+  return `
+    <div class="fcard">
+      <div class="fband">${fLogo()}</div>
+      <div class="fbody">${body}</div>
+      ${foot ? `<div class="ffoot">${foot}</div>` : ''}
+    </div>`;
+}
+
+/* ── screen 1: the only question we ask up front ── */
+function fScoreScreen() {
+  const squares = Array.from({ length: 11 }, (_, i) =>
+    `<button class="fsc ${S.fscore === i ? 'on' : ''}" onclick="fSelect(${i})" aria-label="Score ${i}">${i}</button>`).join('');
+  const picked = S.fscore !== null;
+  return fShell(`
+    <div class="fh1">How was your visit?</div>
+    <div class="fsub">Takes a few seconds &mdash; and helps us take better care of every pet that comes through.</div>
+    <div class="fsec">
+      <div class="fq">How would you rate your experience?<i>*</i></div>
+      <div class="fscale" role="group" aria-label="Rate 0 to 10">${squares}</div>
+      <div class="fends"><span>0 &middot; Not at all likely</span><span>10 &middot; Extremely likely</span></div>
+    </div>`,
+    `<button class="fbtn fbtn-p" onclick="fSubmitScore()" ${picked ? '' : 'disabled'}>${SEND} Submit Feedback</button>`);
+}
+
+/* ── 9–10: hand off to Google, no further questions ── */
+function fRedirectScreen() {
+  return fShell(`
+    <div class="fcenter">
+      <div class="fok">${CHECK}</div>
+      <div class="fh1">That's great to hear!</div>
+      <div class="fsub">Taking you to Google…</div>
+      <div class="fbar"><i></i></div>
+    </div>`);
+}
+
+/* ── 0–8: one follow-up question ── */
+function fFollowupScreen() {
+  const low = S.fscore <= 8;
+  const q = low ? 'What could we have done better?' : 'What stood out?';
+  const ph = low ? 'Tell us what happened — it comes straight to the owner.'
+                 : 'What did we get right?';
+  return fShell(`
+    <div class="fcenter"><span class="fscored">${CHECK.replace('20','13').replace('20','13')} You scored us ${S.fscore}</span></div>
+    <div class="fh1" style="margin-top:14px">${low ? 'Thanks for telling us.' : 'Thanks for letting us know.'}</div>
+    <div class="fsub">${low
+      ? 'Anything you can tell us helps us put it right.'
+      : 'Anything else you\'d like to add?'}</div>
+    <div class="fsec">
+      <div class="fq">${q}</div>
+      <textarea class="fta" placeholder="${ph}"></textarea>
+    </div>`,
+    `<button class="fbtn fbtn-p" onclick="fSubmit()">${SEND} Send feedback</button>`);
+}
+
+/* ── after the follow-up: the Google invite lives here, not next to the complaint ── */
+function fThanksScreen() {
+  const invite = googleWanted();
+  return fShell(`
+    <div class="fcenter">
+      <div class="fok">${CHECK}</div>
+      <div class="fh1">Thank you — we've got it.</div>
+      <div class="fsub">${invite
+        ? 'Someone from the team will read this today.'
+        : 'Someone from the team will read this today. Nothing you\'ve written is posted anywhere public.'}</div>
+    </div>
+    ${invite ? `
+      <div class="fdivider"><i></i><em>ONE MORE THING</em><i></i></div>
+      <div class="fsub" style="max-width:none;margin:0">Would you share it on Google too?</div>` : ''}`,
+    invite
+      ? `<button class="fbtn fbtn-g" onclick="fGo('google')">Leave a Google review</button>
+         <button class="fbtn fbtn-ghost" onclick="fReset()">No thanks, I'm done</button>`
+      : '');
+}
+
+/* ── public only: there is no form, the message links straight out ── */
+function fMessageScreen() {
+  return `
+    <div class="fcard">
+      <div class="fbody" style="padding:22px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #eef1f4;padding-bottom:11px;margin-bottom:15px">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.07em;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:5px;padding:3px 8px">EMAIL</span>
+          <span style="font-size:10.5px;color:#9ca3af">to you · just now</span>
+        </div>
+        <div style="font-size:17px;font-weight:750;letter-spacing:-.025em">How did we do?</div>
+        <div class="fsub" style="text-align:left;margin:8px 0 0;max-width:none">Thanks for visiting ${BIZ.name} last week. If you have a moment, a Google review really helps other pet owners find us.</div>
+      </div>
+      <div class="ffoot"><button class="fbtn fbtn-g" onclick="fGo('google')">Leave a Google review</button></div>
+    </div>`;
+}
+
+/* ── Google's own screen ── */
+function fGoogleScreen() {
+  return `
+    <div class="fcard gsheet">
+      <div class="fbody" style="padding:18px 20px 20px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+          <span style="width:32px;height:32px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">JD</span>
+          <div><div style="font-size:13px;font-weight:600;color:#202124">Jordan D.</div><div style="font-size:11px;color:#5f6368">Posting publicly across Google</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #e0e3e6;border-radius:8px;margin-bottom:14px">
+          <span style="width:28px;height:28px;border-radius:6px;background:var(--biz);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">SP</span>
+          <div><div style="font-size:12.5px;font-weight:600;color:#202124">${BIZ.name}</div><div style="font-size:11px;color:#5f6368">${BIZ.city}</div></div>
+        </div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px">${'<span style="font-size:29px;color:#fbbc04;line-height:1">★</span>'.repeat(5)}</div>
+        <div style="font-size:12px;color:#80868b;border:1px solid #e0e3e6;border-radius:8px;padding:12px;min-height:60px">Share details of your own experience at this place</div>
+        <div style="display:flex;justify-content:flex-end;gap:18px;align-items:center;margin-top:15px">
+          <span style="font-size:12.5px;font-weight:600;color:#1a73e8">Cancel</span>
+          <span style="font-size:12.5px;font-weight:600;color:#fff;background:#1a73e8;border-radius:100px;padding:8px 22px">Post</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+const googleWanted = () => OPT[S.pick].google;
+const formWanted   = () => OPT[S.pick].private;
+
+function fSelect(n) { S.fscore = n; render(); }
+
+function fSubmitScore() {
+  const n = S.fscore;
+  if (typeof n !== 'number') return;
+  if (googleWanted() && formWanted() && n >= S.threshold) {
+    S.fstage = 'redirect';
+    const tick = ++S.ftick;
+    render();
+    setTimeout(() => { if (S.ftick === tick && S.fstage === 'redirect') { S.fstage = 'google'; render(); } }, 1450);
+  } else {
+    S.fstage = 'followup';
+    render();
+  }
+}
+function fSubmit() { S.fstage = 'thanks'; render(); }
+function fGo(stage) { S.fstage = stage; render(); }
+const started = () => S.fscore !== null || !(S.fstage === 'score' || S.fstage === 'message');
+
+function fReset() { S.fstage = formWanted() ? 'score' : 'message'; S.fscore = null; S.ftick++; render(); }
+
+function fScreen() {
+  if (!formWanted()) return S.fstage === 'google' ? fGoogleScreen() : fMessageScreen();
+  switch (S.fstage) {
+    case 'redirect': return fRedirectScreen();
+    case 'followup': return fFollowupScreen();
+    case 'thanks':   return fThanksScreen();
+    case 'google':   return fGoogleScreen();
+    default:         return fScoreScreen();
+  }
+}
+
+
+
+
+function variantE() {
+  const opts = ['both','public','private'].map(k => {
+    const O = OPT[k], on = S.pick === k;
+    return `
+    <button class="eopt ${on ? 'sel' : ''}" onclick="setPick('${k}')">
+      <span class="radio ${on ? 'on' : ''}"></span>
+      <span class="eopt-txt">
+        <span class="eopt-t">${O.tight}${O.rec ? '<span class="rec">Recommended</span>' : ''}</span>
+        <span class="eopt-d">${O.line}</span>
+      </span>
+    </button>`;
+  }).join('');
+
+  return `
+    <h2>How should we ask your customers for reviews?</h2>
+    <p class="lede">Pick one. The phone shows what your customer gets.</p>
+
+    <div class="esplit">
+      <div>${opts}</div>
+
+      <div>
+        <div class="prehead"><button class="treset" onclick="fReset()" ${started() ? '' : 'aria-hidden="true"'}>&#8634; Start over</button></div>
+        <div class="pwrap">
+          <div class="iphone">
+            <div class="inotch"></div>
+            <div class="iscreen">
+              <div class="istatus"><span>9:41</span><span>&#9679;&#9679;&#9679; &#9679;&#9679;</span></div>
+              <div class="iview">${fScreen()}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════ Render ═══════════════════ */
+const VARIANTS = {
+  e: { name: 'E · Live form', desc: 'The picker explains itself with the real form. Tap a score in the preview to follow the branch.', fn: variantE },
+  a: { name: 'A · Storyboard rows', desc: 'Each option carries its own customer journey. Compare by reading across.', fn: variantA },
+  b: { name: 'B · Two plain questions', desc: 'No jargon and no bundles — two yes/no answers compose into the configuration.', fn: variantB },
+  c: { name: 'C · Recommendation first', desc: 'One default with the reasoning behind it. The other two are one click away.', fn: variantC },
+  d: { name: 'D · Score simulator', desc: 'Drive a score and watch the same customer take three different paths.', fn: variantD },
+};
+
+function setVar(v) { S.variant = v; render(); }
+function setPick(k) {
+  S.pick = k;
+  S.wantGoogle = OPT[k].google;
+  S.wantPrivate = OPT[k].private;
+  S.fscore = null;
+  S.ftick++;
+  S.fstage = OPT[k].private ? 'score' : 'message';
+  render();
+}
+function setB(key, v) {
+  S[key] = v;
+  const k = resolveB();
+  if (k) S.pick = k;
+  render();
+}
+function setScore(n) { S.score = n; render(); }
+
+function render() {
+  ['e','a','b','c','d'].forEach(v => document.getElementById('v-' + v).classList.toggle('on', v === S.variant));
+  const resolved = S.variant === 'b' ? resolveB() : S.pick;
+  ['both','public','private'].forEach(k => document.getElementById('p-' + k).classList.toggle('on', k === resolved));
+
+  const V = VARIANTS[S.variant];
+  document.getElementById('vt-name').textContent = V.name;
+  document.getElementById('vt-desc').textContent = V.desc;
+
+  document.getElementById('snav').innerHTML = STEPS.map((s, i) =>
+    `<div class="sitem ${i === 0 ? 'cur' : ''}"><span class="sicon">—</span>${s}</div>`).join('');
+
+  document.getElementById('main').innerHTML = V.fn();
+
+  const blocked = S.variant === 'b' && !resolveB();
+  const next = document.getElementById('btn-next');
+  next.disabled = blocked;
+  document.getElementById('foot-l').textContent = blocked
+    ? 'Answer yes to at least one question to continue.'
+    : 'You can change any of this later.';
+}
+
+render();
+</script>
+</body>
+</html>
