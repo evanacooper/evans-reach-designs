@@ -122,13 +122,6 @@ html, body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; l
 .cfgv { font-weight: 650; text-align: right; }
 
 /* threshold */
-.thr { display: flex; gap: 4px; margin-top: 10px; }
-.tc { flex: 1; text-align: center; padding: 7px 0; border-radius: 6px; font-size: 11.5px; font-weight: 700; border: 1px solid var(--border); background: var(--bg); color: var(--fg-3); }
-.tc.lo { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn); }
-.tc.hi { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
-.tleg { display: flex; gap: 16px; margin-top: 9px; font-size: 11.5px; color: var(--fg-2); flex-wrap: wrap; }
-.tleg span { display: inline-flex; align-items: center; gap: 5px; }
-.dot { width: 7px; height: 7px; border-radius: 2px; }
 
 /* sequence */
 .seq { display: flex; flex-direction: column; }
@@ -566,8 +559,7 @@ const S = {
   step: 0,
   channels: 'both',           // both | public | private
   gbp: true,
-  fastTrack: true,            // 9-10 skip the comment box and go straight to Google
-  threshold: 9,
+  threshold: 9,             // fixed: 9+ goes straight to Google, below opens the comment box
   reminderDays: 2,            // wait before the single reminder
   resendDays: 90,             // how often the whole ask can repeat
   resendNoResponseDays: 30,   // sooner if they never responded
@@ -610,7 +602,7 @@ const PRESETS = {
 const googleOn    = () => PRESETS[S.channels].google;
 const formOn      = () => PRESETS[S.channels].form;
 const combined    = () => googleOn() && formOn();
-const fastTrackOn = () => combined() && S.fastTrack;
+const fastTrackOn = () => combined();
 const volume      = () => 124;
 
 function setPreset(k) {
@@ -668,11 +660,6 @@ function renderNav() {
 }
 
 /* ═══════════ Helpers ═══════════ */
-const thrScale = () => Array.from({length:10},(_,i)=>i+1)
-  .map(n => `<div class="tc ${n >= S.threshold ? 'hi' : 'lo'}">${n}</div>`).join('');
-
-function bump(key, d, min, max) { S[key] = Math.max(min, Math.min(max, S[key] + d)); render(); }
-function thr(d) { S.threshold = Math.max(7, Math.min(10, S.threshold + d)); render(); }
 function toggle(key) { S[key] = !S[key]; render(); }
 function toggleForm() {
   S.formOpen = !S.formOpen;
@@ -1021,36 +1008,13 @@ function stepBranding() {
 
 function stepSettings() {
   const recap = combined()
-    ? `One request after each qualifying visit. ${fastTrackOn()
-        ? `${S.threshold}+ goes straight to Google; lower scores get a comment box and the same Google link.`
-        : 'Every score sees the same screen, with the Google link on it.'}`
+    ? `One request after each qualifying visit. Everyone is asked to rate the visit, everyone is invited to review on Google, and anyone who wants to say more gets a place to do it.`
     : googleOn()
       ? `One Google review request after each qualifying visit, with a reminder ${S.reminderDays} days later.`
       : `One feedback request after each qualifying visit, with a reminder ${S.reminderDays} days later. Nothing is published.`;
 
   const adv = `
     <div class="advbody">
-      ${combined() ? `
-      <div class="advsec">
-        <div class="advsec-t">The form</div>
-        <div class="row">
-          <div class="row-t"><div class="row-n">Send high scorers straight to Google</div>
-          <div class="row-d">Skips the comment box. Turn this off and everyone sees the same screen after scoring.</div></div>
-          <button class="sw ${S.fastTrack?'':'off'}" onclick="toggle('fastTrack')"></button>
-        </div>
-        ${S.fastTrack ? `
-        <div class="row">
-          <div class="row-t"><div class="row-n">Score that skips the comment box <span class="pill p-off">Partner-set</span></div>
-          <div class="row-d">Most responses are a 10, so this moves fewer people than it looks like it does.</div></div>
-          <div class="stepper"><button onclick="thr(-1)">−</button><span>${S.threshold}</span><button onclick="thr(1)">+</button></div>
-        </div>
-        <div class="thr">${thrScale()}</div>
-        <div class="tleg">
-          <span><span class="dot" style="background:var(--warn)"></span> Comment box, plus the Google button</span>
-          <span><span class="dot" style="background:var(--ok)"></span> Straight to Google</span>
-        </div>` : ''}
-      </div>` : ''}
-
       <div class="advsec">
         <div class="advsec-t">Timing</div>
         <div class="row"><div class="row-t"><div class="row-n">Reminder</div>
@@ -1307,7 +1271,7 @@ function stepReview() {
           <div class="box-b">
             <div class="cfgrow"><span class="cfgk">Google reviews</span><span class="cfgv">${googleOn()?'Everyone is invited':'Never asked'}</span></div>
             <div class="cfgrow"><span class="cfgk">Feedback form</span><span class="cfgv">${formOn()?'Yes':'No form'}</span></div>
-            ${combined()?`<div class="cfgrow"><span class="cfgk">Straight to Google at</span><span class="cfgv">${fastTrackOn()?S.threshold+' or above':'Off — same screen for all'}</span></div>`:''}
+            ${combined()?`<div class="cfgrow"><span class="cfgk">After rating</span><span class="cfgv">Everyone is invited to Google</span></div>`:''}
             <div class="cfgrow"><span class="cfgk">Reminder</span><span class="cfgv">${S.reminderDays} d</span></div>
             <div class="cfgrow"><span class="cfgk">Ask again after</span><span class="cfgv">${S.resendDays} d · ${S.resendNoResponseDays} d if no reply</span></div>
             ${combined()?`<div class="cfgrow"><span class="cfgk">After a Google review</span><span class="cfgv">${S.afterReview==='exclude'?'Never ask again':'Keep asking for feedback'}</span></div>`:''}
