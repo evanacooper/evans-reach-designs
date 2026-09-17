@@ -364,15 +364,14 @@
   .wfc-change .r b { font-size: 12.5px; font-weight: 700; color: var(--ink); display: block; }
   .wfc-change .r span { font-size: 12.5px; color: var(--muted); }
   .wfc-change .undo { align-self: flex-start; font-size: 12.5px; font-weight: 700; color: var(--ink); border: 1px solid var(--line); background: #fff; padding: 8px 12px; border-radius: var(--r-sm); cursor: pointer; }
-  /* artifact pills under the chat (segment / broadcast / email) */
-  .wfc-arts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  /* artifact pills under the chat (segment + automation) */
+  .wfc-arts { display: flex; flex-direction: column; gap: 8px; }
   .art-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 9px 10px; cursor: pointer; text-align: left; font-family: inherit; transition: border-color .12s, box-shadow .12s; min-width: 0; }
   .art-pill:hover { border-color: #C3CBD0; }
-  .art-pill.primary { border-color: var(--accent); background: #FFFBF8; grid-column: 1 / -1; box-shadow: 0 0 0 2px rgba(234,91,35,.08); }
+  .art-pill.primary { border-color: var(--accent); background: #FFFBF8; box-shadow: 0 0 0 2px rgba(234,91,35,.08); }
   .art-pill .ai { flex: none; width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
   .art-pill.seg .ai { background: #E6F5F0; color: #2E7D6B; }
-  .art-pill.email .ai { background: #E9F1FB; color: #2563EB; }
-  .art-pill.sms .ai { background: #E8F5EC; color: var(--green); }
+  .art-pill.auto .ai { background: var(--indigo-bg); color: var(--indigo); }
   .art-pill .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .art-pill .tx b { font-size: 12px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .art-pill .tx span { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1269,13 +1268,12 @@
   function wfChatWelcome(){
     return `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's what I built — a re-engagement automation for your lapsed single-track guests. <strong>Please review the segment</strong> before you turn it on: if the audience is off, everything downstream is off.</div></div>
       <div class="wfc-msg ai"><div class="wfc-arts">
-        <button class="art-pill primary seg" data-art="segment"><span class="ai">👥</span><span class="tx"><b>Lapsed single-track customers</b><span>1,284 people · review this →</span></span><span class="go">Open</span></button>
-        <button class="art-pill email" data-art="email"><span class="ai">✉</span><span class="tx"><b>Email</b><span>The trails are dry again</span></span></button>
-        <button class="art-pill sms" data-art="sms"><span class="ai">💬</span><span class="tx"><b>SMS</b><span>2 spots left…</span></span></button>
+        <button class="art-pill primary seg" data-art="segment"><span class="ai">👥</span><span class="tx"><b>Lapsed single-track customers</b><span>Segment · 1,284 people · review this →</span></span><span class="go">Open</span></button>
+        <button class="art-pill auto" data-art="automation"><span class="ai">⚡</span><span class="tx"><b>Lapsed single-track win-back</b><span>Automation · email + SMS</span></span><span class="go">Open</span></button>
       </div></div>`;
   }
   function bindArtifactPills(){
-    $$('#wfChatScroll .art-pill').forEach(p => p.onclick = () => { if(p.dataset.art === 'segment') showPane('segment'); });
+    $$('#wfChatScroll .art-pill').forEach(p => p.onclick = () => { showPane(p.dataset.art === 'segment' ? 'segment' : 'automation'); });
   }
 
   // Restore the full automation shell (undo any broadcast/segment mutations)
