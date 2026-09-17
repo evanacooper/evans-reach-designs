@@ -319,12 +319,8 @@
   .step-tx .lbl { font-size: 10px; font-weight: 800; letter-spacing: .13em; color: var(--fainter); }
   .step-tx .main { font-size: 14px; line-height: 1.45; color: var(--ink); font-weight: 600; }
   .step-tx .main .edit { border-bottom: 1.5px dashed #C3CBD0; }
-  /* Segment link in the Start step — highlighted so people click it and verify the audience */
-  .step-tx .main a.seg-link { display: inline-flex; align-items: center; gap: 5px; color: var(--accent-deep); font-weight: 700; background: var(--accent-bg); border: 1px solid var(--accent-line); border-radius: 7px; padding: 2px 8px; cursor: pointer; text-decoration: none; box-shadow: 0 0 0 0 rgba(234,91,35,.35); animation: segpulse 2.6s ease-out 3; transition: background .12s, border-color .12s, box-shadow .12s; }
-  .step-tx .main a.seg-link svg { width: 13px; height: 13px; }
-  .step-tx .main a.seg-link .rv { font-size: 11px; font-weight: 700; color: var(--accent); opacity: .85; }
-  .step-tx .main a.seg-link:hover { background: #FCE7DA; border-color: var(--accent); box-shadow: 0 2px 8px -3px rgba(234,91,35,.4); }
-  @keyframes segpulse { 0% { box-shadow: 0 0 0 0 rgba(234,91,35,.35); } 60% { box-shadow: 0 0 0 5px rgba(234,91,35,0); } 100% { box-shadow: 0 0 0 0 rgba(234,91,35,0); } }
+  .step-tx .main a.seg-link { color: var(--accent-deep); font-weight: 600; border-bottom: 1.5px dashed var(--accent-line); cursor: pointer; }
+  .step-tx .main a.seg-link:hover { border-bottom-color: var(--accent); }
   .step-tx .sub { font-size: 12.5px; color: var(--faint); }
   .step-toggle { flex: none; width: 32px; height: 18px; border-radius: 999px; background: var(--green); display: flex; align-items: center; justify-content: flex-end; padding: 2px; }
   .step-toggle span { width: 14px; height: 14px; border-radius: 50%; background: #fff; display: block; }
@@ -372,25 +368,40 @@
   .wfc-change .r b { font-size: 12.5px; font-weight: 700; color: var(--ink); display: block; }
   .wfc-change .r span { font-size: 12.5px; color: var(--muted); }
   .wfc-change .undo { align-self: flex-start; font-size: 12.5px; font-weight: 700; color: var(--ink); border: 1px solid var(--line); background: #fff; padding: 8px 12px; border-radius: var(--r-sm); cursor: pointer; }
-  /* artifact pills under the chat (segment + automation) */
-  .wfc-arts { display: flex; flex-direction: column; gap: 8px; }
-  .art-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 9px 10px; cursor: pointer; text-align: left; font-family: inherit; transition: border-color .12s, box-shadow .12s, background .12s; min-width: 0; }
-  .art-pill:hover { border-color: var(--accent); background: #FFFBF8; box-shadow: 0 2px 10px -4px rgba(234,91,35,.25); }
-  .art-pill .go { transition: transform .12s; }
-  .art-pill:hover .go { transform: translateX(2px); }
-  .art-pill .ai { flex: none; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-  .art-pill .ai svg { width: 17px; height: 17px; }
-  .art-pill.seg .ai { background: #E6F5F0; color: #2E7D6B; }
-  .art-pill.auto .ai { background: var(--indigo-bg); color: var(--indigo); }
-  .art-pill .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .art-pill .tx b { font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .art-pill .tx > span { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .art-pill .tx .kind { font-weight: 700; padding: 1px 6px; border-radius: 4px; font-size: 10px; letter-spacing: .02em; }
-  .art-pill.seg .tx .kind { color: #2E7D6B; background: #E6F5F0; }
-  .art-pill.auto .tx .kind { color: var(--indigo); background: var(--indigo-bg); }
-  .art-pill .go { flex: none; font-size: 11px; color: var(--accent-deep); font-weight: 700; }
-  .art-cta { font-size: 12px; color: var(--accent-deep); font-weight: 600; }
-  .art-revert { align-self: flex-start; font-size: 12px; font-weight: 700; color: var(--muted); border: 1px solid var(--line); background: #fff; padding: 6px 11px; border-radius: 7px; cursor: pointer; }
+  /* "Who this goes to" review card in the chat */
+  .review-card { border: 1px solid var(--accent-line); background: #fff; border-radius: 12px; padding: 15px 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 3px 14px -8px rgba(234,91,35,.35); }
+  .rc-head { display: flex; align-items: center; justify-content: space-between; }
+  .rc-title { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink); }
+  .rc-title svg { width: 16px; height: 16px; color: var(--accent-deep); }
+  .rc-title b { font-weight: 700; }
+  .rc-flag { font-size: 9.5px; font-weight: 800; letter-spacing: .1em; color: var(--accent-deep); background: var(--accent-bg); border: 1px solid var(--accent-line); padding: 3px 7px; border-radius: 5px; }
+  .rc-count { display: flex; align-items: baseline; gap: 8px; }
+  .rc-count .big { font-size: 30px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); line-height: 1; }
+  .rc-count .u { font-size: 13px; color: var(--muted); }
+  .rc-plain { font-size: 13.5px; line-height: 1.5; color: var(--slate); }
+  .rc-plain strong { font-weight: 700; color: var(--ink); }
+  .rc-bul { display: flex; flex-direction: column; gap: 6px; }
+  .rc-bul .b { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.45; color: var(--slate); }
+  .rc-bul .b .m { flex: none; font-size: 11px; padding-top: 2px; }
+  .rc-bul .b.inc .m { color: var(--green); } .rc-bul .b.exc .m { color: #B6BFC5; }
+  .rc-samples { border: 1px solid var(--line-2); border-radius: 9px; overflow: hidden; }
+  .rc-samples .s { display: flex; justify-content: space-between; gap: 10px; padding: 8px 11px; font-size: 12.5px; border-bottom: 1px solid var(--line-2); }
+  .rc-samples .s:last-child { border-bottom: 0; }
+  .rc-samples .s .n { color: var(--ink); font-weight: 600; } .rc-samples .s .d { color: var(--faint); }
+  .rc-seeall { font-size: 12.5px; font-weight: 600; color: var(--accent-deep); cursor: pointer; text-decoration: none; }
+  .rc-seeall:hover { text-decoration: underline; }
+  .rc-actions { display: flex; gap: 9px; }
+  .rc-actions .rc-ok { padding: 10px 16px; }
+  .rc-actions .rc-change { padding: 10px 16px; }
+  /* collapsed persistent version */
+  .review-card.collapsed { flex-direction: row; align-items: center; gap: 10px; padding: 10px 12px; box-shadow: none; cursor: default; }
+  .review-card.collapsed .rcc-ic { flex: none; width: 28px; height: 28px; border-radius: 7px; background: #E6F5F0; color: #2E7D6B; display: flex; align-items: center; justify-content: center; }
+  .review-card.collapsed .rcc-ic svg { width: 15px; height: 15px; }
+  .review-card.collapsed .rcc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .review-card.collapsed .rcc-tx b { font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .review-card.collapsed .rcc-tx span { font-size: 11px; color: var(--green); }
+  .review-card.collapsed .rcc-open { flex: none; font-size: 12px; font-weight: 700; color: var(--accent-deep); background: #fff; border: 1px solid var(--accent-line); border-radius: 7px; padding: 6px 12px; cursor: pointer; font-family: inherit; }
+  .review-card.collapsed .rcc-open:hover { background: var(--accent-bg); border-color: var(--accent); }
   /* failure bubble in chat */
   .wfc-fail { border: 1px solid #F0C9C0; background: #FDF3F0; border-radius: 10px; padding: 13px 15px; display: flex; flex-direction: column; gap: 10px; }
   .wfc-fail .fl { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #B23A22; }
@@ -856,7 +867,7 @@
                 <span class="step-ic start">⚡</span>
                 <div class="step-tx">
                   <span class="lbl">START THIS BROADCAST</span>
-                  <span class="main" id="startMain">Everyone in <a class="seg-link" id="segLink"><svg viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 15.5c0-2.2 2-3.6 4.5-3.6s4.5 1.4 4.5 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13.2 5.2a2.4 2.4 0 0 1 0 4.2M14 15.5c0-1.7-.9-3-2.3-3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Lapsed single-track customers <span class="rv">review →</span></a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span></span>
+                  <span class="main" id="startMain">Everyone in <a class="seg-link" id="segLink">Lapsed single-track customers</a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span></span>
                   <span class="sub">1,284 customers today · sends once</span>
                 </div>
                 <span class="step-car">▾</span>
@@ -1322,16 +1333,60 @@
   const ICON_AUTOMATION = '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="5" height="5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="12" y="12" width="5" height="5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8v3.5a2 2 0 0 0 2 2H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const ICON_BROADCAST = '<svg viewBox="0 0 20 20" fill="none"><path d="M4 8.5 14.5 4v11L4 10.5V8.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.5 10v3.2a1.3 1.3 0 0 0 1.3 1.3H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
   // ---- The single persistent chat's opening content (message first, artifact pills below) ----
-  function wfChatWelcome(){
-    return `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's what I built — a re-engagement automation for your lapsed single-track guests. <strong>Please review the segment</strong> before you turn it on: if the audience is off, everything downstream is off.</div></div>
-      <div class="wfc-msg ai"><div class="wfc-arts">
-        <button class="art-pill seg" data-art="segment"><span class="ai">${ICON_SEGMENT}</span><span class="tx"><b>Lapsed single-track customers</b><span><span class="kind">Segment</span> · 1,284 people · review this →</span></span><span class="go">Open</span></button>
-        <button class="art-pill auto" data-art="automation"><span class="ai">${ICON_AUTOMATION}</span><span class="tx"><b>Lapsed single-track win-back</b><span><span class="kind">Automation</span> · email + SMS</span></span><span class="go">Open</span></button>
-      </div></div>`;
+  // Prior chat history that precedes the review card (as in the post-build state).
+  function wfChatHistory(){
+    return `<div class="wfc-msg you"><span class="who">YOU</span><div class="wfc-bubble">…and skip anyone we have messaged recently.</div></div>
+      <div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Added a 90-day gap. Building it now — one moment.</div></div>
+      <div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here it is. Have a look at who it goes to before you turn it on — that's the part I could get wrong without you noticing.</div></div>`;
   }
-  function bindArtifactPills(){
-    $$('#wfChatScroll .art-pill').forEach(p => p.onclick = () => { showPane(p.dataset.art === 'segment' ? 'segment' : 'automation'); });
+  // The expanded "Who this goes to" review card.
+  function reviewCardExpanded(){
+    return `<div class="review-card" id="reviewCard">
+      <div class="rc-head"><span class="rc-title">${ICON_SEGMENT}<b>Who this goes to</b></span><span class="rc-flag">REVIEW THIS</span></div>
+      <div class="rc-count"><span class="big">1,284</span><span class="u">customers today</span></div>
+      <div class="rc-plain">Guests on a <strong>single-track trip</strong> in the last two years with <strong>nothing upcoming</strong>.</div>
+      <div class="rc-bul">
+        <div class="b inc"><span class="m">✓</span><span>Guided and self-guided single-track</span></div>
+        <div class="b exc"><span class="m">✕</span><span>Anyone with a trip on the books</span></div>
+        <div class="b exc"><span class="m">✕</span><span>Anyone messaged in the last 90 days</span></div>
+      </div>
+      <div class="rc-samples">
+        <div class="s"><span class="n">Dana Whitlock</span><span class="d">Sawtooth · Sep 2024</span></div>
+        <div class="s"><span class="n">Marcus Ihle</span><span class="d">Berry Hill · Jun 2025</span></div>
+        <div class="s"><span class="n">Priya Raman</span><span class="d">Sawtooth · Apr 2025</span></div>
+      </div>
+      <a class="rc-seeall" id="rcSeeAll">See all 1,284 and the conditions →</a>
+      <div class="rc-actions"><button class="btn btn-dark rc-ok" id="rcLooksRight">Looks right</button><button class="btn btn-outline rc-change" id="rcChange">Change who</button></div>
+    </div>`;
   }
+  // The collapsed persistent version — always lets them jump back to the segment.
+  function reviewCardCollapsed(){
+    return `<div class="review-card collapsed" id="reviewCard">
+      <span class="rcc-ic">${ICON_SEGMENT}</span>
+      <span class="rcc-tx"><b>Lapsed single-track customers</b><span>1,284 people · reviewed ✓</span></span>
+      <button class="rcc-open" id="rcSeeAll">Open</button>
+    </div>`;
+  }
+  function bindReviewCard(){
+    const seeAll = $('#rcSeeAll'); if(seeAll) seeAll.onclick = () => showPane('segment');
+    const ok = $('#rcLooksRight'); if(ok) ok.onclick = collapseReviewCard;
+    const change = $('#rcChange'); if(change) change.onclick = () => showPane('segment');
+  }
+  // "Looks right" → the segment is confirmed reviewed; collapse to the small persistent card.
+  function collapseReviewCard(){
+    const card = $('#reviewCard'); if(!card) return;
+    const msg = card.closest('.wfc-msg') || card.parentElement;
+    // insert a short confirmation, then swap the card for its collapsed form
+    const scroll = $('#wfChatScroll');
+    card.outerHTML = reviewCardCollapsed();
+    scroll.insertAdjacentHTML('beforeend', `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Great — the audience is confirmed. You can turn it on when you're ready, or ask me for any change.</div></div>`);
+    bindReviewCard();
+    scroll.scrollTop = scroll.scrollHeight;
+  }
+  // Full post-build chat: history + expanded review card.
+  function wfChatBuilt(){ return wfChatHistory() + `<div class="wfc-msg ai">${reviewCardExpanded()}</div>`; }
+  // Chat for an already-created automation opened from the list: history + collapsed card.
+  function wfChatReviewed(){ return wfChatHistory() + `<div class="wfc-msg ai">${reviewCardCollapsed()}</div>`; }
 
   // Restore the full automation shell (undo any broadcast/segment mutations)
   function restoreAutomationShell(){
@@ -1340,7 +1395,7 @@
     const pill = $('.wf-title .pill'); pill.className = 'pill ai'; pill.textContent = 'Custom'; pill.style.display = '';
     $('#wfEditAi').style.display = ''; $('#wfTurnOn').style.display = '';
     $('#wfStatus').textContent = '● Off ▾'; $('#wfStatus').style.color = '';
-    $('#startMain').innerHTML = `Everyone in <a class="seg-link" id="segLink">${ICON_SEGMENT}Lapsed single-track customers <span class="rv">review →</span></a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span>`;
+    $('#startMain').innerHTML = `Everyone in <a class="seg-link" id="segLink">Lapsed single-track customers</a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span>`;
     $('#segLink').onclick = (e) => { e.stopPropagation(); showPane('segment'); };
     $('.step[data-step="start"] .lbl').textContent = 'START THIS BROADCAST';
     $('.step[data-step="start"] .sub').textContent = '1,284 customers today · sends once';
@@ -1360,10 +1415,11 @@
   function landBuilt(){
     restoreAutomationShell();
     configSegment({ fromWorkflow: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
-    $('#wfChatScroll').innerHTML = wfChatWelcome(); bindArtifactPills();
+    $('#wfChatScroll').innerHTML = wfChatBuilt(); bindReviewCard();
     showView('workflow');
     $('#wfChat').setAttribute('data-open',''); $('#wfEditAi').style.display = ''; syncEditAi();
-    setGuide('✅ Built. You\'re in the <strong>automation view</strong> with the chat open. Click the <strong>segment pill</strong> (or the segment name) — it opens on the left, chat stays put.');
+    $('#wfChatScroll').scrollTop = $('#wfChatScroll').scrollHeight;
+    setGuide('✅ Built. Review <strong>who this goes to</strong> in the chat — click <strong>Looks right</strong> to confirm the audience, or open it to check the details.');
   }
 
   // ================= WORKFLOW SHELL — pane swapping (C7) =================
@@ -1396,7 +1452,8 @@
     if(opts.name) $('.wf-title h2').textContent = opts.name;
     if(opts.meta) $('#wfMeta').textContent = opts.meta;
     if(aiEditable){
-      $('#wfChatScroll').innerHTML = wfChatWelcome(); bindArtifactPills();
+      // Opening an already-created automation → history + the collapsed (already-reviewed) card.
+      $('#wfChatScroll').innerHTML = wfChatReviewed(); bindReviewCard();
       configSegment({ fromWorkflow: true, name: opts.name || 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
       $('#wfEditAi').style.display = '';
     } else {
