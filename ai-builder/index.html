@@ -344,9 +344,9 @@
   .seg-inline-pick { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 700; color: var(--ink); border: 1px solid var(--line-3); background: var(--subtle); padding: 7px 11px; border-radius: 7px; cursor: pointer; }
 
   /* ============ WORKFLOW CHAT PANEL (docked right) ============ */
-  .wf-chat { width: 0; flex: none; border-left: 1px solid var(--line); background: var(--subtle); display: flex; flex-direction: column; overflow: hidden; transition: width .22s ease; }
+  .wf-chat { width: 0; flex: none; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--subtle); display: flex; flex-direction: column; overflow: hidden; transition: width .22s ease; box-shadow: 0 1px 3px rgba(22,36,46,.05); }
   .wf-chat[data-open] { width: 340px; }
-  .wfc-head { flex: none; padding: 14px 18px; border-bottom: 1px solid var(--line); background: #fff; display: flex; align-items: center; justify-content: space-between; }
+  .wfc-head { flex: none; padding: 14px 18px; border-bottom: 1px solid var(--line); border-radius: var(--r-md) var(--r-md) 0 0; background: #fff; display: flex; align-items: center; justify-content: space-between; }
   .wfc-head .l { display: flex; align-items: center; gap: 8px; }
   .wfc-head .sp { color: var(--accent-deep); font-size: 12.5px; }
   .wfc-head b { font-size: 13px; font-weight: 700; color: var(--ink); }
@@ -391,7 +391,7 @@
   .wfc-fail .fail-or { font-size: 12px; color: var(--faint); }
   .wfc-fail .fail-retry-link { font: inherit; font-size: 12px; color: var(--muted); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
   .wfc-fail .fail-retry-link:hover { color: var(--ink); }
-  .wfc-composer { flex: none; padding: 14px 16px; border-top: 1px solid var(--line); background: #fff; }
+  .wfc-composer { flex: none; padding: 14px 16px; border-top: 1px solid var(--line); border-radius: 0 0 var(--r-md) var(--r-md); background: #fff; }
   .wfc-inp { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line-3); border-radius: 9px; padding: 10px 12px; }
   .wfc-inp input { flex: 1; border: 0; outline: none; font-family: inherit; font-size: 13px; color: var(--ink); }
   .wfc-inp input::placeholder { color: #9AA6AE; }
