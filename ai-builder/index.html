@@ -385,6 +385,11 @@
   .wfc-fail .ft { font-size: 13px; line-height: 1.5; color: var(--slate); }
   .wfc-fail .fa { display: flex; gap: 9px; }
   .wfc-fail .retry { font-size: 12.5px; font-weight: 700; color: #fff; background: var(--accent); border: 0; padding: 8px 13px; border-radius: 8px; cursor: pointer; }
+  .wfc-fail .fail-suggest { align-self: flex-start; font-size: 12.5px; font-weight: 600; color: var(--accent-deep); background: #fff; border: 1px solid var(--accent-line); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .wfc-fail .fail-suggest:hover { background: var(--accent-bg); }
+  .wfc-fail .fail-or { font-size: 12px; color: var(--faint); }
+  .wfc-fail .fail-retry-link { font: inherit; font-size: 12px; color: var(--muted); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+  .wfc-fail .fail-retry-link:hover { color: var(--ink); }
   .wfc-composer { flex: none; padding: 14px 16px; border-top: 1px solid var(--line); background: #fff; }
   .wfc-inp { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line-3); border-radius: 9px; padding: 10px 12px; }
   .wfc-inp input { flex: 1; border: 0; outline: none; font-family: inherit; font-size: 13px; color: var(--ink); }
@@ -1089,6 +1094,7 @@
       plan: true }
   ];
   let convoStep = 0;
+  let justFailed = false; // true right after a failed build, so the next typed message triggers a rebuild
 
   function bubbleEl(role, html){
     const wrap = document.createElement('div');
@@ -1178,9 +1184,19 @@
     const v = $('#chatInput').value.trim();
     if(!v) return;
     $('#chatInput').value = '';
+    // After a failed build, a typed change gets acknowledged with a fresh (successful) rebuild CTA.
+    if(justFailed){
+      appendUserPrompt(v);
+      justFailed = false;
+      $('#chatInput').placeholder = 'Reply, or change any part of the plan…';
+      setTimeout(() => {
+        appendUserPrompt(`Good call — I've widened the audience to the <strong>last 12 months</strong> (about <strong>2,340 customers</strong>). Ready to build it now?<div class="plain-cta" style="padding-top:10px"><button class="btn btn-accent" id="rebuildBtn">Build it</button><span class="hint">Nothing is created until you say build.</span></div>`, true);
+        $('#rebuildBtn') && ($('#rebuildBtn').onclick = () => { buildMode = 'success'; runBuild(); });
+      }, 550);
+      return;
+    }
     // If we're mid-script, treat typed text as the reply to the current question
     if(convo[convoStep] && convo[convoStep].choices){ userReply(v); return; }
-    // otherwise show acknowledgement
     appendUserPrompt(v);
     setTimeout(() => {
       appendUserPrompt(`Got it — I've noted that. When you're ready, hit <strong>Build it</strong> above and I'll create everything.`, true);
@@ -1231,13 +1247,21 @@
     $('.build-title').innerHTML = '<span class="build-fail-ic">!</span><span>Couldn\'t finish building</span>';
     $('#buildFoot').innerHTML = "Nothing was created — your plan is safe. Taking you back to the chat…";
     setGuide('⚠️ The build hit a problem. Nothing was created — you\'ll drop back into the chat to keep going.');
+    justFailed = true;
     setTimeout(() => {
       showView('chat');
       const scroll = $('#chatScroll');
       // plain-language failure, no jargon, plan intact + retry
-      scroll.insertAdjacentHTML('beforeend', `<div class="msg ai"><span class="who">GOOSE</span><div class="bubble"><div class="wfc-fail"><div class="fl">⚠ I couldn't build this</div><div class="ft">The segment came back <strong>empty</strong> — no customers matched, so I didn't create anything. Nothing was saved. Want to widen the audience (say, last 12 months instead of 180 days) and try again?</div><div class="fa"><button class="retry" id="failRetry">Try building again</button></div></div></div></div>`);
+      scroll.insertAdjacentHTML('beforeend', `<div class="msg ai"><span class="who">GOOSE</span><div class="bubble"><div class="wfc-fail"><div class="fl">⚠ I couldn't build this</div><div class="ft">The segment came back <strong>empty</strong> — no customers matched, so I didn't create anything. Nothing was saved.</div><div class="ft"><strong>Tell me what to change below</strong> and I'll rebuild. For example, you could widen the audience:</div><div class="fa"><button class="fail-suggest" data-fill="Widen it to the last 12 months instead of 180 days.">↳ "Widen it to the last 12 months"</button></div><div class="fail-or">Or, if you think it was a fluke, <button class="fail-retry-link" id="failRetry">retry without changes</button>.</div></div></div></div>`);
       scroll.scrollTop = scroll.scrollHeight;
-      $('#failRetry').onclick = () => { buildMode = 'success'; runBuild(); };
+      // Make the "type a change" path the obvious one: point the composer at it and focus.
+      const input = $('#chatInput');
+      input.placeholder = 'Tell me what to change, then send…';
+      input.focus();
+      // Clicking the example drops it into the box (doesn't send) so the user can edit/confirm.
+      $$('.fail-suggest', scroll).forEach(b => b.onclick = () => { input.value = b.dataset.fill; input.focus(); });
+      // The retry link rebuilds as-is, no changes.
+      $('#failRetry').onclick = () => { justFailed = false; input.placeholder = 'Reply, or change any part of the plan…'; buildMode = 'success'; runBuild(); };
     }, 1100);
   }
 
