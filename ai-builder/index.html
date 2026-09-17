@@ -251,7 +251,8 @@
   .build-foot { font-size: 13.5px; line-height: 1.5; color: var(--muted); }
 
   /* ============ WORKFLOW VIEW (A1 / B5) ============ */
-  .wf-top { flex: none; padding: 22px 28px 0; display: flex; flex-direction: column; gap: 14px; }
+  .wf-top { flex: none; height: 150px; padding: 20px 28px 0; display: flex; flex-direction: column; justify-content: space-between; }
+  .wf-top > :last-child { padding-bottom: 12px; }
   .wf-titlerow { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
   .wf-back { flex: none; width: 31px; height: 31px; border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--faint); font-size: 14px; display: flex; align-items: center; justify-content: center; background: #fff; cursor: pointer; }
   .wf-titlewrap { display: flex; align-items: flex-start; gap: 12px; min-width: 0; flex: 1; }
@@ -925,7 +926,7 @@
             <div class="plain-hero">
               <div class="l">IN PLAIN ENGLISH</div>
               <div class="plain-hero-text" id="sbPlain">Customers who were a guest on a <strong>single-track trip</strong> in the <strong>last 180 days</strong> and have <strong>nothing upcoming</strong>.</div>
-              <div class="plain-hero-count"><span class="big" id="sbCount">1,284</span><span class="u">customers match</span><span class="recount"><b>↻ Recount</b></span></div>
+              <div class="plain-hero-count"><span class="big" id="sbCount">1,284</span><span class="u">customers match</span></div>
             </div>
 
             <div class="sb-matchrow">
