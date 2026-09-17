@@ -280,15 +280,16 @@
   /* segment pane (in-pane, beside the shared chat) */
   .sb-pane { overflow-y: auto; }
   .sb-pane .sb-main { flex: 1; min-width: 0; width: 760px; max-width: 100%; margin: 0 auto; padding: 0 4px; }
-  .plain-hero { border: 1px solid var(--accent-line); background: #FFFBF8; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
-  .plain-hero .l { font-size: 10px; font-weight: 800; letter-spacing: .14em; color: var(--accent-deep); }
-  .plain-hero-text { font-size: 17px; line-height: 1.5; color: var(--ink); }
-  .plain-hero-text strong { font-weight: 700; }
-  .plain-hero-count { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding-top: 2px; border-top: 1px solid var(--accent-line); margin-top: 2px; }
-  .plain-hero-count .big { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+  .plain-hero { border: 1px solid var(--accent-line); background: linear-gradient(180deg, #FFFCF9, #FFF7F1); border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+  .plain-hero .l { font-size: 10.5px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: var(--accent-deep); display: flex; align-items: center; gap: 6px; }
+  .plain-hero .l .sp { font-size: 11px; }
+  .plain-hero-text { font-size: 18px; line-height: 1.55; color: var(--ink); font-weight: 500; }
+  .plain-hero-text strong { font-weight: 800; }
+  .plain-hero-count { display: flex; align-items: center; gap: 8px; padding-top: 13px; border-top: 1px solid var(--accent-line); }
+  .plain-hero-count .big { font-size: 28px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); line-height: 1; }
   .plain-hero-count .u { font-size: 13.5px; color: var(--muted); }
-  .plain-hero-count .recount { font-size: 12.5px; color: var(--faint); margin-left: auto; }
-  .plain-hero-count .recount b { font-weight: 600; color: var(--slate); cursor: pointer; }
+  .hero-seeall { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--accent-deep); background: #fff; border: 1px solid var(--accent-line); border-radius: 8px; padding: 7px 13px; cursor: pointer; font-family: inherit; transition: background .12s, border-color .12s; }
+  .hero-seeall:hover { background: var(--accent-bg); border-color: var(--accent); }
   .sb-belowgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
   /* segment header variant */
   .seg-top .name { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); border: 0; border-bottom: 2px dashed transparent; padding: 0 0 2px; font-family: inherit; outline: none; width: 100%; max-width: 620px; background: transparent; text-overflow: ellipsis; }
@@ -372,12 +373,16 @@
   .art-pill:hover { border-color: var(--accent); background: #FFFBF8; box-shadow: 0 2px 10px -4px rgba(234,91,35,.25); }
   .art-pill .go { transition: transform .12s; }
   .art-pill:hover .go { transform: translateX(2px); }
-  .art-pill .ai { flex: none; width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .art-pill .ai { flex: none; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .art-pill .ai svg { width: 17px; height: 17px; }
   .art-pill.seg .ai { background: #E6F5F0; color: #2E7D6B; }
   .art-pill.auto .ai { background: var(--indigo-bg); color: var(--indigo); }
-  .art-pill .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-  .art-pill .tx b { font-size: 12px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .art-pill .tx span { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .art-pill .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .art-pill .tx b { font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .art-pill .tx > span { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .art-pill .tx .kind { font-weight: 700; padding: 1px 6px; border-radius: 4px; font-size: 10px; letter-spacing: .02em; }
+  .art-pill.seg .tx .kind { color: #2E7D6B; background: #E6F5F0; }
+  .art-pill.auto .tx .kind { color: var(--indigo); background: var(--indigo-bg); }
   .art-pill .go { flex: none; font-size: 11px; color: var(--accent-deep); font-weight: 700; }
   .art-cta { font-size: 12px; color: var(--accent-deep); font-weight: 600; }
   .art-revert { align-self: flex-start; font-size: 12px; font-weight: 700; color: var(--muted); border: 1px solid var(--line); background: #fff; padding: 6px 11px; border-radius: 7px; cursor: pointer; }
@@ -449,7 +454,8 @@
   .used-list { display: flex; flex-direction: column; gap: 7px; }
   .used-item { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 11px; background: #fff; cursor: pointer; }
   .used-item:hover { border-color: #C3CBD0; }
-  .used-item .ci { flex: none; width: 22px; height: 22px; border-radius: 6px; background: var(--indigo-bg); color: var(--indigo); font-size: 11px; display: flex; align-items: center; justify-content: center; }
+  .used-item .ci { flex: none; width: 24px; height: 24px; border-radius: 6px; background: var(--indigo-bg); color: var(--indigo); display: flex; align-items: center; justify-content: center; }
+  .used-item .ci svg { width: 14px; height: 14px; }
   .used-item .cn { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: var(--ink); }
   .used-item .cg { font-size: 11px; color: var(--faint); }
   .side-div { height: 1px; background: #E7E9EA; }
@@ -926,9 +932,13 @@
           <div class="sb-main">
             <!-- IN PLAIN ENGLISH — moved to the top, prominent -->
             <div class="plain-hero">
-              <div class="l">IN PLAIN ENGLISH</div>
+              <div class="l"><span class="sp">✦</span>In plain English</div>
               <div class="plain-hero-text" id="sbPlain">Customers who were a guest on a <strong>single-track trip</strong> in the <strong>last 180 days</strong> and have <strong>nothing upcoming</strong>.</div>
-              <div class="plain-hero-count"><span class="big" id="sbCount">1,284</span><span class="u">customers match</span></div>
+              <div class="plain-hero-count">
+                <span class="big" id="sbCount">1,284</span>
+                <span class="u">customers match today</span>
+                <button class="hero-seeall" id="sbSeeAllTop">See all →</button>
+              </div>
             </div>
 
             <div class="sb-matchrow">
@@ -1302,12 +1312,16 @@
     }, 1100);
   }
 
+  // Consistent iconography for artifact types.
+  const ICON_SEGMENT = '<svg viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.6" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 15.5c0-2.2 2-3.6 4.5-3.6s4.5 1.4 4.5 3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13.2 5.2a2.4 2.4 0 0 1 0 4.2M14 15.5c0-1.7-.9-3-2.3-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  const ICON_AUTOMATION = '<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="5" height="5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="12" y="12" width="5" height="5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8v3.5a2 2 0 0 0 2 2H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const ICON_BROADCAST = '<svg viewBox="0 0 20 20" fill="none"><path d="M4 8.5 14.5 4v11L4 10.5V8.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.5 10v3.2a1.3 1.3 0 0 0 1.3 1.3H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
   // ---- The single persistent chat's opening content (message first, artifact pills below) ----
   function wfChatWelcome(){
     return `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's what I built — a re-engagement automation for your lapsed single-track guests. <strong>Please review the segment</strong> before you turn it on: if the audience is off, everything downstream is off.</div></div>
       <div class="wfc-msg ai"><div class="wfc-arts">
-        <button class="art-pill seg" data-art="segment"><span class="ai">👥</span><span class="tx"><b>Lapsed single-track customers</b><span>Segment · 1,284 people · review this →</span></span><span class="go">Open</span></button>
-        <button class="art-pill auto" data-art="automation"><span class="ai">⚡</span><span class="tx"><b>Lapsed single-track win-back</b><span>Automation · email + SMS</span></span><span class="go">Open</span></button>
+        <button class="art-pill seg" data-art="segment"><span class="ai">${ICON_SEGMENT}</span><span class="tx"><b>Lapsed single-track customers</b><span><span class="kind">Segment</span> · 1,284 people · review this →</span></span><span class="go">Open</span></button>
+        <button class="art-pill auto" data-art="automation"><span class="ai">${ICON_AUTOMATION}</span><span class="tx"><b>Lapsed single-track win-back</b><span><span class="kind">Automation</span> · email + SMS</span></span><span class="go">Open</span></button>
       </div></div>`;
   }
   function bindArtifactPills(){
@@ -1470,7 +1484,7 @@
         <div class="side-note">Target it from a broadcast or automation to start messaging this audience.</div>`;
       return;
     }
-    const rows = info.list.map(a => `<div class="used-item"><span class="ci">${a.kind === 'Broadcast' ? '▤' : '⚡'}</span><span class="cn">${a.name}</span><span class="cg">${a.kind}</span></div>`).join('');
+    const rows = info.list.map(a => `<div class="used-item"><span class="ci">${a.kind === 'Broadcast' ? ICON_BROADCAST : ICON_AUTOMATION}</span><span class="cn">${a.name}</span><span class="cg">${a.kind}</span></div>`).join('');
     body.innerHTML = `<div class="used-list">${rows}</div>
       <div class="side-note">Editing conditions changes who these ${info.list.length > 1 ? 'send to' : 'sends to'}. Duplicate the segment first if you only want to change one.</div>`;
   }
@@ -1531,6 +1545,7 @@
   const audScrim = $('#audScrim');
   function openAudience(){ $('#audCount').textContent = $('#sbCount').textContent + ' users match your conditions'; $('#audSearch').value = ''; renderAudRows(''); audScrim.setAttribute('data-open',''); $('#audSearch').focus(); }
   $('#sbSeeAll').onclick = openAudience;
+  $('#sbSeeAllTop').onclick = openAudience;
   $('#audClose').onclick = () => audScrim.removeAttribute('data-open');
   audScrim.onclick = e => { if(e.target === audScrim) audScrim.removeAttribute('data-open'); };
   $('#audSearch').addEventListener('input', e => renderAudRows(e.target.value));
