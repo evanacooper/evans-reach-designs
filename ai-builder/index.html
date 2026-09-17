@@ -319,7 +319,12 @@
   .step-tx .lbl { font-size: 10px; font-weight: 800; letter-spacing: .13em; color: var(--fainter); }
   .step-tx .main { font-size: 14px; line-height: 1.45; color: var(--ink); font-weight: 600; }
   .step-tx .main .edit { border-bottom: 1.5px dashed #C3CBD0; }
-  .step-tx .main a.seg-link { color: var(--accent-deep); border-bottom: 1.5px dashed var(--accent-line); cursor: pointer; }
+  /* Segment link in the Start step — highlighted so people click it and verify the audience */
+  .step-tx .main a.seg-link { display: inline-flex; align-items: center; gap: 5px; color: var(--accent-deep); font-weight: 700; background: var(--accent-bg); border: 1px solid var(--accent-line); border-radius: 7px; padding: 2px 8px; cursor: pointer; text-decoration: none; box-shadow: 0 0 0 0 rgba(234,91,35,.35); animation: segpulse 2.6s ease-out 3; transition: background .12s, border-color .12s, box-shadow .12s; }
+  .step-tx .main a.seg-link svg { width: 13px; height: 13px; }
+  .step-tx .main a.seg-link .rv { font-size: 11px; font-weight: 700; color: var(--accent); opacity: .85; }
+  .step-tx .main a.seg-link:hover { background: #FCE7DA; border-color: var(--accent); box-shadow: 0 2px 8px -3px rgba(234,91,35,.4); }
+  @keyframes segpulse { 0% { box-shadow: 0 0 0 0 rgba(234,91,35,.35); } 60% { box-shadow: 0 0 0 5px rgba(234,91,35,0); } 100% { box-shadow: 0 0 0 0 rgba(234,91,35,0); } }
   .step-tx .sub { font-size: 12.5px; color: var(--faint); }
   .step-toggle { flex: none; width: 32px; height: 18px; border-radius: 999px; background: var(--green); display: flex; align-items: center; justify-content: flex-end; padding: 2px; }
   .step-toggle span { width: 14px; height: 14px; border-radius: 50%; background: #fff; display: block; }
@@ -851,7 +856,7 @@
                 <span class="step-ic start">⚡</span>
                 <div class="step-tx">
                   <span class="lbl">START THIS BROADCAST</span>
-                  <span class="main" id="startMain">Everyone in <a class="seg-link" id="segLink">Lapsed single-track customers</a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span></span>
+                  <span class="main" id="startMain">Everyone in <a class="seg-link" id="segLink"><svg viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 15.5c0-2.2 2-3.6 4.5-3.6s4.5 1.4 4.5 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13.2 5.2a2.4 2.4 0 0 1 0 4.2M14 15.5c0-1.7-.9-3-2.3-3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Lapsed single-track customers <span class="rv">review →</span></a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span></span>
                   <span class="sub">1,284 customers today · sends once</span>
                 </div>
                 <span class="step-car">▾</span>
@@ -1335,7 +1340,7 @@
     const pill = $('.wf-title .pill'); pill.className = 'pill ai'; pill.textContent = 'Custom'; pill.style.display = '';
     $('#wfEditAi').style.display = ''; $('#wfTurnOn').style.display = '';
     $('#wfStatus').textContent = '● Off ▾'; $('#wfStatus').style.color = '';
-    $('#startMain').innerHTML = 'Everyone in <a class="seg-link" id="segLink">Lapsed single-track customers</a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span>';
+    $('#startMain').innerHTML = `Everyone in <a class="seg-link" id="segLink">${ICON_SEGMENT}Lapsed single-track customers <span class="rv">review →</span></a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span>`;
     $('#segLink').onclick = (e) => { e.stopPropagation(); showPane('segment'); };
     $('.step[data-step="start"] .lbl').textContent = 'START THIS BROADCAST';
     $('.step[data-step="start"] .sub').textContent = '1,284 customers today · sends once';
