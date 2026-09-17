@@ -237,6 +237,12 @@
   .build-title { display: flex; align-items: center; gap: 11px; font-size: 17px; font-weight: 800; letter-spacing: -.01em; color: var(--ink); }
   .build-title .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); display: block; animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .build-spin { width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid var(--accent-line); border-top-color: var(--accent); display: block; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .build-card.failed { border-color: #F0C9C0; }
+  .build-fail-ic { width: 42px; height: 42px; border-radius: 50%; background: #FDECE8; color: #C0402A; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+  .build-card.failed .build-title { color: #B23A22; }
+  .build-fail-actions { display: flex; gap: 10px; }
   .build-steps { display: flex; flex-direction: column; gap: 11px; }
   .build-step { display: flex; align-items: center; gap: 11px; font-size: 14.5px; color: #8B979E; }
   .build-step .mk { flex: none; font-size: 13px; color: #C3CBD0; width: 14px; text-align: center; }
@@ -262,10 +268,35 @@
   .wf-tab { font-size: 13px; font-weight: 600; color: var(--muted); padding: 8px 13px; border-radius: var(--r-sm); border: 0; background: transparent; font-family: inherit; cursor: pointer; }
   .wf-tab[data-on] { font-weight: 700; color: var(--ink); border: 1px solid var(--line); background: #fff; }
   .wf-body { flex: 1; min-height: 0; display: flex; gap: 20px; padding: 20px 28px 24px; background: var(--canvas); }
+  .wf-left { flex: 1; min-width: 0; display: flex; }
+  .pane { flex: 1; min-width: 0; display: none; }
+  .pane:not([hidden]) { display: flex; }
+  .pane[hidden] { display: none; }
+  .wf-top[hidden] { display: none; }
   .wf-canvas { flex: 1; min-width: 0; overflow-y: auto; display: flex; justify-content: center; }
   .wf-stack { width: 680px; max-width: 100%; display: flex; flex-direction: column; }
+  /* segment pane (in-pane, beside the shared chat) */
+  .sb-pane { overflow-y: auto; }
+  .sb-pane .sb-main { flex: 1; min-width: 0; width: 760px; max-width: 100%; margin: 0 auto; padding: 0 4px; }
+  .plain-hero { border: 1px solid var(--accent-line); background: #FFFBF8; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .plain-hero .l { font-size: 10px; font-weight: 800; letter-spacing: .14em; color: var(--accent-deep); }
+  .plain-hero-text { font-size: 17px; line-height: 1.5; color: var(--ink); }
+  .plain-hero-text strong { font-weight: 700; }
+  .plain-hero-count { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding-top: 2px; border-top: 1px solid var(--accent-line); margin-top: 2px; }
+  .plain-hero-count .big { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+  .plain-hero-count .u { font-size: 13.5px; color: var(--muted); }
+  .plain-hero-count .recount { font-size: 12.5px; color: var(--faint); margin-left: auto; }
+  .plain-hero-count .recount b { font-weight: 600; color: var(--slate); cursor: pointer; }
+  .sb-belowgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
+  /* segment header variant */
+  .seg-top .name { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); border: 0; border-bottom: 2px dashed transparent; padding: 0 0 2px; font-family: inherit; outline: none; width: 100%; max-width: 460px; background: transparent; }
+  .seg-top .name:hover { border-bottom-color: var(--line-3); } .seg-top .name:focus { border-bottom-color: var(--accent); }
+  .seg-top .desc { font-size: 13.5px; color: var(--slate); border: 0; border-bottom: 1px dashed transparent; padding: 0 0 2px; font-family: inherit; outline: none; width: 100%; max-width: 520px; background: transparent; margin-top: 4px; }
+  .seg-top .desc::placeholder { color: var(--faint); } .seg-top .desc:hover { border-bottom-color: var(--line-3); } .seg-top .desc:focus { border-bottom-color: var(--accent); color: var(--ink); }
+  .seg-backrow { margin-top: 4px; }
+  .seg-back-big { font-size: 13px; font-weight: 700; padding: 8px 14px; }
 
-  .wf-banner { border-radius: 10px; padding: 12px 15px; display: flex; align-items: flex-start; gap: 11px; margin-bottom: 14px; }
+  .wf-banner { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 12px 15px; display: flex; align-items: flex-start; gap: 11px; margin-bottom: 14px; }
   .wf-banner.ai { border: 1px solid #F0D3C1; background: #FFFBF8; }
   .wf-banner.ok { border: 1px solid var(--green-line); background: var(--green-bg); }
   .wf-banner .bi { font-size: 12.5px; flex: none; padding-top: 1px; }
@@ -333,6 +364,27 @@
   .wfc-change .r b { font-size: 12.5px; font-weight: 700; color: var(--ink); display: block; }
   .wfc-change .r span { font-size: 12.5px; color: var(--muted); }
   .wfc-change .undo { align-self: flex-start; font-size: 12.5px; font-weight: 700; color: var(--ink); border: 1px solid var(--line); background: #fff; padding: 8px 12px; border-radius: var(--r-sm); cursor: pointer; }
+  /* artifact pills under the chat (segment / broadcast / email) */
+  .wfc-arts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .art-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 9px 10px; cursor: pointer; text-align: left; font-family: inherit; transition: border-color .12s, box-shadow .12s; min-width: 0; }
+  .art-pill:hover { border-color: #C3CBD0; }
+  .art-pill.primary { border-color: var(--accent); background: #FFFBF8; grid-column: 1 / -1; box-shadow: 0 0 0 2px rgba(234,91,35,.08); }
+  .art-pill .ai { flex: none; width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .art-pill.seg .ai { background: #E6F5F0; color: #2E7D6B; }
+  .art-pill.email .ai { background: #E9F1FB; color: #2563EB; }
+  .art-pill.sms .ai { background: #E8F5EC; color: var(--green); }
+  .art-pill .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .art-pill .tx b { font-size: 12px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .art-pill .tx span { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .art-pill .go { flex: none; font-size: 11px; color: var(--accent-deep); font-weight: 700; }
+  .art-cta { font-size: 12px; color: var(--accent-deep); font-weight: 600; }
+  .art-revert { align-self: flex-start; font-size: 12px; font-weight: 700; color: var(--muted); border: 1px solid var(--line); background: #fff; padding: 6px 11px; border-radius: 7px; cursor: pointer; }
+  /* failure bubble in chat */
+  .wfc-fail { border: 1px solid #F0C9C0; background: #FDF3F0; border-radius: 10px; padding: 13px 15px; display: flex; flex-direction: column; gap: 10px; }
+  .wfc-fail .fl { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #B23A22; }
+  .wfc-fail .ft { font-size: 13px; line-height: 1.5; color: var(--slate); }
+  .wfc-fail .fa { display: flex; gap: 9px; }
+  .wfc-fail .retry { font-size: 12.5px; font-weight: 700; color: #fff; background: var(--accent); border: 0; padding: 8px 13px; border-radius: 8px; cursor: pointer; }
   .wfc-composer { flex: none; padding: 14px 16px; border-top: 1px solid var(--line); background: #fff; }
   .wfc-inp { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line-3); border-radius: 9px; padding: 10px 12px; }
   .wfc-inp input { flex: 1; border: 0; outline: none; font-family: inherit; font-size: 13px; color: var(--ink); }
@@ -517,6 +569,10 @@
   .guide { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 12.5px; padding: 9px 18px; border-radius: 999px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.4); z-index: 90; max-width: 92%; }
   .guide strong { color: #FFD9C6; font-weight: 700; }
   .guide .rs { margin-left: 10px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,.25); cursor: pointer; opacity: .85; }
+  .build-toggle { margin-left: 10px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,.25); font-size: 11.5px; opacity: .9; }
+  .build-toggle b { display: inline-block; font-weight: 600; padding: 2px 8px; margin-left: 4px; border-radius: 999px; cursor: pointer; color: rgba(255,255,255,.7); }
+  .build-toggle b[data-on] { background: rgba(255,255,255,.16); color: #fff; }
+  .build-toggle b[data-mode="fail"][data-on] { background: rgba(224,120,90,.55); }
 </style>
 </head>
 <body>
@@ -598,15 +654,15 @@
         <div class="tabpane" data-pane="automations">
           <div class="list-head"><h3>Your automations</h3><span class="n" id="autoCount">3 items · 1 live</span></div>
           <div class="table" id="autoTable" style="margin-top:12px">
-            <div class="tr">
+            <div class="tr clickable" data-open-workflow data-ai="managed" data-name="High Risk Journey — Grooming" data-meta="Managed automation · re-engages customers at churn risk">
               <span class="nm">High Risk Journey — Grooming <small>Re-engage customers at churn risk</small></span>
               <span class="pill auto">Managed</span><span class="when">9d ago</span><span class="status">Off</span>
             </div>
-            <div class="tr">
+            <div class="tr clickable" data-open-workflow data-ai="managed" data-name="Boarding Cross-Sell" data-meta="Managed automation · live · encourages daycare customers to try boarding">
               <span class="nm">Boarding Cross-Sell <small>Encourage daycare customers to try boarding</small></span>
               <span class="pill auto">Managed</span><span class="when">9d ago</span><span class="status live">Live</span>
             </div>
-            <div class="tr clickable" data-open-workflow>
+            <div class="tr clickable" data-open-workflow data-name="Lapsed single-track win-back" data-meta="Sends once on Tue 4 Aug · 1,284 customers · created just now">
               <span class="nm">Lapsed single-track win-back <small>Guests on a past single-track trip, nothing upcoming</small></span>
               <span class="pill ai">Custom</span><span class="when">just now</span><span class="status">Draft</span>
             </div>
@@ -683,22 +739,23 @@
         </div>
         <div class="build-wrap">
           <div class="build-card">
-            <div class="build-title"><span class="dot"></span>Building it now</div>
+            <div class="build-title"><span class="build-spin"></span><span id="buildTitleText">Building it now</span></div>
             <div class="build-steps" id="buildSteps">
               <div class="build-step" data-i="0"><span class="mk">○</span>Segment created — 1,284 customers</div>
               <div class="build-step" data-i="1"><span class="mk">○</span>Broadcast created — sends once on 4 Aug</div>
               <div class="build-step" data-i="2"><span class="mk">○</span>Email drafted</div>
               <div class="build-step" data-i="3"><span class="mk">○</span>SMS drafted</div>
             </div>
-            <div class="build-foot">Next you'll land on the workflow view — every step is editable by hand and the chat is a click away.</div>
+            <div class="build-foot" id="buildFoot">Next you'll land on the workflow view — every step is editable by hand and the chat is a click away.</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== VIEW: WORKFLOW (A1 / B5) ===== -->
+    <!-- ===== VIEW: WORKFLOW SHELL (A1 / B5 / A6b) — one shell, swappable left pane, one chat ===== -->
     <section class="view" data-view="workflow">
-      <div class="wf-top">
+      <!-- AUTOMATION HEADER (shown when left pane = automation) -->
+      <div class="wf-top" id="wfTopAutomation">
         <div class="wf-titlerow">
           <div class="wf-titlewrap">
             <button class="wf-back" data-back-to-list>←</button>
@@ -722,8 +779,31 @@
           <button class="wf-tab">Insights</button>
         </div>
       </div>
+
+      <!-- SEGMENT HEADER (shown when left pane = segment) -->
+      <div class="wf-top seg-top" id="wfTopSegment" hidden>
+        <div class="wf-titlerow">
+          <div class="wf-titlewrap">
+            <button class="wf-back" id="segBackBtn">←</button>
+            <div class="wf-title">
+              <input class="name" id="sbTitleInput" placeholder="Name this segment…" value="Lapsed single-track customers" />
+              <input class="desc" id="sbDescInput" placeholder="Add a description (optional)…" value="Guests on a past single-track trip with nothing upcoming." />
+              <div class="meta" id="sbMeta">Created by Goose · 30 Jul · not yet saved</div>
+            </div>
+          </div>
+          <div class="wf-actions">
+            <button class="chip-btn" id="sbEditAi">✦ Edit with AI</button>
+            <button class="btn btn-accent" style="padding:10px 18px" id="sbSave">Save segment</button>
+          </div>
+        </div>
+        <div class="seg-backrow"><button class="btn-outline seg-back-big" id="segBackBig">← Back to automation</button></div>
+      </div>
+
       <div class="wf-body">
-        <div class="wf-canvas">
+        <div class="wf-left" id="wfLeft">
+
+        <!-- ===== LEFT PANE A: AUTOMATION WORKFLOW ===== -->
+        <div class="wf-canvas pane" id="paneAutomation">
           <div class="wf-stack">
             <div class="wf-banner ok" id="wfBanner">
               <span class="bi">✓</span>
@@ -742,7 +822,7 @@
                 <span class="step-car">▾</span>
               </div>
               <div class="step-detail">
-                <div class="fieldset"><span class="fl">AUDIENCE SEGMENT</span><span class="seg-inline-pick" id="segLink2">👥 Lapsed single-track customers · edit segment →</span></div>
+                <div class="fieldset"><span class="fl">AUDIENCE SEGMENT</span><span class="seg-inline-pick" id="segLink2" onclick="event.stopPropagation()">👥 Lapsed single-track customers · edit segment →</span></div>
                 <div class="fieldset"><span class="fl">SEND DATE</span><input class="fld" value="Tue 4 Aug 2026, 9:00 am" /></div>
                 <div class="detail-actions"><span class="rm">Remove step</span><div class="grp"><button class="btn btn-outline" data-collapse-step>Cancel</button><button class="btn btn-accent" data-collapse-step>Save step</button></div></div>
               </div>
@@ -812,144 +892,90 @@
           </div>
         </div>
 
-        <!-- WORKFLOW CHAT PANEL -->
+        <!-- ===== LEFT PANE B: SEGMENT BUILDER (in-pane, swaps with automation) ===== -->
+        <div class="pane sb-pane" id="paneSegment" hidden>
+          <div class="sb-main">
+            <!-- IN PLAIN ENGLISH — moved to the top, prominent -->
+            <div class="plain-hero">
+              <div class="l">IN PLAIN ENGLISH</div>
+              <div class="plain-hero-text" id="sbPlain">Customers who were a guest on a <strong>single-track trip</strong> in the <strong>last 180 days</strong> and have <strong>nothing upcoming</strong>.</div>
+              <div class="plain-hero-count"><span class="big" id="sbCount">1,284</span><span class="u">customers match</span><span class="recount">Counted just now · <b>Recount</b></span></div>
+            </div>
+
+            <div class="sb-matchrow">
+              <span><strong>Customers</strong> who match</span>
+              <span class="token">all ▾</span>
+              <span>of the conditions below</span>
+            </div>
+
+            <div id="sbConds">
+              <div class="cond-card">
+                <div class="cond-line">
+                  <span class="lead">The customer has</span>
+                  <span class="tok-fill">at least 1 ▾</span>
+                  <span class="tok-fill">Trip ▾</span>
+                  <span class="lead">as a</span>
+                  <span class="tok-fill">guest ▾</span>
+                  <span class="lead">where all of:</span>
+                  <span class="dots">⋯</span>
+                </div>
+                <div class="cond-sub">
+                  <div class="sub-cond"><span class="lead">Trip type</span><span class="tok-fill">is any of ▾</span><span class="tok-fill">Sawtooth Single-track ✕</span><span class="tok-fill">Ridgeline Descent ✕</span><span class="tok-fill">Aspen Flow ✕</span></div>
+                  <span class="and-sm">AND</span>
+                  <div class="sub-cond"><span class="lead">Trip date</span><span class="tok-fill">is within the last ▾</span><span class="tok-fill">180 days ▾</span></div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin:2px 0">
+              <span style="height:1px;flex:1;background:#E7E9EA"></span><span class="and-sm">AND</span><span style="height:1px;flex:1;background:#E7E9EA"></span>
+            </div>
+            <div class="cond-card" id="sbCond2">
+              <div class="cond-line">
+                <span class="lead">The customer has</span>
+                <span class="tok-fill">no ▾</span>
+                <span class="tok-fill">Trip ▾</span>
+                <span class="lead">with</span>
+                <span class="tok-fill">Trip date ▾</span>
+                <span class="tok-fill">in the future ▾</span>
+                <span class="dots">⋯</span>
+              </div>
+            </div>
+            <button class="add-cond" id="sbAddCond">＋ Add condition</button>
+
+            <!-- sample members + used-by, below the builder -->
+            <div class="sb-belowgrid">
+              <div class="side-sec">
+                <div class="l">SAMPLE MEMBERS</div>
+                <div class="side-list">
+                  <div class="r"><span class="n">Dana Whitmore</span><span class="d">Mar 14</span></div>
+                  <div class="r"><span class="n">Marcus Bell</span><span class="d">Feb 2</span></div>
+                  <div class="r"><span class="n">Priya Nandakumar</span><span class="d">Jan 28</span></div>
+                  <div class="r"><span class="n">Théo Lambert</span><span class="d">Jan 9</span></div>
+                  <div class="all" id="sbSeeAll">See all 1,284</div>
+                </div>
+              </div>
+              <div class="side-sec" id="sbUsedBy">
+                <div class="l">USED BY</div>
+                <div id="sbUsedByBody"><!-- filled per segment --></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div><!-- /wf-left -->
+
+        <!-- ===== SINGLE PERSISTENT CHAT (docked; shared by both left panes) ===== -->
         <aside class="wf-chat" id="wfChat">
           <div class="wfc-head">
-            <div class="l"><span class="sp">✦</span><b>Edit with AI</b><span class="sub">· this automation</span></div>
+            <div class="l"><span class="sp">✦</span><b>Edit with AI</b><span class="sub" id="wfChatCtx">· this automation</span></div>
             <span class="x" id="wfChatClose">✕</span>
           </div>
-          <div class="wfc-scroll" id="wfChatScroll">
-            <div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's what I built: a segment of <strong>1,284 lapsed single-track guests</strong>, an email on <strong>4 Aug</strong>, and an SMS 5 days later for anyone who didn't open it. Ask me to change anything.</div></div>
-          </div>
+          <div class="wfc-scroll" id="wfChatScroll"><!-- built by renderWfChat() --></div>
           <div class="wfc-composer">
             <div class="wfc-inp"><input id="wfChatInput" placeholder="Ask for a change…" /><span class="send" id="wfChatSend">↑</span></div>
           </div>
         </aside>
       </div>
-    </section>
-
-    <!-- ===== VIEW: SEGMENT BUILDER (A6 / A6b) ===== -->
-    <section class="view" data-view="segment">
-      <div class="subhead">
-        <div class="crumbs"><span>Engagement</span><span class="sep">/</span><span>Segments</span><span class="sep">/</span><span class="cur" id="segCrumb">Lapsed single-track customers</span></div>
-        <span class="x" data-back-to-list>✕</span>
-      </div>
-
-      <!-- editing-behind-a-draft notice (only when arrived from workflow) -->
-      <div class="sb-notice" id="sbNotice" hidden>
-        <span class="sp">✦</span>
-        <span class="t">You're editing the segment behind the <strong>Lapsed single-track win-back</strong> draft. Anything you change here is carried back — Goose will note that you edited it by hand.</span>
-        <span class="back" data-back-to-workflow>← Back to draft</span>
-      </div>
-
-      <div class="sb-body">
-        <div class="sb-main">
-          <div class="sb-titlerow">
-            <div class="sb-title">
-              <input class="name" id="sbTitleInput" placeholder="Name this segment…" value="Lapsed single-track customers" />
-              <input class="desc" id="sbDescInput" placeholder="Add a description (optional)…" value="Guests on a past single-track trip with nothing upcoming." />
-              <div class="meta" id="sbMeta">Created by Goose · 30 Jul · not yet saved</div>
-            </div>
-            <div class="sb-headactions">
-              <div class="row">
-                <button class="chip-btn" id="sbEditAi">✦ Edit with AI</button>
-                <button class="btn btn-accent" style="padding:10px 18px" id="sbSave">Save segment</button>
-              </div>
-              <span class="btn-ghost" style="cursor:pointer" data-back-to-list>Cancel</span>
-            </div>
-          </div>
-
-          <div class="sb-matchrow">
-            <span><strong>Customers</strong> who match</span>
-            <span class="token">all ▾</span>
-            <span>of the conditions below</span>
-          </div>
-
-          <div id="sbConds">
-            <!-- Condition 1 -->
-            <div class="cond-card">
-              <div class="cond-line">
-                <span class="lead">The customer has</span>
-                <span class="tok-fill">at least 1 ▾</span>
-                <span class="tok-fill">Trip ▾</span>
-                <span class="lead">as a</span>
-                <span class="tok-fill">guest ▾</span>
-                <span class="lead">where all of:</span>
-                <span class="dots">⋯</span>
-              </div>
-              <div class="cond-sub">
-                <div class="sub-cond"><span class="lead">Trip type</span><span class="tok-fill">is any of ▾</span><span class="tok-fill">Sawtooth Single-track ✕</span><span class="tok-fill">Ridgeline Descent ✕</span><span class="tok-fill">Aspen Flow ✕</span></div>
-                <span class="and-sm">AND</span>
-                <div class="sub-cond"><span class="lead">Trip date</span><span class="tok-fill">is within the last ▾</span><span class="tok-fill">180 days ▾</span></div>
-              </div>
-            </div>
-          </div>
-          <div style="height:0"></div>
-          <!-- top-level AND -->
-          <div style="display:flex;align-items:center;gap:10px;margin:2px 0">
-            <span style="height:1px;flex:1;background:#E7E9EA"></span><span class="and-sm">AND</span><span style="height:1px;flex:1;background:#E7E9EA"></span>
-          </div>
-          <div class="cond-card" id="sbCond2">
-            <div class="cond-line">
-              <span class="lead">The customer has</span>
-              <span class="tok-fill">no ▾</span>
-              <span class="tok-fill">Trip ▾</span>
-              <span class="lead">with</span>
-              <span class="tok-fill">Trip date ▾</span>
-              <span class="tok-fill">in the future ▾</span>
-              <span class="dots">⋯</span>
-            </div>
-          </div>
-          <button class="add-cond" id="sbAddCond">＋ Add condition</button>
-        </div>
-
-        <!-- SEGMENT RIGHT PANEL -->
-        <aside class="sb-side">
-          <div class="pad">
-            <div class="side-sec">
-              <div class="l">IN PLAIN ENGLISH</div>
-              <div class="side-plain" id="sbPlain">Customers who were a guest on a <strong>single-track trip</strong> in the <strong>last 180 days</strong> and have <strong>nothing upcoming</strong>.</div>
-              <div class="side-bul">
-                <div class="b inc"><span class="m">✓</span><span>Includes Sawtooth Single-track, Ridgeline Descent and Aspen Flow</span></div>
-                <div class="b inc"><span class="m">✓</span><span>Counts trips that already happened, not future bookings</span></div>
-                <div class="b exc"><span class="m">✕</span><span>Leaves out anyone with a trip on the books, and leads who never booked</span></div>
-              </div>
-              <div class="side-note">Rewritten as you edit, so the two views can't drift apart.</div>
-            </div>
-            <div class="side-div"></div>
-            <div class="side-sec">
-              <div class="side-count"><span class="big" id="sbCount">1,284</span><span class="u">customers match</span></div>
-              <div class="side-recount">Counted just now · <b>Recount</b></div>
-            </div>
-            <div class="side-list">
-              <div class="r"><span class="n">Dana Whitmore</span><span class="d">Mar 14</span></div>
-              <div class="r"><span class="n">Marcus Bell</span><span class="d">Feb 2</span></div>
-              <div class="r"><span class="n">Priya Nandakumar</span><span class="d">Jan 28</span></div>
-              <div class="r"><span class="n">Théo Lambert</span><span class="d">Jan 9</span></div>
-              <div class="all" id="sbSeeAll">See all 1,284</div>
-            </div>
-            <div class="side-div"></div>
-            <div class="side-sec" id="sbUsedBy">
-              <div class="l">USED BY</div>
-              <div id="sbUsedByBody"><!-- filled per segment --></div>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <!-- SEGMENT AI CHAT (A6b) -->
-      <aside class="sb-chat" id="sbChat">
-        <div class="wfc-head">
-          <div class="l"><span class="sp">✦</span><b>Edit with AI</b><span class="sub">· this segment</span></div>
-          <span class="x" id="sbChatClose">✕</span>
-        </div>
-        <div class="wfc-scroll" id="sbChatScroll">
-          <div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's the segment I built, in plain English:<div style="display:flex;flex-direction:column;gap:7px;padding-top:9px"><div style="color:var(--slate)"><strong>Includes</strong> customers who were a guest on Sawtooth Single-track, Ridgeline Descent or Aspen Flow in the last 180 days.</div><div style="color:var(--slate)"><strong>Leaves out</strong> anyone with a trip already on the books, and leads who never booked.</div><div style="color:var(--slate)"><strong>1,284 customers</strong> match today. It belongs to this broadcast only.</div></div></div></div>
-        </div>
-        <div class="wfc-composer">
-          <div class="wfc-inp"><input id="sbChatInput" placeholder="Ask for another change…" /><span class="send" id="sbChatSend">↑</span></div>
-        </div>
-      </aside>
     </section>
 
     <!-- ===== BROADCAST WIZARD (existing product flow — full-screen) ===== -->
@@ -1011,7 +1037,7 @@
   const $$ = (s, r=document) => [...r.querySelectorAll(s)];
   const app = $('#app');
 
-  function setGuide(html){ $('#guide').innerHTML = html + ' <span class="rs" id="resetBtn">↻ Reset</span>'; $('#resetBtn').onclick = resetAll; }
+  function setGuide(html){ $('#guide').innerHTML = html + ' ' + buildModeControl() + ' <span class="rs" id="resetBtn">↻ Reset</span>'; $('#resetBtn').onclick = resetAll; bindBuildToggle(); }
 
   // ---------- View router ----------
   function showView(name){
@@ -1163,25 +1189,72 @@
   $('[data-close-chat]').onclick = () => { showView('list'); };
 
   // ---------- Building screen (B4) ----------
+  // ---- Build mode toggle (guide bar) : success vs failure ----
+  let buildMode = 'success';
+  function buildModeControl(){
+    return `<span class="build-toggle" id="buildToggle" title="Choose which build path the next 'Build it' shows">
+      Next build: <b data-mode="success"${buildMode==='success'?' data-on':''}>Success</b><b data-mode="fail"${buildMode==='fail'?' data-on':''}>Failure</b></span>`;
+  }
+  function bindBuildToggle(){
+    const t = $('#buildToggle'); if(!t) return;
+    $$('#buildToggle b').forEach(b => b.onclick = (e) => { e.stopPropagation(); buildMode = b.dataset.mode; $$('#buildToggle b').forEach(x=>x.toggleAttribute('data-on', x.dataset.mode===buildMode)); });
+  }
+
   function runBuild(){
     showView('building');
+    const card = $('.build-card'); card.classList.remove('failed');
+    $('.build-title').innerHTML = '<span class="build-spin"></span><span id="buildTitleText">Building it now</span>';
+    $('#buildFoot').textContent = "Next you'll land on the workflow view — every step is editable by hand and the chat is a click away.";
     setGuide('⏳ Building the segment, broadcast, and both messages…');
     const steps = $$('#buildSteps .build-step');
     steps.forEach(s => { s.removeAttribute('data-done'); $('.mk', s).textContent = '○'; });
+    // In failure mode, the 2nd item is where it breaks.
+    const failAt = buildMode === 'fail' ? 1 : steps.length;
     let i = 0;
     const tick = () => {
-      if(i < steps.length){
+      if(i < steps.length && i < failAt){
         steps[i].setAttribute('data-done','');
         $('.mk', steps[i]).textContent = '✓';
         i++;
         setTimeout(tick, 620);
+      } else if(buildMode === 'fail'){
+        setTimeout(buildFailed, 700);
       } else {
         setTimeout(landBuilt, 700);
       }
     };
     setTimeout(tick, 500);
   }
-  // Restore the full automation shell (undo any broadcast-specific mutations)
+  // A2 + A1: build fails → animate to a failure card, then dump back into the chat.
+  function buildFailed(){
+    const card = $('.build-card'); card.classList.add('failed');
+    $('.build-title').innerHTML = '<span class="build-fail-ic">!</span><span>Couldn\'t finish building</span>';
+    $('#buildFoot').innerHTML = "Nothing was created — your plan is safe. Taking you back to the chat…";
+    setGuide('⚠️ The build hit a problem. Nothing was created — you\'ll drop back into the chat to keep going.');
+    setTimeout(() => {
+      showView('chat');
+      const scroll = $('#chatScroll');
+      // plain-language failure, no jargon, plan intact + retry
+      scroll.insertAdjacentHTML('beforeend', `<div class="msg ai"><span class="who">GOOSE</span><div class="bubble"><div class="wfc-fail"><div class="fl">⚠ I couldn't build this</div><div class="ft">The segment came back <strong>empty</strong> — no customers matched, so I didn't create anything. Nothing was saved. Want to widen the audience (say, last 12 months instead of 180 days) and try again?</div><div class="fa"><button class="retry" id="failRetry">Try building again</button></div></div></div></div>`);
+      scroll.scrollTop = scroll.scrollHeight;
+      $('#failRetry').onclick = () => { buildMode = 'success'; runBuild(); };
+    }, 1100);
+  }
+
+  // ---- The single persistent chat's opening content (message first, artifact pills below) ----
+  function wfChatWelcome(){
+    return `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's what I built — a re-engagement automation for your lapsed single-track guests. <strong>Please review the segment</strong> before you turn it on: if the audience is off, everything downstream is off.</div></div>
+      <div class="wfc-msg ai"><div class="wfc-arts">
+        <button class="art-pill primary seg" data-art="segment"><span class="ai">👥</span><span class="tx"><b>Lapsed single-track customers</b><span>1,284 people · review this →</span></span><span class="go">Open</span></button>
+        <button class="art-pill email" data-art="email"><span class="ai">✉</span><span class="tx"><b>Email</b><span>The trails are dry again</span></span></button>
+        <button class="art-pill sms" data-art="sms"><span class="ai">💬</span><span class="tx"><b>SMS</b><span>2 spots left…</span></span></button>
+      </div></div>`;
+  }
+  function bindArtifactPills(){
+    $$('#wfChatScroll .art-pill').forEach(p => p.onclick = () => { if(p.dataset.art === 'segment') showPane('segment'); });
+  }
+
+  // Restore the full automation shell (undo any broadcast/segment mutations)
   function restoreAutomationShell(){
     $('.wf-title h2').textContent = 'Lapsed single-track win-back';
     $('#wfMeta').textContent = 'Sends once on Tue 4 Aug · 1,284 customers · created just now';
@@ -1189,7 +1262,7 @@
     $('#wfEditAi').style.display = ''; $('#wfTurnOn').style.display = '';
     $('#wfStatus').textContent = '● Off ▾'; $('#wfStatus').style.color = '';
     $('#startMain').innerHTML = 'Everyone in <a class="seg-link" id="segLink">Lapsed single-track customers</a> — sends once on <span class="edit">Tue 4 Aug, 9:00 am</span>';
-    $('#segLink').onclick = (e) => { e.stopPropagation(); openSegmentFromWorkflow(); };
+    $('#segLink').onclick = (e) => { e.stopPropagation(); showPane('segment'); };
     $('.step[data-step="start"] .lbl').textContent = 'START THIS BROADCAST';
     $('.step[data-step="start"] .sub').textContent = '1,284 customers today · sends once';
     $('.step[data-step="email"] .main').textContent = 'The trails are dry again';
@@ -1203,56 +1276,90 @@
     ['wait','sms'].forEach(k => { const s = $(`.step[data-step="${k}"]`); s.style.display = ''; });
     $('.step[data-step="wait"]').nextElementSibling.style.display = '';
     $('.step[data-step="sms"]').previousElementSibling.style.display = '';
-    // reset the automation chat to its opening message
-    $('#wfChatScroll').innerHTML = `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's what I built: a segment of <strong>1,284 lapsed single-track guests</strong>, an email on <strong>4 Aug</strong>, and an SMS 5 days later for anyone who didn't open it. Ask me to change anything.</div></div>`;
+    showPane('automation', true);
   }
   function landBuilt(){
-    // B5: workflow view, chat open, "Turn on" primary, freshly-built banner
     restoreAutomationShell();
+    configSegment({ fromWorkflow: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
+    $('#wfChatScroll').innerHTML = wfChatWelcome(); bindArtifactPills();
     showView('workflow');
-    $('#wfChat').setAttribute('data-open','');
-    $('#wfEditAi').setAttribute('data-on','');
-    $('#wfMeta').textContent = 'Sends once on Tue 4 Aug · 1,284 customers · created just now';
-    $('#wfTurnOn').style.display = '';
-    // mark the automations list row as existing (already there)
-    setGuide('✅ Built. This is the <strong>workflow view</strong> — click any step to edit it by hand, toggle the chat with <strong>Edit with AI</strong>, or click the <strong>segment name</strong> in the first step.');
+    $('#wfChat').setAttribute('data-open',''); $('#wfEditAi').setAttribute('data-on','');
+    $('#wfEditAi').style.display = '';
+    setGuide('✅ Built. You\'re in the <strong>automation view</strong> with the chat open. Click the <strong>segment pill</strong> (or the segment name) — it opens on the left, chat stays put.');
   }
 
-  // ================= WORKFLOW VIEW (A1) =================
-  // Open from the list row
-  $$('[data-open-workflow]').forEach(r => r.onclick = () => openWorkflow());
-  function openWorkflow(){
-    restoreAutomationShell();
-    showView('workflow');
-    $('#wfChat').removeAttribute('data-open');
-    $('#wfEditAi').removeAttribute('data-on');
-    setGuide('This is the automation <strong>workflow view</strong>. Click a step to edit inline, click the <strong>segment name</strong> to open the segment builder, or hit <strong>Edit with AI</strong>.');
+  // ================= WORKFLOW SHELL — pane swapping (C7) =================
+  // aiEditable: whether this automation was built with AI (has a bound chat). F12.
+  let aiEditable = true;
+  let curPane = 'automation';
+  function showPane(which, force){
+    if(!force && which === curPane) return;
+    curPane = which;
+    const seg = which === 'segment';
+    $('#paneAutomation').hidden = seg;
+    $('#paneSegment').hidden = !seg;
+    $('#wfTopAutomation').hidden = seg;
+    $('#wfTopSegment').hidden = !seg;
+    $('#wfChatCtx').textContent = seg ? '· this segment' : '· this automation';
   }
-  $('[data-back-to-list]') && $$('[data-back-to-list]').forEach(b => b.onclick = () => { showView('list'); setTab('automations'); });
+  // Open an automation from a list row. isAi=false → Managed (no chat / no Edit-with-AI). F12.
+  $$('[data-open-workflow]').forEach(r => r.onclick = () => openAutomation({ ai: r.dataset.ai !== 'managed', name: r.dataset.name, desc: r.dataset.desc, meta: r.dataset.meta }));
+  function openAutomation(opts){
+    opts = opts || {};
+    aiEditable = opts.ai !== false;
+    restoreAutomationShell();
+    if(opts.name) $('.wf-title h2').textContent = opts.name;
+    if(opts.meta) $('#wfMeta').textContent = opts.meta;
+    if(aiEditable){
+      $('#wfChatScroll').innerHTML = wfChatWelcome(); bindArtifactPills();
+      configSegment({ fromWorkflow: true, name: opts.name || 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
+      $('#wfEditAi').style.display = '';
+    } else {
+      // Managed automation: NO Edit-with-AI button, NO chat.
+      $('#wfEditAi').style.display = 'none';
+      const pill = $('.wf-title .pill'); pill.className = 'pill auto'; pill.textContent = 'Managed';
+      const banner = $('#wfBanner'); banner.className = 'wf-banner';
+      banner.querySelector('b').textContent = 'Managed automation — set up for you';
+      banner.querySelector('span:last-child').textContent = 'Click any step to change it by hand. This one wasn\'t built with AI, so there\'s no chat.';
+      // a managed automation's segment link still opens the segment pane (read-only feel), but no chat
+      $('#segLink') && ($('#segLink').onclick = (e) => { e.stopPropagation(); configSegment({ fromWorkflow: false, name: opts.name }); $('#sbEditAi').style.display = 'none'; showPane('segment'); });
+    }
+    showView('workflow');
+    $('#wfChat').removeAttribute('data-open'); $('#wfEditAi').removeAttribute('data-on');
+    showPane('automation', true);
+    setGuide(aiEditable
+      ? 'This automation was <strong>built with AI</strong> — hit <strong>Edit with AI</strong> to reopen the chat, or click the segment to view it in place.'
+      : 'This is a <strong>Managed</strong> automation (not built with AI) — note there\'s <strong>no “Edit with AI” button</strong>, and no chat panel.');
+  }
+  $$('[data-back-to-list]').forEach(b => b.onclick = () => { showView('list'); setTab('automations'); });
+  // segment header back → automation (in-pane, chat & scroll preserved)
+  $('#segBackBtn').onclick = () => showPane('automation');
+  $('#segBackBig').onclick = () => showPane('automation');
 
   // Step expand/collapse (A2/A3 inline editing)
   $$('.step').forEach(step => {
     const summary = $('.step-summary', step);
     summary.onclick = (e) => {
-      if(e.target.closest('.step-toggle') || e.target.closest('.seg-link')) return; // toggles & links handled separately
-      // collapse others, open this
+      if(e.target.closest('.step-toggle') || e.target.closest('.seg-link')) return;
       const wasOpen = step.classList.contains('open');
       $$('.step').forEach(s => { s.classList.remove('open','selected'); });
       if(!wasOpen){ step.classList.add('open','selected'); }
     };
   });
   $$('[data-collapse-step]').forEach(b => b.onclick = (e) => { e.stopPropagation(); const s = b.closest('.step'); s.classList.remove('open','selected'); });
-  // toggles are inert visual
   $$('.step-toggle').forEach(t => t.onclick = e => { e.stopPropagation(); t.style.background = t.style.background === 'rgb(195, 203, 208)' ? '' : '#C3CBD0'; t.style.justifyContent = t.style.justifyContent === 'flex-start' ? '' : 'flex-start'; });
+  // the "edit segment →" pick inside the Start step detail also swaps to the segment pane
+  $('#segLink2') && ($('#segLink2').onclick = (e) => { e.stopPropagation(); showPane('segment'); });
 
-  // Edit with AI toggles the chat panel
+  // Edit with AI toggles the single chat panel (only present when aiEditable)
   $('#wfEditAi').onclick = () => {
     const open = $('#wfChat').toggleAttribute('data-open');
     $('#wfEditAi').toggleAttribute('data-on', open);
   };
-  $('#wfChatClose').onclick = () => { $('#wfChat').removeAttribute('data-open'); $('#wfEditAi').removeAttribute('data-on'); };
-  // workflow chat send (simulated single-change)
-  let wfChangeShown = false;
+  $('#wfChatClose').onclick = () => { $('#wfChat').removeAttribute('data-open'); $('#wfEditAi').removeAttribute('data-on'); $('#sbEditAi').removeAttribute('data-on'); };
+
+  // The single chat's send: context-aware. On the segment pane it edits the segment
+  // (adds spend condition, drops count); on the automation pane it tightens the audience.
   $('#wfChatSend').onclick = wfChatSend;
   $('#wfChatInput').addEventListener('keydown', e => { if(e.key === 'Enter') wfChatSend(); });
   function wfChatSend(){
@@ -1262,12 +1369,12 @@
     scroll.insertAdjacentHTML('beforeend', `<div class="wfc-msg you"><span class="who">YOU</span><div class="wfc-bubble">${v}</div></div>`);
     scroll.scrollTop = scroll.scrollHeight;
     setTimeout(() => {
-      scroll.insertAdjacentHTML('beforeend', `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Done — tightened the audience to higher-value customers. That takes it from <strong>1,284</strong> to <strong>794</strong>. Undo any time.</div></div>
+      scroll.insertAdjacentHTML('beforeend', `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Added a lifetime spend condition — highlighted on the segment, and applied. That takes it from <strong>1,284</strong> to <strong>794</strong> customers. Undo any time.</div></div>
       <div class="wfc-change"><div class="l">WHAT I CHANGED</div><div class="r"><b>New condition</b><span>Lifetime spend is over $400 · <s style="color:#B6BFC5">1,284</s> → <strong style="color:var(--ink)">794 customers</strong></span></div><button class="undo">↩ Undo</button></div>`);
       scroll.scrollTop = scroll.scrollHeight;
-      // reflect in the start step summary + meta
+      applySpendCondition();
       $('#wfMeta').textContent = 'Sends once on Tue 4 Aug · 794 customers · edited just now';
-      $$('.wfc-change .undo').forEach(u => u.onclick = () => { $('#wfMeta').textContent = 'Sends once on Tue 4 Aug · 1,284 customers · created just now'; u.closest('.wfc-change').style.opacity = .5; });
+      $$('.wfc-change .undo').forEach(u => u.onclick = () => { removeSpendCondition(); $('#wfMeta').textContent = 'Sends once on Tue 4 Aug · 1,284 customers · created just now'; u.closest('.wfc-change').style.opacity = .5; });
     }, 650);
   }
 
@@ -1280,18 +1387,7 @@
     setGuide('✅ Automation is <strong>live</strong>. It sends once on 4 Aug to everyone in the segment.');
   };
 
-  // Click segment name → open segment builder w/ chat (A6b), editing-behind-draft
-  $('#segLink').onclick = (e) => { e.stopPropagation(); openSegmentFromWorkflow(); };
-  $('#segLink2').onclick = (e) => { e.stopPropagation(); openSegmentFromWorkflow(); };
-  function openSegmentFromWorkflow(){
-    showView('segment');
-    configSegment({ fromWorkflow: true, chat: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
-    setGuide('This is the <strong>segment builder</strong> behind the automation. Continue the chat, edit conditions by hand, or hit <strong>← Back to draft</strong>.');
-  }
-  $('[data-back-to-workflow]') && $('[data-back-to-workflow]').addEventListener('click', () => { showView('workflow'); $('#wfChat').setAttribute('data-open',''); });
-
-  // ================= SEGMENT BUILDER (A6 / A6b) =================
-  // Which automations/broadcasts each segment feeds (its "Used by").
+  // ================= SEGMENT PANE (A6 / A6b, in-pane) =================
   const SEGMENT_USED_BY = {
     'Lapsed single-track customers': { owner: 'Lapsed single-track win-back', kind: 'broadcast', list: [] },
     'High Risk Churn — Daycare': { list: [{ name: 'High Risk Journey — Grooming', kind: 'Automation' }, { name: 'Daycare Churn Risk Outreach', kind: 'Automation' }] },
@@ -1301,13 +1397,11 @@
   function renderUsedBy(name){
     const info = SEGMENT_USED_BY[name] || { list: [] };
     const body = $('#sbUsedByBody');
-    // Owned by a single draft (segment created behind an automation/broadcast)
     if(info.owner){
       body.innerHTML = `<div class="side-plain" style="font-size:13.5px;line-height:1.5;color:var(--slate)">Only the <strong style="color:var(--ink)">${info.owner}</strong> ${info.kind}. Editing it cannot affect anything else.</div>
         <div class="side-note">Want to reuse it elsewhere? <span style="color:var(--accent-deep);font-weight:600;cursor:pointer">Make it a shared segment</span></div>`;
       return;
     }
-    // Shared segment — list every automation/broadcast that references it
     if(!info.list.length){
       body.innerHTML = `<div class="side-plain" style="font-size:13.5px;line-height:1.5;color:var(--slate)">Not used by anything yet.</div>
         <div class="side-note">Target it from a broadcast or automation to start messaging this audience.</div>`;
@@ -1317,58 +1411,31 @@
     body.innerHTML = `<div class="used-list">${rows}</div>
       <div class="side-note">Editing conditions changes who these ${info.list.length > 1 ? 'send to' : 'sends to'}. Duplicate the segment first if you only want to change one.</div>`;
   }
+  // Configure the segment pane's content (does NOT swap panes — call showPane('segment') for that).
   function configSegment(opts){
-    const { fromWorkflow, chat, name, desc, blank } = opts;
-    // The draft-origin banner only shows when arriving via the AI automation flow.
-    $('#sbNotice').hidden = !fromWorkflow;
-    // "Used by" is always shown (except for a brand-new unsaved segment).
+    const { fromWorkflow, name, desc, blank } = opts;
     $('#sbUsedBy').style.display = blank ? 'none' : '';
     if(!blank) renderUsedBy(name);
-    // Name + description are always human-editable.
     $('#sbTitleInput').value = blank ? '' : (name || '');
     $('#sbDescInput').value = blank ? '' : (desc || '');
-    if(blank){
-      $('#sbMeta').textContent = 'New segment · not yet saved';
-      $('#segCrumb').textContent = 'New segment';
-    } else {
-      $('#sbMeta').textContent = fromWorkflow ? 'Created by Goose · 30 Jul · not yet saved' : 'Saved segment · edit conditions below';
-      $('#segCrumb').textContent = name;
-    }
-    // keep the crumb in sync as the name is edited
-    $('#sbTitleInput').oninput = () => { $('#segCrumb').textContent = $('#sbTitleInput').value.trim() || 'New segment'; };
-    // chat
-    $('#sbChat').toggleAttribute('data-open', !!chat);
-    $('#sbEditAi').toggleAttribute('data-on', !!chat);
+    $('#sbMeta').textContent = blank ? 'New segment · not yet saved' : (fromWorkflow ? 'Created by Goose · 30 Jul · not yet saved' : 'Saved segment · edit conditions below');
   }
-  // Open from the segments list (existing saved segment — A6, no chat, no notice)
+  // Open a saved segment from the segments list → segment pane in the shell, no chat.
   $$('[data-open-segment]').forEach(r => r.onclick = () => {
-    showView('segment');
-    configSegment({ fromWorkflow: false, chat: false, name: r.dataset.openSegment, desc: r.dataset.openDesc || '' });
-    setGuide('This is the <strong>segment builder</strong>. Edit the name and description, tune conditions on the left, or see which automations it feeds under <strong>Used by</strong>.');
+    aiEditable = false;
+    restoreAutomationShell();
+    configSegment({ fromWorkflow: false, name: r.dataset.openSegment, desc: r.dataset.openDesc || '' });
+    $('#sbEditAi').style.display = 'none'; // saved segment opened directly has no AI session (F12-style)
+    showView('workflow');
+    $('#wfChat').removeAttribute('data-open');
+    showPane('segment', true);
+    setGuide('This is the <strong>segment builder</strong>. Edit the name and description, tune conditions, see the plain-English summary on top, or which automations it feeds under <strong>Used by</strong>.');
   });
+  // Edit-with-AI from the segment header just opens the shared chat.
   $('#sbEditAi').onclick = () => {
-    const open = $('#sbChat').toggleAttribute('data-open');
+    const open = $('#wfChat').toggleAttribute('data-open');
     $('#sbEditAi').toggleAttribute('data-on', open);
   };
-  $('#sbChatClose').onclick = () => { $('#sbChat').removeAttribute('data-open'); $('#sbEditAi').removeAttribute('data-on'); };
-  // segment chat send (adds a spend condition, drops count to 794)
-  $('#sbChatSend').onclick = sbChatSend;
-  $('#sbChatInput').addEventListener('keydown', e => { if(e.key === 'Enter') sbChatSend(); });
-  function sbChatSend(){
-    const v = $('#sbChatInput').value.trim() || 'Only customers who spent over $400 with us.';
-    $('#sbChatInput').value = '';
-    const scroll = $('#sbChatScroll');
-    scroll.insertAdjacentHTML('beforeend', `<div class="wfc-msg you"><span class="who">YOU</span><div class="wfc-bubble">${v}</div></div>`);
-    scroll.scrollTop = scroll.scrollHeight;
-    setTimeout(() => {
-      scroll.insertAdjacentHTML('beforeend', `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Added a lifetime spend condition — highlighted on the left, and applied. That takes it from <strong>1,284</strong> to <strong>794</strong> customers. Undo it any time.</div></div>
-      <div class="wfc-change"><div class="l">WHAT I CHANGED</div><div class="r"><b>New condition</b><span>Lifetime spend is over $400 · <s style="color:#B6BFC5">1,284</s> → <strong style="color:var(--ink)">794 customers</strong></span></div><button class="undo">↩ Undo</button></div>`);
-      scroll.scrollTop = scroll.scrollHeight;
-      // reflect on the canvas + right panel
-      applySpendCondition();
-      $$('.wfc-change .undo').forEach(u => u.onclick = () => { removeSpendCondition(); u.closest('.wfc-change').style.opacity = .5; });
-    }, 650);
-  }
   function applySpendCondition(){
     if($('#spendCond')) return;
     const html = `<div style="display:flex;align-items:center;gap:10px;margin:2px 0"><span style="height:1px;flex:1;background:#E7E9EA"></span><span class="and-sm">AND</span><span style="height:1px;flex:1;background:#E7E9EA"></span></div>
@@ -1413,21 +1480,32 @@
   genScrim.onclick = e => { if(e.target === genScrim) closeGen(); };
   function closeGen(){ genScrim.removeAttribute('data-open'); }
 
-  // Generate Segment → A6b (builder with chat, prefilled)
+  // Generate Segment → segment pane with the AI chat open (prefilled)
   $('#genGo').onclick = () => {
     closeGen();
-    showView('segment');
-    configSegment({ fromWorkflow: false, chat: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
+    aiEditable = true;
+    restoreAutomationShell();
+    configSegment({ fromWorkflow: false, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
     $('#sbMeta').textContent = 'Created by Goose · just now · not yet saved';
+    $('#sbEditAi').style.display = '';
+    $('#wfChatScroll').innerHTML = `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's the segment I built from your description, in plain English:<div style="display:flex;flex-direction:column;gap:7px;padding-top:9px"><div style="color:var(--slate)"><strong>Includes</strong> guests on Sawtooth Single-track, Ridgeline Descent or Aspen Flow in the last 180 days.</div><div style="color:var(--slate)"><strong>Leaves out</strong> anyone with a trip on the books, and leads who never booked.</div><div style="color:var(--slate)"><strong>1,284 customers</strong> match today. Ask me to change anything.</div></div></div></div>`;
+    showView('workflow');
+    showPane('segment', true);
+    $('#wfChat').setAttribute('data-open',''); $('#sbEditAi').setAttribute('data-on','');
     setGuide('✅ AI built your segment. Continue the chat to refine it, or edit conditions by hand — then <strong>Save segment</strong>.');
   };
-  // Manual Builder → A6 blank
+  // Manual Builder → blank segment pane, no chat
   $('#genManual').onclick = () => {
     closeGen();
-    showView('segment');
-    configSegment({ fromWorkflow: false, chat: false, blank: true, name: 'New segment' });
+    aiEditable = false;
+    restoreAutomationShell();
+    configSegment({ fromWorkflow: false, blank: true, name: 'New segment' });
+    $('#sbEditAi').style.display = 'none';
     $('#sbCount').textContent = '0';
     $('#sbPlain').innerHTML = 'Add a condition to describe who this segment includes.';
+    showView('workflow');
+    $('#wfChat').removeAttribute('data-open');
+    showPane('segment', true);
     setGuide('This is the blank <strong>Manual Builder</strong>. Name the segment and add conditions.');
   };
 
@@ -1632,7 +1710,9 @@
 
   // Broadcast landing view (existing product: Audience / Email / SMS / Start-this-broadcast + email preview)
   function openBroadcastLanding(){
+    aiEditable = false;
     showView('workflow');
+    showPane('automation', true);
     $('#wfChat').removeAttribute('data-open'); $('#wfEditAi').removeAttribute('data-on');
     $('.wf-title h2').textContent = 'Golden Retriever Day Celebration by Paws Pet Hotel';
     const pill = $('.wf-title .pill'); pill.className = 'pill bc'; pill.textContent = 'Scheduled'; pill.style.display = '';
@@ -1647,7 +1727,7 @@
     $('#startMain').innerHTML = 'Bulk send at <span class="edit">9:07 PM · 08/05/26</span> to <a class="seg-link" id="segLinkBc">Daycare &amp; Boarding Customers</a>';
     $('.step[data-step="start"] .lbl').textContent = 'START THIS BROADCAST';
     $('.step[data-step="start"] .sub').textContent = 'Send to all users in this segment · sends once';
-    $('#segLinkBc') && ($('#segLinkBc').onclick = (e) => { e.stopPropagation(); openSegmentFromWorkflow(); });
+    $('#segLinkBc') && ($('#segLinkBc').onclick = (e) => { e.stopPropagation(); configSegment({ fromWorkflow: false, name: 'Daycare & Boarding Customers', desc: 'Customers with a daycare or boarding booking history.' }); $('#sbEditAi').style.display = 'none'; showPane('segment'); });
     $('.step[data-step="wait"]').style.display = 'none';
     $('.step[data-step="wait"]').nextElementSibling.style.display = 'none';
     $('.step[data-step="sms"]').style.display = '';
