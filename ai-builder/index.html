@@ -254,8 +254,8 @@
   .wf-top { flex: none; padding: 22px 28px 0; display: flex; flex-direction: column; gap: 14px; }
   .wf-titlerow { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
   .wf-back { flex: none; width: 31px; height: 31px; border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--faint); font-size: 14px; display: flex; align-items: center; justify-content: center; background: #fff; cursor: pointer; }
-  .wf-titlewrap { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
-  .wf-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .wf-titlewrap { display: flex; align-items: flex-start; gap: 12px; min-width: 0; flex: 1; }
+  .wf-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
   .wf-title .row1 { display: flex; align-items: center; gap: 10px; }
   .wf-title h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
   .wf-title .meta { font-size: 13px; color: var(--muted); }
@@ -289,9 +289,9 @@
   .plain-hero-count .recount b { font-weight: 600; color: var(--slate); cursor: pointer; }
   .sb-belowgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
   /* segment header variant */
-  .seg-top .name { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); border: 0; border-bottom: 2px dashed transparent; padding: 0 0 2px; font-family: inherit; outline: none; width: 100%; max-width: 460px; background: transparent; }
+  .seg-top .name { font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); border: 0; border-bottom: 2px dashed transparent; padding: 0 0 2px; font-family: inherit; outline: none; width: 100%; max-width: 620px; background: transparent; text-overflow: ellipsis; }
   .seg-top .name:hover { border-bottom-color: var(--line-3); } .seg-top .name:focus { border-bottom-color: var(--accent); }
-  .seg-top .desc { font-size: 13.5px; color: var(--slate); border: 0; border-bottom: 1px dashed transparent; padding: 0 0 2px; font-family: inherit; outline: none; width: 100%; max-width: 520px; background: transparent; margin-top: 4px; }
+  .seg-top .desc { font-size: 13.5px; color: var(--slate); border: 0; border-bottom: 1px dashed transparent; padding: 0 0 2px; font-family: inherit; outline: none; width: 100%; max-width: 620px; background: transparent; margin-top: 4px; text-overflow: ellipsis; }
   .seg-top .desc::placeholder { color: var(--faint); } .seg-top .desc:hover { border-bottom-color: var(--line-3); } .seg-top .desc:focus { border-bottom-color: var(--accent); color: var(--ink); }
   .seg-backrow { margin-top: 4px; }
   .seg-back-big { font-size: 13px; font-weight: 700; padding: 8px 14px; }
@@ -366,9 +366,10 @@
   .wfc-change .undo { align-self: flex-start; font-size: 12.5px; font-weight: 700; color: var(--ink); border: 1px solid var(--line); background: #fff; padding: 8px 12px; border-radius: var(--r-sm); cursor: pointer; }
   /* artifact pills under the chat (segment + automation) */
   .wfc-arts { display: flex; flex-direction: column; gap: 8px; }
-  .art-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 9px 10px; cursor: pointer; text-align: left; font-family: inherit; transition: border-color .12s, box-shadow .12s; min-width: 0; }
-  .art-pill:hover { border-color: #C3CBD0; }
-  .art-pill.primary { border-color: var(--accent); background: #FFFBF8; box-shadow: 0 0 0 2px rgba(234,91,35,.08); }
+  .art-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 9px 10px; cursor: pointer; text-align: left; font-family: inherit; transition: border-color .12s, box-shadow .12s, background .12s; min-width: 0; }
+  .art-pill:hover { border-color: var(--accent); background: #FFFBF8; box-shadow: 0 2px 10px -4px rgba(234,91,35,.25); }
+  .art-pill .go { transition: transform .12s; }
+  .art-pill:hover .go { transform: translateX(2px); }
   .art-pill .ai { flex: none; width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
   .art-pill.seg .ai { background: #E6F5F0; color: #2E7D6B; }
   .art-pill.auto .ai { background: var(--indigo-bg); color: var(--indigo); }
@@ -455,6 +456,27 @@
   .side-count .u { font-size: 13.5px; color: var(--muted); }
   .side-recount { font-size: 13px; color: var(--faint); }
   .side-recount b { font-weight: 600; color: var(--slate); cursor: pointer; }
+  /* audience preview modal */
+  .aud-modal { width: 100%; max-width: 460px; height: 82%; max-height: 680px; background: #fff; border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 30px 70px -30px rgba(0,0,0,.5); display: grid; grid-template-rows: auto auto auto 1fr; }
+  .aud-head { padding: 18px 20px 14px; display: flex; align-items: flex-start; justify-content: space-between; }
+  .aud-title { display: flex; align-items: center; gap: 11px; }
+  .aud-title .ic { width: 34px; height: 34px; border-radius: 9px; background: #EEF1F2; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .aud-title b { font-size: 17px; font-weight: 800; color: var(--ink); display: block; }
+  .aud-title span { font-size: 13px; color: var(--muted); }
+  .aud-search { padding: 0 20px 12px; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .aud-search .mag { font-size: 13px; color: var(--faint); }
+  .aud-search input { flex: 1; min-width: 160px; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; font-family: inherit; font-size: 13.5px; color: var(--ink); outline: none; }
+  .aud-search input:focus { border-color: #C9D1D6; }
+  .aud-search .aud-note { width: 100%; font-size: 11.5px; color: var(--faint); }
+  .aud-tablehead { display: flex; justify-content: space-between; padding: 9px 20px; background: #F4F5F6; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--muted); }
+  .aud-rows { overflow-y: auto; }
+  .aud-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 20px; border-bottom: 1px solid var(--line-2); }
+  .aud-row .an { font-size: 14px; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .aud-row .subs { display: flex; gap: 6px; flex: none; }
+  .sub-tag { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 6px; }
+  .sub-tag.email { color: #2563EB; background: #E9F1FB; }
+  .sub-tag.phone { color: #2E7D6B; background: #E6F5F0; }
+  .aud-empty { padding: 30px 20px; text-align: center; font-size: 13.5px; color: var(--faint); }
   .side-list { border: 1px solid #E7E9EA; border-radius: 9px; overflow: hidden; background: #fff; }
   .side-list .r { display: flex; padding: 10px 13px; font-size: 13px; color: var(--slate); border-bottom: 1px solid #F2F4F4; }
   .side-list .r:last-child { border-bottom: 0; }
@@ -903,7 +925,7 @@
             <div class="plain-hero">
               <div class="l">IN PLAIN ENGLISH</div>
               <div class="plain-hero-text" id="sbPlain">Customers who were a guest on a <strong>single-track trip</strong> in the <strong>last 180 days</strong> and have <strong>nothing upcoming</strong>.</div>
-              <div class="plain-hero-count"><span class="big" id="sbCount">1,284</span><span class="u">customers match</span><span class="recount">Counted just now · <b>Recount</b></span></div>
+              <div class="plain-hero-count"><span class="big" id="sbCount">1,284</span><span class="u">customers match</span><span class="recount"><b>↻ Recount</b></span></div>
             </div>
 
             <div class="sb-matchrow">
@@ -1028,6 +1050,19 @@
             <button class="btn btn-accent" id="genGo">Generate ✦</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== AUDIENCE PREVIEW MODAL ("See all") ===== -->
+    <div class="scrim" id="audScrim">
+      <div class="aud-modal">
+        <div class="aud-head">
+          <div class="aud-title"><span class="ic">👥</span><div><b>Audience Preview</b><span id="audCount">1,284 users match your conditions</span></div></div>
+          <button class="gen-x" id="audClose">✕</button>
+        </div>
+        <div class="aud-search"><span class="mag">🔍</span><input id="audSearch" placeholder="Search name, email or phone…" /><span class="aud-note">ⓘ Preview based on sample data</span></div>
+        <div class="aud-tablehead"><span>NAME</span><span>SUBSCRIBED TO</span></div>
+        <div class="aud-rows" id="audRows"><!-- rendered --></div>
       </div>
     </div>
 
@@ -1268,7 +1303,7 @@
   function wfChatWelcome(){
     return `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's what I built — a re-engagement automation for your lapsed single-track guests. <strong>Please review the segment</strong> before you turn it on: if the audience is off, everything downstream is off.</div></div>
       <div class="wfc-msg ai"><div class="wfc-arts">
-        <button class="art-pill primary seg" data-art="segment"><span class="ai">👥</span><span class="tx"><b>Lapsed single-track customers</b><span>Segment · 1,284 people · review this →</span></span><span class="go">Open</span></button>
+        <button class="art-pill seg" data-art="segment"><span class="ai">👥</span><span class="tx"><b>Lapsed single-track customers</b><span>Segment · 1,284 people · review this →</span></span><span class="go">Open</span></button>
         <button class="art-pill auto" data-art="automation"><span class="ai">⚡</span><span class="tx"><b>Lapsed single-track win-back</b><span>Automation · email + SMS</span></span><span class="go">Open</span></button>
       </div></div>`;
   }
@@ -1463,14 +1498,40 @@
     const html = `<div style="display:flex;align-items:center;gap:10px;margin:2px 0"><span style="height:1px;flex:1;background:#E7E9EA"></span><span class="and-sm">AND</span><span style="height:1px;flex:1;background:#E7E9EA"></span></div>
     <div class="cond-card" id="spendCond" style="border-color:var(--accent);box-shadow:0 0 0 3px rgba(234,91,35,.1)"><div class="cond-line"><span class="lead">Lifetime spend</span><span class="tok-fill">is over ▾</span><span class="tok-fill">$400 ▾</span><span class="dots">⋯</span></div></div>`;
     $('#sbAddCond').insertAdjacentHTML('beforebegin', html);
-    $('#sbCount').textContent = '794';
+    $('#sbCount').textContent = '794'; $('#sbSeeAll').textContent = 'See all 794';
     $('#sbPlain').innerHTML = 'Customers who were a guest on a <strong>single-track trip</strong> in the <strong>last 180 days</strong>, have <strong>nothing upcoming</strong>, and have spent <strong>over $400</strong>.';
   }
   function removeSpendCondition(){
     const c = $('#spendCond'); if(c){ c.previousElementSibling.remove(); c.remove(); }
-    $('#sbCount').textContent = '1,284';
+    $('#sbCount').textContent = '1,284'; $('#sbSeeAll').textContent = 'See all 1,284';
     $('#sbPlain').innerHTML = 'Customers who were a guest on a <strong>single-track trip</strong> in the <strong>last 180 days</strong> and have <strong>nothing upcoming</strong>.';
   }
+  // ---- Audience preview modal ("See all") ----
+  const AUD_MEMBERS = [
+    ['Nikita Yudin', ['email','phone']], ['Grant White', ['email','phone']], ['Alex Fletcher', ['email','phone']],
+    ['Bam Adebayo', ['email','phone']], ['Denali Cragman', ['email']], ['Oliver Fletcher', ['email','phone']],
+    ['Kent Kasica', ['email','phone']], ['Billy Bob', ['email']], ['Benjamin Lazarov', ['email','phone']],
+    ['Ascent Peak', ['email']], ['Johnny Tarpon', ['email','phone']], ['Dana Whitmore', ['email','phone']],
+    ['Marcus Bell', ['email']], ['Priya Nandakumar', ['email','phone']], ['Théo Lambert', ['email','phone']],
+    ['Sasha Kline', ['email']], ['Wren Halloway', ['email','phone']], ['Marisol Vega', ['email','phone']],
+    ['Ibrahim Okafor', ['email']], ['Petra Nowak', ['email','phone']], ['Cody Ramirez', ['email','phone']],
+    ['Aiko Tanaka', ['email']], ['Lena Fischer', ['email','phone']], ['Diego Salcedo', ['email','phone']],
+  ];
+  function subTag(k){ return `<span class="sub-tag ${k}">${k === 'email' ? 'Email' : 'Phone'}</span>`; }
+  function renderAudRows(q){
+    q = (q || '').toLowerCase().trim();
+    const rows = AUD_MEMBERS.filter(m => !q || m[0].toLowerCase().includes(q));
+    $('#audRows').innerHTML = rows.length
+      ? rows.map(m => `<div class="aud-row"><span class="an">${m[0]}</span><span class="subs">${m[1].map(subTag).join('')}</span></div>`).join('')
+      : '<div class="aud-empty">No one matches that search.</div>';
+  }
+  const audScrim = $('#audScrim');
+  function openAudience(){ $('#audCount').textContent = $('#sbCount').textContent + ' users match your conditions'; $('#audSearch').value = ''; renderAudRows(''); audScrim.setAttribute('data-open',''); $('#audSearch').focus(); }
+  $('#sbSeeAll').onclick = openAudience;
+  $('#audClose').onclick = () => audScrim.removeAttribute('data-open');
+  audScrim.onclick = e => { if(e.target === audScrim) audScrim.removeAttribute('data-open'); };
+  $('#audSearch').addEventListener('input', e => renderAudRows(e.target.value));
+
   $('#sbSave').onclick = () => {
     setGuide('✅ Segment saved. Any automation or broadcast can now target it.');
     $('#sbSave').textContent = 'Saved ✓';
