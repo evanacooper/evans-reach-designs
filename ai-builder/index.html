@@ -1343,8 +1343,7 @@
     configSegment({ fromWorkflow: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
     $('#wfChatScroll').innerHTML = wfChatWelcome(); bindArtifactPills();
     showView('workflow');
-    $('#wfChat').setAttribute('data-open',''); $('#wfEditAi').setAttribute('data-on','');
-    $('#wfEditAi').style.display = '';
+    $('#wfChat').setAttribute('data-open',''); $('#wfEditAi').style.display = ''; syncEditAi();
     setGuide('✅ Built. You\'re in the <strong>automation view</strong> with the chat open. Click the <strong>segment pill</strong> (or the segment name) — it opens on the left, chat stays put.');
   }
 
@@ -1352,6 +1351,12 @@
   // aiEditable: whether this automation was built with AI (has a bound chat). F12.
   let aiEditable = true;
   let curPane = 'automation';
+  // Both "Edit with AI" buttons reflect one source of truth: whether the shared chat is open.
+  function syncEditAi(){
+    const open = $('#wfChat').hasAttribute('data-open');
+    $('#wfEditAi').toggleAttribute('data-on', open);
+    $('#sbEditAi').toggleAttribute('data-on', open);
+  }
   function showPane(which, force){
     if(!force && which === curPane) return;
     curPane = which;
@@ -1361,6 +1366,7 @@
     $('#wfTopAutomation').hidden = seg;
     $('#wfTopSegment').hidden = !seg;
     $('#wfChatCtx').textContent = seg ? '· this segment' : '· this automation';
+    syncEditAi();
   }
   // Open an automation from a list row. isAi=false → Managed (no chat / no Edit-with-AI). F12.
   $$('[data-open-workflow]').forEach(r => r.onclick = () => openAutomation({ ai: r.dataset.ai !== 'managed', name: r.dataset.name, desc: r.dataset.desc, meta: r.dataset.meta }));
@@ -1411,12 +1417,9 @@
   // the "edit segment →" pick inside the Start step detail also swaps to the segment pane
   $('#segLink2') && ($('#segLink2').onclick = (e) => { e.stopPropagation(); showPane('segment'); });
 
-  // Edit with AI toggles the single chat panel (only present when aiEditable)
-  $('#wfEditAi').onclick = () => {
-    const open = $('#wfChat').toggleAttribute('data-open');
-    $('#wfEditAi').toggleAttribute('data-on', open);
-  };
-  $('#wfChatClose').onclick = () => { $('#wfChat').removeAttribute('data-open'); $('#wfEditAi').removeAttribute('data-on'); $('#sbEditAi').removeAttribute('data-on'); };
+  // Edit with AI toggles the single chat panel (only present when aiEditable). Both buttons stay in sync.
+  $('#wfEditAi').onclick = () => { $('#wfChat').toggleAttribute('data-open'); syncEditAi(); };
+  $('#wfChatClose').onclick = () => { $('#wfChat').removeAttribute('data-open'); syncEditAi(); };
 
   // The single chat's send: context-aware. On the segment pane it edits the segment
   // (adds spend condition, drops count); on the automation pane it tightens the audience.
@@ -1491,11 +1494,8 @@
     showPane('segment', true);
     setGuide('This is the <strong>segment builder</strong>. Edit the name and description, tune conditions, see the plain-English summary on top, or which automations it feeds under <strong>Used by</strong>.');
   });
-  // Edit-with-AI from the segment header just opens the shared chat.
-  $('#sbEditAi').onclick = () => {
-    const open = $('#wfChat').toggleAttribute('data-open');
-    $('#sbEditAi').toggleAttribute('data-on', open);
-  };
+  // Edit-with-AI from the segment header just opens the shared chat. Both buttons stay in sync.
+  $('#sbEditAi').onclick = () => { $('#wfChat').toggleAttribute('data-open'); syncEditAi(); };
   function applySpendCondition(){
     if($('#spendCond')) return;
     const html = `<div style="display:flex;align-items:center;gap:10px;margin:2px 0"><span style="height:1px;flex:1;background:#E7E9EA"></span><span class="and-sm">AND</span><span style="height:1px;flex:1;background:#E7E9EA"></span></div>
@@ -1577,7 +1577,7 @@
     $('#wfChatScroll').innerHTML = `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Here's the segment I built from your description, in plain English:<div style="display:flex;flex-direction:column;gap:7px;padding-top:9px"><div style="color:var(--slate)"><strong>Includes</strong> guests on Sawtooth Single-track, Ridgeline Descent or Aspen Flow in the last 180 days.</div><div style="color:var(--slate)"><strong>Leaves out</strong> anyone with a trip on the books, and leads who never booked.</div><div style="color:var(--slate)"><strong>1,284 customers</strong> match today. Ask me to change anything.</div></div></div></div>`;
     showView('workflow');
     showPane('segment', true);
-    $('#wfChat').setAttribute('data-open',''); $('#sbEditAi').setAttribute('data-on','');
+    $('#wfChat').setAttribute('data-open',''); syncEditAi();
     setGuide('✅ AI built your segment. Continue the chat to refine it, or edit conditions by hand — then <strong>Save segment</strong>.');
   };
   // Manual Builder → blank segment pane, no chat
