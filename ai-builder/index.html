@@ -258,8 +258,9 @@
   .wf-titlewrap { display: flex; align-items: flex-start; gap: 12px; min-width: 0; flex: 1; }
   .wf-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
   .wf-title .row1 { display: flex; align-items: center; gap: 10px; }
-  .wf-title h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
-  .wf-title .meta { font-size: 13px; color: var(--muted); }
+  .wf-title h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); line-height: 27px; padding-bottom: 4px; }
+  .wf-title .wf-desc { font-size: 13.5px; line-height: 19px; color: var(--slate); margin-top: 4px; padding-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 620px; }
+  .wf-title .meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
   .wf-actions { display: flex; align-items: center; gap: 9px; flex: none; }
   .chip-btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; font-weight: 700; color: var(--ink); border: 1px solid var(--line); background: #fff; padding: 9px 14px; border-radius: var(--r-sm); cursor: pointer; font-family: inherit; }
   .chip-btn:hover { border-color: #C3CBD0; }
@@ -791,6 +792,7 @@
                 <h2>Lapsed single-track win-back</h2>
                 <span class="pill ai">Custom</span>
               </div>
+              <div class="wf-desc" id="wfDesc">Guests on a past single-track trip with nothing upcoming.</div>
               <div class="meta" id="wfMeta">Sends once on Tue 4 Aug · 1,284 customers · created just now</div>
             </div>
           </div>
