@@ -372,6 +372,18 @@
   .wfp-p { font-size: 13.5px; line-height: 1.55; color: var(--slate); }
   .wfp-tok { background: #F1F3F4; border-radius: 5px; padding: 1px 7px; font-weight: 600; color: var(--ink); }
   .wfp-cta { align-self: flex-start; font-size: 13px; font-weight: 700; color: #fff; background: var(--accent); padding: 10px 18px; border-radius: 8px; }
+  /* column-2 panes: email preview vs. a clicked step's editor */
+  .wf-preview { position: relative; }
+  .wfp-pane { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+  .wfp-pane[hidden] { display: none; }
+  .wfp-stepbody { flex: 1; min-height: 0; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; }
+  .wfp-stepbody .step-detail { display: block !important; border: 0; background: transparent; padding: 0; }
+  .wfp-stepfoot { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--line-2); }
+  .wfp-stepfoot .rm { font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .wfp-stepfoot .grp { display: flex; gap: 9px; }
+  /* a step selected while chat is closed reads as active but does not expand inline */
+  .wf-body:not(.chat-open) .step.selected { border: 1.5px solid var(--ink); box-shadow: 0 12px 28px -18px rgba(22,36,46,.5); }
+  .wf-body:not(.chat-open) .step.selected .step-detail { display: none; }
   .wfc-head { flex: none; padding: 14px 18px; border-bottom: 1px solid var(--line); border-radius: var(--r-md) var(--r-md) 0 0; background: #fff; display: flex; align-items: center; justify-content: space-between; }
   .wfc-head .l { display: flex; align-items: center; gap: 8px; }
   .wfc-head .sp { color: var(--accent-deep); font-size: 12.5px; }
@@ -1131,15 +1143,23 @@
 
         <!-- Standard builder: email preview on the right, shown when the AI chat is closed (V1) -->
         <aside class="wf-preview" id="wfPreview">
-          <div class="wfp-head"><span class="wfp-t">✉ EMAIL PREVIEW</span><span class="wfp-actions"><button class="wfp-btn">▷ Send Test</button><button class="wfp-btn icon">⤢</button><button class="wfp-btn">✎ Edit Email</button></span></div>
-          <div class="wfp-meta"><div class="wfp-row"><span class="k">SUBJECT</span><span class="v">Time for a fresh groom? We'd love to see you again ✂️🐾</span></div><div class="wfp-row"><span class="k">PREVIEW</span><span class="v muted">It's been a little while — booking your next grooming visit is quick and …</span></div></div>
-          <div class="wfp-body">
-            <div class="wfp-logo"><span class="wfp-mark">⌂</span><span>BERRY HILL<br>TRAILS</span></div>
-            <div class="wfp-h">The trails are dry again 🚵</div>
-            <div class="wfp-img">Trip photo</div>
-            <div class="wfp-p">Hi <span class="wfp-tok">First name</span> 👋</div>
-            <div class="wfp-p">The single-track is dry, the shuttle is running again, and the season calendar just went up. You rode with us in the spring — here's what's open next.</div>
-            <div class="wfp-cta">See open dates</div>
+          <!-- Default: email preview -->
+          <div class="wfp-pane" id="wfPreviewEmail">
+            <div class="wfp-head"><span class="wfp-t">✉ EMAIL PREVIEW</span><span class="wfp-actions"><button class="wfp-btn">▷ Send Test</button><button class="wfp-btn icon">⤢</button><button class="wfp-btn">✎ Edit Email</button></span></div>
+            <div class="wfp-meta"><div class="wfp-row"><span class="k">SUBJECT</span><span class="v">Time for a fresh groom? We'd love to see you again ✂️🐾</span></div><div class="wfp-row"><span class="k">PREVIEW</span><span class="v muted">It's been a little while — booking your next grooming visit is quick and …</span></div></div>
+            <div class="wfp-body">
+              <div class="wfp-logo"><span class="wfp-mark">⌂</span><span>BERRY HILL<br>TRAILS</span></div>
+              <div class="wfp-h">The trails are dry again 🚵</div>
+              <div class="wfp-img">Trip photo</div>
+              <div class="wfp-p">Hi <span class="wfp-tok">First name</span> 👋</div>
+              <div class="wfp-p">The single-track is dry, the shuttle is running again, and the season calendar just went up. You rode with us in the spring — here's what's open next.</div>
+              <div class="wfp-cta">See open dates</div>
+            </div>
+          </div>
+          <!-- When a non-email step is clicked (chat closed): that step's editor renders here -->
+          <div class="wfp-pane wfp-step" id="wfPreviewStep" hidden>
+            <div class="wfp-head"><span class="wfp-t" id="wfpStepTitle">STEP</span><span class="wfp-actions"><button class="wfp-btn" id="wfpStepClose">✕ Close</button></span></div>
+            <div class="wfp-stepbody" id="wfpStepBody"><!-- filled with the step's fields --></div>
           </div>
         </aside>
       </div>
@@ -1565,6 +1585,9 @@ Have not been messaged in the last 90 days</textarea>
     $('#sbEditAi') && $('#sbEditAi').toggleAttribute('data-on', open);
     // V1: chat open hides the email preview; chat closed shows the standard builder (steps + preview).
     $('.wf-body') && $('.wf-body').classList.toggle('chat-open', open);
+    // reset step editing when switching modes so inline vs column-2 don't overlap
+    $$('.step').forEach(s => s.classList.remove('open','selected'));
+    if($('#wfPreviewEmail')) showPreviewEmail();
   }
   function showPane(which, force){
     if(!force && which === curPane) return;
@@ -1613,16 +1636,50 @@ Have not been messaged in the last 90 days</textarea>
   $('#segBackBig').onclick = () => showPane('automation');
 
   // Step expand/collapse (A2/A3 inline editing)
+  // V1 step editing:
+  //  - chat OPEN  (col 2 = chat)   → expand the step inline (as today)
+  //  - chat CLOSED (col 2 = preview) → open the step's editor in column 2; email step shows the email preview
+  function showPreviewEmail(){ $('#wfPreviewEmail').hidden = false; $('#wfPreviewStep').hidden = true; }
+  function showPreviewStep(step){
+    const label = $('.step-tx .lbl', step)?.textContent || 'STEP';
+    const detail = $('.step-detail', step);
+    $('#wfpStepTitle').textContent = label;
+    // clone the step's fields (minus the inline action bar) into the column-2 host
+    const clone = detail ? detail.cloneNode(true) : document.createElement('div');
+    clone.querySelector('.detail-actions')?.remove();
+    $('#wfpStepBody').innerHTML = '';
+    $('#wfpStepBody').appendChild(clone);
+    // a segment pick inside the cloned start-step editor still opens the modal
+    const segPick = $('#wfpStepBody #segLink2'); if(segPick){ segPick.id = ''; segPick.onclick = (e)=>{ e.stopPropagation(); openSegmentModal('Lapsed single-track customers'); }; }
+    $('#wfpStepBody').insertAdjacentHTML('beforeend', `<div class="wfp-stepfoot"><span class="rm">Remove step</span><div class="grp"><button class="btn btn-outline" id="wfpStepCancel">Cancel</button><button class="btn btn-accent" id="wfpStepSave">Save step</button></div></div>`);
+    $('#wfpStepCancel').onclick = $('#wfpStepSave').onclick = closeStepInPreview;
+    $('#wfPreviewEmail').hidden = true; $('#wfPreviewStep').hidden = false;
+  }
+  function closeStepInPreview(){ $$('.step').forEach(s => s.classList.remove('selected')); showPreviewEmail(); }
+  function selectStep(step){
+    const chatOpen = $('#wfChat').hasAttribute('data-open');
+    if(chatOpen){
+      const wasOpen = step.classList.contains('open');
+      $$('.step').forEach(s => { s.classList.remove('open','selected'); });
+      if(!wasOpen){ step.classList.add('open','selected'); }
+      return;
+    }
+    // chat closed → column-2 editor
+    const wasSelected = step.classList.contains('selected');
+    $$('.step').forEach(s => s.classList.remove('open','selected'));
+    if(wasSelected){ showPreviewEmail(); return; }
+    step.classList.add('selected');
+    if(step.dataset.step === 'email') showPreviewEmail(); else showPreviewStep(step);
+  }
   $$('.step').forEach(step => {
     const summary = $('.step-summary', step);
     summary.onclick = (e) => {
       if(e.target.closest('.step-toggle') || e.target.closest('.seg-link')) return;
-      const wasOpen = step.classList.contains('open');
-      $$('.step').forEach(s => { s.classList.remove('open','selected'); });
-      if(!wasOpen){ step.classList.add('open','selected'); }
+      selectStep(step);
     };
   });
   $$('[data-collapse-step]').forEach(b => b.onclick = (e) => { e.stopPropagation(); const s = b.closest('.step'); s.classList.remove('open','selected'); });
+  $('#wfpStepClose') && ($('#wfpStepClose').onclick = closeStepInPreview);
   $$('.step-toggle').forEach(t => t.onclick = e => { e.stopPropagation(); t.style.background = t.style.background === 'rgb(195, 203, 208)' ? '' : '#C3CBD0'; t.style.justifyContent = t.style.justifyContent === 'flex-start' ? '' : 'flex-start'; });
   // the "edit segment →" pick inside the Start step detail also swaps to the segment pane
   $('#segLink2') && ($('#segLink2').onclick = (e) => { e.stopPropagation(); openSegmentModal('Lapsed single-track customers'); });
