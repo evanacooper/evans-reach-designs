@@ -526,23 +526,26 @@
   .aud-empty { padding: 30px 20px; text-align: center; font-size: 13.5px; color: var(--faint); }
 
   /* ===== V1: seg chip in chat ===== */
+  .seg-chips { display: flex; flex-direction: column; gap: 8px; }
   .seg-chip { display: flex; align-items: center; gap: 10px; width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 10px 12px; cursor: pointer; font-family: inherit; text-align: left; transition: border-color .12s, box-shadow .12s; }
   .seg-chip:hover { border-color: var(--accent); box-shadow: 0 2px 10px -4px rgba(234,91,35,.25); }
   .seg-chip svg { flex: none; width: 26px; height: 26px; padding: 5px; border-radius: 7px; background: #E6F5F0; color: #2E7D6B; }
-  .seg-chip .sc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-  .seg-chip .sc-tx b { font-size: 12.5px; font-weight: 700; color: var(--ink); }
-  .seg-chip .sc-tx span { font-size: 11px; color: var(--faint); }
+  .seg-chip .sc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .seg-chip .sc-top { display: flex; align-items: center; gap: 7px; min-width: 0; }
+  .seg-chip .sc-pill { flex: none; font-size: 9.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #2E7D6B; background: #E6F5F0; padding: 2px 7px; border-radius: 999px; }
+  .seg-chip .sc-tx b { font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .seg-chip .sc-sub { font-size: 11px; color: var(--faint); }
   .seg-chip .sc-open { flex: none; font-size: 12px; font-weight: 700; color: var(--accent-deep); }
   /* inline building indicator in chat */
   .inline-build { display: inline-flex; align-items: center; gap: 9px; color: var(--muted); }
   .ib-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .7s linear infinite; }
 
   /* ===== V1: View Segment modal (partner-dashboard builder) ===== */
-  .vseg-modal { width: 100%; max-width: 1000px; height: 88%; max-height: 760px; background: #fff; border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 30px 70px -30px rgba(0,0,0,.5); display: grid; grid-template-rows: auto 1fr auto; }
+  .vseg-modal { width: 100%; max-width: 1060px; height: 90%; max-height: 780px; background: #fff; border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 30px 70px -30px rgba(0,0,0,.5); display: grid; grid-template-rows: auto 1fr auto; }
   .vseg-head { padding: 22px 26px 16px; display: flex; align-items: flex-start; justify-content: space-between; }
   .vseg-head h2 { margin: 0 0 3px; font-size: 24px; font-weight: 800; letter-spacing: -.01em; color: var(--ink); }
   .vseg-head p { margin: 0; font-size: 13.5px; color: var(--muted); }
-  .vseg-body { min-height: 0; display: grid; grid-template-columns: 1fr 380px; gap: 24px; padding: 0 26px; overflow: hidden; }
+  .vseg-body { min-height: 0; display: grid; grid-template-columns: 1fr 300px; gap: 24px; padding: 0 26px; overflow: hidden; }
   .vseg-left { min-height: 0; overflow-y: auto; padding-bottom: 20px; }
   .vseg-field { margin-bottom: 16px; }
   .vseg-field label { display: block; font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
@@ -552,19 +555,36 @@
   .vseg-hr { border: 0; border-top: 1px solid var(--line-2); margin: 20px 0; }
   .vseg-sec h3 { margin: 0 0 3px; font-size: 17px; font-weight: 800; color: var(--ink); }
   .vseg-sub { margin: 0 0 16px; font-size: 13px; color: var(--muted); }
-  .cgroup { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-  .cgroup-label { font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--fainter); margin-bottom: 12px; }
-  .crow { display: grid; grid-template-columns: 22px 1fr 1fr 1fr; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px; background: #fff; }
-  .crow .ci { color: var(--faint); font-size: 13px; }
-  .crow .cfield, .crow .cop, .crow .cval { border: 1px solid var(--line-3); border-radius: 7px; padding: 8px 10px; font-size: 13px; color: var(--ink); background: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .crow .cval { color: var(--slate); }
-  .cjoin { display: flex; align-items: center; gap: 0; margin: 10px 0; padding-left: 2px; }
-  .cjoin .cj { font-size: 11px; font-weight: 700; color: var(--faint); background: #F1F3F4; padding: 5px 12px; cursor: pointer; }
-  .cjoin .cj:first-child { border-radius: 6px 0 0 6px; }
-  .cjoin .cj:last-child { border-radius: 0 6px 6px 0; }
+  .cgroup { border: 1px solid var(--line); border-radius: 14px; padding: 16px; background: var(--subtle); }
+  .cgroup-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cgroup-label { font-size: 11.5px; font-weight: 800; letter-spacing: .09em; color: var(--muted); }
+  .cgroup-actions { display: flex; gap: 14px; }
+  .cg-act { font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .cg-act:hover { color: var(--ink); }
+  /* condition card (a relationship condition or a flat attribute condition) */
+  .ccard { border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .cline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; color: var(--slate); }
+  .cline .cx { color: var(--faint); font-size: 11px; cursor: pointer; }
+  .cent { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: var(--ink); }
+  .csel { border: 1px solid var(--line-3); border-radius: 7px; padding: 7px 11px; font-size: 13px; color: var(--ink); background: #fff; cursor: pointer; }
+  .csel.wide { min-width: 120px; }
+  .cnum { width: 54px; border: 1px solid var(--line-3); border-radius: 7px; padding: 7px 10px; font-size: 13px; color: var(--ink); text-align: left; background: #fff; }
+  .crel { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--slate); }
+  .cnest { margin-left: 6px; padding: 14px; border: 1px solid var(--line-2); border-radius: 11px; background: var(--subtle); display: flex; flex-direction: column; gap: 12px; }
+  .cfilter { display: flex; flex-direction: column; gap: 10px; }
+  .cfrow { display: flex; gap: 10px; flex-wrap: wrap; }
+  .ctok { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-3); border-radius: 7px; padding: 7px 11px; font-size: 13px; font-weight: 600; color: var(--ink); background: #fff; cursor: pointer; }
+  .ctok .tx2 { color: var(--faint); font-size: 11px; }
+  .cval-inp { border: 1px solid var(--line-3); border-radius: 7px; padding: 9px 12px; font-size: 13.5px; color: var(--ink); font-family: inherit; background: #fff; width: 100%; }
+  .cadds { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cadd { font-size: 12.5px; font-weight: 600; color: var(--muted); background: var(--subtle); border: 1px solid var(--line-2); border-radius: 8px; padding: 8px 11px; cursor: pointer; }
+  .cadd:hover { color: var(--ink); border-color: var(--line-3); }
+  .cjoin { display: flex; align-items: center; gap: 0; margin: 12px 0; padding-left: 2px; }
+  .cjoin .cj { font-size: 11px; font-weight: 700; color: var(--faint); background: #E9EBEC; padding: 6px 14px; cursor: pointer; }
+  .cjoin .cj:first-child { border-radius: 999px 0 0 999px; }
+  .cjoin .cj:last-child { border-radius: 0 999px 999px 0; }
   .cjoin .cj.on { color: #fff; background: var(--ink); }
-  .cjoin::after { content: ""; flex: 1; height: 1px; background: var(--line-2); margin-left: 12px; }
-  .cgroup-add { margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--muted); border: 1px dashed var(--line-3); border-radius: 8px; padding: 9px; text-align: center; cursor: pointer; }
+  .cjoin::after { content: ""; flex: 1; height: 1px; background: var(--line-2); margin-left: 14px; }
   .cgroup-new { margin-top: 12px; font-size: 13.5px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; }
   .cgroup-new:hover, .cgroup-add:hover { color: var(--ink); border-color: #C3CBD0; }
   .vseg-right { min-height: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
@@ -1208,15 +1228,32 @@ Have not been messaged in the last 90 days</textarea>
               <h3>Audience Conditions</h3>
               <p class="vseg-sub">Build a group per set of conditions, then choose how the groups combine</p>
               <div class="cgroup">
-                <div class="cgroup-label">GROUP 1</div>
-                <div class="crow"><span class="ci">ⓘ</span><span class="cfield">Trip type ⌄</span><span class="cop">Is any of ⌄</span><span class="cval">Single-track</span></div>
+                <div class="cgroup-top"><span class="cgroup-label">▾ GROUP 1</span><span class="cgroup-actions"><span class="cg-act">🏷 Tag</span><span class="cg-act">🗑 Delete</span></span></div>
+
+                <!-- Nested relationship condition: Customer has ≥1 Trip where that Trip has ≥1 Listing (Listing Category = bike) -->
+                <div class="ccard">
+                  <div class="cline"><span class="cx">▾</span>The <span class="cent">◈ Customer</span> has <span class="csel">at least ▾</span><span class="cnum">1</span></div>
+                  <div class="crel"><span class="cent">◈ Trip</span> where:</div>
+                  <div class="cnest">
+                    <div class="cline"><span class="cx">▾</span>and that <span class="cent">◈ Trip</span> has <span class="csel">at least ▾</span><span class="cnum">1</span></div>
+                    <div class="crel"><span class="cent">◈ Listing</span> where:</div>
+                    <div class="cfilter">
+                      <div class="cfrow"><span class="ctok">◈ Listing Category <span class="tx2">✕</span> ▾</span><span class="csel wide">equals ▾</span></div>
+                      <input class="cval-inp" value="bike" />
+                      <div class="cadds"><span class="cadd">＋ Listing Attribute</span><span class="cadd">＋ Related Record</span></div>
+                    </div>
+                  </div>
+                  <div class="cadds"><span class="cadd">＋ Trip Attribute</span><span class="cadd">＋ Related Record</span></div>
+                </div>
+
                 <div class="cjoin"><span class="cj on">AND</span><span class="cj">OR</span></div>
-                <div class="crow"><span class="ci">ⓘ</span><span class="cfield">Trip date ⌄</span><span class="cop">Within last ⌄</span><span class="cval">180 days</span></div>
-                <div class="cjoin"><span class="cj on">AND</span><span class="cj">OR</span></div>
-                <div class="crow"><span class="ci">ⓘ</span><span class="cfield">Upcoming trips ⌄</span><span class="cop">Equals ⌄</span><span class="cval">0</span></div>
-                <div class="cjoin"><span class="cj on">AND</span><span class="cj">OR</span></div>
-                <div class="crow"><span class="ci">ⓘ</span><span class="cfield">Last messaged ⌄</span><span class="cop">Before ⌄</span><span class="cval">90 days ago</span></div>
-                <div class="cgroup-add">＋ Add condition</div>
+
+                <!-- Simple attribute condition: Bookings count > 2 -->
+                <div class="ccard flat">
+                  <div class="cfrow"><span class="ctok">◈ Bookings count <span class="tx2">✕</span> ▾</span><span class="csel wide">greater than ▾</span></div>
+                  <input class="cval-inp" value="2" />
+                  <div class="cadds"><span class="cadd">＋ Customer Attribute</span><span class="cadd">＋ Sub Grouping</span><span class="cadd">＋ Related Record</span></div>
+                </div>
               </div>
               <div class="cgroup-new">＋ Condition Group</div>
             </div>
@@ -1415,18 +1452,22 @@ Have not been messaged in the last 90 days</textarea>
     $$('#buildToggle b').forEach(b => b.onclick = (e) => { e.stopPropagation(); buildMode = b.dataset.mode; $$('#buildToggle b').forEach(x=>x.toggleAttribute('data-on', x.dataset.mode===buildMode)); });
   }
 
-  // V1: no full-screen building step. Land on the automation viewer and show a
-  // minimal inline loading indicator in the chat, which resolves into the created message.
+  // V1: no full-screen building step. A little loading happens inline in the PLAN chat
+  // first ("building, building…"), then we drop the user into the automation viewer.
   function runBuild(){
     if(buildMode === 'fail'){ buildFailed(); return; }
-    restoreAutomationShell();
-    configSegment({ fromWorkflow: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
-    $('#wfChatScroll').innerHTML = wfChatHistory() + `<div class="wfc-msg ai" id="wfBuilding"><span class="who">GOOSE</span><div class="wfc-bubble"><span class="inline-build"><span class="ib-spin"></span>Building your automation…</span></div></div>`;
-    showView('workflow');
-    $('#wfChat').setAttribute('data-open',''); $('#wfEditAi').style.display = ''; syncEditAi();
-    $('#wfChatScroll').scrollTop = $('#wfChatScroll').scrollHeight;
-    setGuide('⏳ Building your automation — this happens inline in the chat…');
-    setTimeout(landBuilt, 1900);
+    // stay in the plan chat and show progressive building messages
+    const scroll = $('#chatScroll');
+    scroll.insertAdjacentHTML('beforeend', `<div class="msg ai" id="planBuilding"><span class="who">GOOSE</span><div class="bubble"><span class="inline-build"><span class="ib-spin"></span><span id="planBuildTxt">Building your segment…</span></span></div></div>`);
+    scroll.scrollTop = scroll.scrollHeight;
+    setGuide('⏳ Building — segment, automation, and both messages…');
+    const phases = ['Building your segment…', 'Creating the automation…', 'Drafting the email and SMS…', 'Almost done…'];
+    let p = 0;
+    const iv = setInterval(() => {
+      p++;
+      if(p < phases.length){ const t = $('#planBuildTxt'); if(t) t.textContent = phases[p]; }
+      else { clearInterval(iv); landBuilt(); }
+    }, 750);
   }
   // A2 + A1: build fails → animate to a failure card, then dump back into the chat.
   function buildFailed(){
@@ -1462,16 +1503,16 @@ Have not been messaged in the last 90 days</textarea>
     return `<div class="wfc-msg you"><span class="who">YOU</span><div class="wfc-bubble">…and skip anyone we have messaged recently.</div></div>
       <div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Added a 90-day gap. Building it now — one moment.</div></div>`;
   }
-  // Small segment chip — opens the View Segment modal.
-  function segChip(){
-    return `<button class="seg-chip" id="segChip">${ICON_SEGMENT}<span class="sc-tx"><b>Lapsed single-track customers</b><span>1,284 people</span></span><span class="sc-open">View</span></button>`;
+  // Small segment chip — a green "Segment" pill + name + count. Opens the View Segment modal.
+  function segChip(name, count){
+    return `<button class="seg-chip" data-seg="${name.replace(/"/g,'&quot;')}">${ICON_SEGMENT}<span class="sc-tx"><span class="sc-top"><span class="sc-pill">Segment</span><b>${name}</b></span><span class="sc-sub">${count} people</span></span><span class="sc-open">View</span></button>`;
   }
-  function bindSegChip(){ const c = $('#segChip'); if(c) c.onclick = openSegmentModal; }
-  // Stripped-down created message + the segment chip.
+  function bindSegChip(){ $$('#wfChatScroll .seg-chip').forEach(c => c.onclick = () => openSegmentModal(c.dataset.seg)); }
+  // Stripped-down created message + the segment chips (an automation can create more than one).
   function wfChatCreated(){
-    return wfChatHistory() + `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Done — your automation is created and saved as a draft. It goes to this segment:</div></div>
-      <div class="wfc-msg ai">${segChip()}</div>
-      <div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Have a look at the segment before you turn it on, or ask me for any change.</div></div>`;
+    return wfChatHistory() + `<div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Done — your automation is created and saved as a draft. It goes to these segments:</div></div>
+      <div class="wfc-msg ai"><div class="seg-chips">${segChip('Lapsed single-track customers','1,284')}${segChip('High-value riders','412')}</div></div>
+      <div class="wfc-msg ai"><span class="who">GOOSE</span><div class="wfc-bubble">Have a look at the segments before you turn it on, or ask me for any change.</div></div>`;
   }
   // Same content whether freshly built or opened later (V1 has no expand/collapse review card).
   function wfChatBuilt(){ return wfChatCreated(); }
@@ -1502,13 +1543,15 @@ Have not been messaged in the last 90 days</textarea>
     $('.step[data-step="sms"]').previousElementSibling.style.display = '';
     showPane('automation', true);
   }
-  // Inline loading resolves into the stripped-down created message + segment chip.
+  // After the in-chat loading, drop the user into the automation viewer with the created chat.
   function landBuilt(){
-    if($('.view[data-active]')?.dataset.view !== 'workflow'){ restoreAutomationShell(); showView('workflow'); $('#wfChat').setAttribute('data-open',''); syncEditAi(); }
+    restoreAutomationShell();
+    configSegment({ fromWorkflow: true, name: 'Lapsed single-track customers', desc: 'Guests on a past single-track trip with nothing upcoming.' });
     $('#wfChatScroll').innerHTML = wfChatBuilt(); bindReviewCard();
-    $('#wfEditAi').style.display = '';
+    showView('workflow');
+    $('#wfChat').setAttribute('data-open',''); $('#wfEditAi').style.display = ''; syncEditAi();
     $('#wfChatScroll').scrollTop = $('#wfChatScroll').scrollHeight;
-    setGuide('✅ Created. This is the automation view with the chat open — click the <strong>segment chip</strong> to review who it goes to, or close the chat to edit steps by hand.');
+    setGuide('✅ Created. This is the automation view with the chat open — click a <strong>segment chip</strong> to review who it goes to, or close the chat to edit steps by hand.');
   }
 
   // ================= WORKFLOW SHELL — pane swapping (C7) =================
